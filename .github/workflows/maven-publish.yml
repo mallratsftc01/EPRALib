@@ -3,8 +3,8 @@
 
 name: Maven Package
 
-on: workflow_dispatch
-  release: 1.0
+on: 
+  release: 
     types: [created]
 
 jobs:
