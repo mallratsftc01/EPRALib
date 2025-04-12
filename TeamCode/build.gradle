@@ -10,10 +10,6 @@
 
 // Custom definitions may go here
 
-plugins {
-    id("maven-publish")
-}
-
 // Include common definitions from above.
 
 apply from: '../build.common.gradle'
@@ -24,32 +20,6 @@ android {
 
     packagingOptions {
         jniLibs.useLegacyPackaging true
-    }
-
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
-}
-
-publishing {
-    repositories {
-        maven {
-            name = "EPRALib"
-            url = uri("https://maven.pkg.github.com/mallratsftc01/EPRALib")
-            credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("mallratsftc01")
-                password = project.findProperty("gpr.key") ?: System.getenv("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")
-            }
-        }
-    }
-    publications {
-        gpr(MavenPublication) {
-            afterEvaluate {
-                from(components.release)
-            }
-        }
     }
 }
 
