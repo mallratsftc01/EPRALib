@@ -1,0 +1,715 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.9.0" type="baseline" client="gradle" dependencies="false" name="AGP (8.9.0)" variant="all" version="8.9.0">
+
+    <issue
+        id="WrongCommentType"
+        message="This block comment looks like it was intended to be a javadoc comment"
+        errorLine1=" * @see &lt;a href=&quot;http://www.adafruit.com/products/2472&quot;>Adafruit IMU&lt;/a>"
+        errorLine2="   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorBNO055IMU.java"
+            line="57"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="WrongCommentType"
+        message="This block comment looks like it was intended to be a javadoc comment"
+        errorLine1=" * @see &lt;a href=&quot;https://limelightvision.io/&quot;>Limelight&lt;/a>"
+        errorLine2="   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorLimelight3A.java"
+            line="50"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="WrongCommentType"
+        message="This block comment looks like it was intended to be a javadoc comment"
+        errorLine1="   * depending on what you&apos;re trying to do. {@link IntegratingGyroscope} (and it&apos;s base interface,"
+        errorLine2="                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorMRGyro.java"
+            line="58"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="WrongCommentType"
+        message="This block comment looks like it was intended to be a javadoc comment"
+        errorLine1=" * @see &lt;a href=&quot;http://modernroboticsinc.com/range-sensor&quot;>MR Range Sensor&lt;/a>"
+        errorLine2="   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorMRRangeSensor.java"
+            line="46"
+            column="4"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;\n==== (ID %d) %s&quot;, detection.id, detection.metadata.name));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTag.java"
+            line="200"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;XYZ %6.1f %6.1f %6.1f  (inch)&quot;, detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTag.java"
+            line="201"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;PRY %6.1f %6.1f %6.1f  (deg)&quot;, detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTag.java"
+            line="202"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;RBE %6.1f %6.1f %6.1f  (inch, deg, deg)&quot;, detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTag.java"
+            line="203"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;\n==== (ID %d) Unknown&quot;, detection.id));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTag.java"
+            line="205"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;Center %6.0f %6.0f   (pixels)&quot;, detection.center.x, detection.center.y));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTag.java"
+            line="206"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;\n==== (ID %d) %s&quot;, detection.id, detection.metadata.name));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagEasy.java"
+            line="146"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;XYZ %6.1f %6.1f %6.1f  (inch)&quot;, detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagEasy.java"
+            line="147"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;PRY %6.1f %6.1f %6.1f  (deg)&quot;, detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagEasy.java"
+            line="148"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;RBE %6.1f %6.1f %6.1f  (inch, deg, deg)&quot;, detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagEasy.java"
+            line="149"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;\n==== (ID %d) Unknown&quot;, detection.id));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagEasy.java"
+            line="151"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;Center %6.0f %6.0f   (pixels)&quot;, detection.center.x, detection.center.y));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagEasy.java"
+            line="152"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;\n==== (ID %d) %s&quot;, detection.id, detection.metadata.name));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagLocalization.java"
+            line="223"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;XYZ %6.1f %6.1f %6.1f  (inch)&quot;,"
+        errorLine2="                                  ^">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagLocalization.java"
+            line="224"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;PRY %6.1f %6.1f %6.1f  (deg)&quot;,"
+        errorLine2="                                  ^">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagLocalization.java"
+            line="228"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;\n==== (ID %d) Unknown&quot;, detection.id));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagLocalization.java"
+            line="233"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;Center %6.0f %6.0f   (pixels)&quot;, detection.center.x, detection.center.y));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagLocalization.java"
+            line="234"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;\n==== (ID %d) %s&quot;, detection.id, detection.metadata.name));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagSwitchableCameras.java"
+            line="159"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;XYZ %6.1f %6.1f %6.1f  (inch)&quot;, detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagSwitchableCameras.java"
+            line="160"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;PRY %6.1f %6.1f %6.1f  (deg)&quot;, detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagSwitchableCameras.java"
+            line="161"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;RBE %6.1f %6.1f %6.1f  (inch, deg, deg)&quot;, detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagSwitchableCameras.java"
+            line="162"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;\n==== (ID %d) Unknown&quot;, detection.id));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagSwitchableCameras.java"
+            line="164"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;Center %6.0f %6.0f   (pixels)&quot;, detection.center.x, detection.center.y));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptAprilTagSwitchableCameras.java"
+            line="165"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;Finger 1: x=%5.2f y=%5.2f\n&quot;, gamepad1.touchpad_finger_1_x, gamepad1.touchpad_finger_1_y));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptGamepadTouchpad.java"
+            line="58"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                telemetry.addLine(String.format(&quot;Finger 2: x=%5.2f y=%5.2f\n&quot;, gamepad1.touchpad_finger_2_x, gamepad1.touchpad_finger_2_y));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptGamepadTouchpad.java"
+            line="65"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        return String.format(&quot;%.3f&quot;, rate);"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorKLNavxMicro.java"
+            line="118"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        return String.format(&quot;%.1f&quot;, AngleUnit.DEGREES.normalize(degrees));"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorKLNavxMicro.java"
+            line="126"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="    return String.format(&quot;%d&quot;, rawValue);"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorMRGyro.java"
+            line="149"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="    return String.format(&quot;%.3f&quot;, rate);"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorMRGyro.java"
+            line="153"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="    return String.format(&quot;%.3f&quot;, rate);"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorMRGyro.java"
+            line="157"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            telemetry.addData(&quot;range&quot;, String.format(&quot;%.01f mm&quot;, sensorDistance.getDistance(DistanceUnit.MM)));"
+        errorLine2="                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorREV2mDistance.java"
+            line="74"
+            column="40"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            telemetry.addData(&quot;range&quot;, String.format(&quot;%.01f cm&quot;, sensorDistance.getDistance(DistanceUnit.CM)));"
+        errorLine2="                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorREV2mDistance.java"
+            line="75"
+            column="40"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            telemetry.addData(&quot;range&quot;, String.format(&quot;%.01f m&quot;, sensorDistance.getDistance(DistanceUnit.METER)));"
+        errorLine2="                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorREV2mDistance.java"
+            line="76"
+            column="40"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            telemetry.addData(&quot;range&quot;, String.format(&quot;%.01f in&quot;, sensorDistance.getDistance(DistanceUnit.INCH)));"
+        errorLine2="                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorREV2mDistance.java"
+            line="77"
+            column="40"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        telemetry.addLine(String.format(&quot;OTOS Hardware Version: v%d.%d&quot;, hwVersion.major, hwVersion.minor));"
+        errorLine2="                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorSparkFunOTOS.java"
+            line="152"
+            column="27"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        telemetry.addLine(String.format(&quot;OTOS Firmware Version: v%d.%d&quot;, fwVersion.major, fwVersion.minor));"
+        errorLine2="                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorSparkFunOTOS.java"
+            line="153"
+            column="27"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    String.format(&quot;Encoder %d direction&quot;, i),"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/UtilityOctoQuadConfigMenu.java"
+            line="132"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    String.format(&quot;Chan %d velocity intvl&quot;, i),"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/UtilityOctoQuadConfigMenu.java"
+            line="142"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    String.format(&quot;Chan %d max pulse length&quot;, i),"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/UtilityOctoQuadConfigMenu.java"
+            line="154"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    String.format(&quot;Chan %d min pulse length&quot;, i),"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/UtilityOctoQuadConfigMenu.java"
+            line="160"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                return String.format(&quot;%s: &lt;font color=&apos;#e37c07&apos; face=monospace>%d&lt;/font>&quot;, name, i);"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/UtilityOctoQuadConfigMenu.java"
+            line="678"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="SdCardPath"
+        message="Do not hardcode &quot;/sdcard/&quot;; use `Environment.getExternalStorageDirectory().getPath()` instead"
+        errorLine1="    private File goldFile   = new File(&quot;/sdcard&quot; + soundPath + &quot;/gold.wav&quot;);"
+        errorLine2="                                       ~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptSoundsOnBotJava.java"
+            line="69"
+            column="40"/>
+    </issue>
+
+    <issue
+        id="SdCardPath"
+        message="Do not hardcode &quot;/sdcard/&quot;; use `Environment.getExternalStorageDirectory().getPath()` instead"
+        errorLine1="    private File silverFile = new File(&quot;/sdcard&quot; + soundPath + &quot;/silver.wav&quot;);"
+        errorLine2="                                       ~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptSoundsOnBotJava.java"
+            line="70"
+            column="40"/>
+    </issue>
+
+    <issue
+        id="RedundantLabel"
+        message="Redundant label can be removed"
+        errorLine1="              android:label=&quot;@string/app_name&quot;"
+        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="26"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="RedundantLabel"
+        message="Redundant label can be removed"
+        errorLine1="      android:label=&quot;@string/app_name&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="40"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="DiscouragedApi"
+        message="Should not restrict activity to fixed orientation. This may not be suitable for different form factors, causing the app to be letterboxed."
+        errorLine1="              android:screenOrientation=&quot;fullUser&quot;"
+        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="24"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="DiscouragedApi"
+        message="Should not restrict activity to fixed orientation. This may not be suitable for different form factors, causing the app to be letterboxed."
+        errorLine1="      android:screenOrientation=&quot;fullUser&quot;"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="38"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="DiscouragedApi"
+        message="Use of this function is discouraged because resource reflection makes it harder to perform build optimizations and compile-time verification of code. It is much more efficient to retrieve resources by identifier (e.g. `R.foo.bar`) than by name (e.g. `getIdentifier(&quot;bar&quot;, &quot;foo&quot;, null)`)."
+        errorLine1="        int silverSoundID = hardwareMap.appContext.getResources().getIdentifier(&quot;silver&quot;, &quot;raw&quot;, hardwareMap.appContext.getPackageName());"
+        errorLine2="                                                                  ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptSoundsASJava.java"
+            line="88"
+            column="67"/>
+    </issue>
+
+    <issue
+        id="DiscouragedApi"
+        message="Use of this function is discouraged because resource reflection makes it harder to perform build optimizations and compile-time verification of code. It is much more efficient to retrieve resources by identifier (e.g. `R.foo.bar`) than by name (e.g. `getIdentifier(&quot;bar&quot;, &quot;foo&quot;, null)`)."
+        errorLine1="        int goldSoundID   = hardwareMap.appContext.getResources().getIdentifier(&quot;gold&quot;,   &quot;raw&quot;, hardwareMap.appContext.getPackageName());"
+        errorLine2="                                                                  ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptSoundsASJava.java"
+            line="89"
+            column="67"/>
+    </issue>
+
+    <issue
+        id="DiscouragedApi"
+        message="Use of this function is discouraged because resource reflection makes it harder to perform build optimizations and compile-time verification of code. It is much more efficient to retrieve resources by identifier (e.g. `R.foo.bar`) than by name (e.g. `getIdentifier(&quot;bar&quot;, &quot;foo&quot;, null)`)."
+        errorLine1="                if ((soundID = myApp.getResources().getIdentifier(sounds[soundIndex], &quot;raw&quot;, myApp.getPackageName())) != 0){"
+        errorLine2="                                                    ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/ConceptSoundsSKYSTONE.java"
+            line="95"
+            column="53"/>
+    </issue>
+
+    <issue
+        id="DiscouragedApi"
+        message="Use of this function is discouraged because resource reflection makes it harder to perform build optimizations and compile-time verification of code. It is much more efficient to retrieve resources by identifier (e.g. `R.foo.bar`) than by name (e.g. `getIdentifier(&quot;bar&quot;, &quot;foo&quot;, null)`)."
+        errorLine1="    int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier(&quot;RelativeLayout&quot;, &quot;id&quot;, hardwareMap.appContext.getPackageName());"
+        errorLine2="                                                                 ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorColor.java"
+            line="93"
+            column="66"/>
+    </issue>
+
+    <issue
+        id="DiscouragedApi"
+        message="Use of this function is discouraged because resource reflection makes it harder to perform build optimizations and compile-time verification of code. It is much more efficient to retrieve resources by identifier (e.g. `R.foo.bar`) than by name (e.g. `getIdentifier(&quot;bar&quot;, &quot;foo&quot;, null)`)."
+        errorLine1="    int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier(&quot;RelativeLayout&quot;, &quot;id&quot;, hardwareMap.appContext.getPackageName());"
+        errorLine2="                                                                 ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorMRColor.java"
+            line="71"
+            column="66"/>
+    </issue>
+
+    <issue
+        id="IntentFilterExportedReceiver"
+        message="As of Android 12, `android:exported` must be set; use `true` to make the activity available to other apps, and `false` otherwise. For launcher activities, this should be set to `true`."
+        errorLine1="    &lt;activity android:name=&quot;org.firstinspires.ftc.robotcontroller.internal.PermissionValidatorWrapper&quot;"
+        errorLine2="     ~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="23"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="IntentFilterExportedReceiver"
+        message="As of Android 12, `android:exported` must be set; use `true` to make the activity available to other apps, and `false` otherwise."
+        errorLine1="    &lt;activity"
+        errorLine2="     ~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="36"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; `SDK_INT` is always >= 24"
+        errorLine1="      if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {"
+        errorLine2="          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/internal/FtcRobotControllerActivity.java"
+            line="599"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="IconMissingDensityFolder"
+        message="Missing density variation folders in `src\main\res`: drawable-hdpi, drawable-mdpi, drawable-xxhdpi">
+        <location
+            file="src/main/res"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view ``LinearLayout`` has `setOnTouchListener` called on it but does not override `performClick`"
+        errorLine1="    entireScreenLayout.setOnTouchListener(new View.OnTouchListener() {"
+        errorLine2="    ^">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/internal/FtcRobotControllerActivity.java"
+            line="433"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="`onTouch` should call `View#performClick` when a click is detected"
+        errorLine1="      public boolean onTouch(View v, MotionEvent event) {"
+        errorLine2="                     ~~~~~~~">
+        <location
+            file="src/main/java/org/firstinspires/ftc/robotcontroller/internal/FtcRobotControllerActivity.java"
+            line="435"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="ContentDescription"
+        message="Missing `contentDescription` attribute on image"
+        errorLine1="    &lt;ImageView"
+        errorLine2="     ~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_ftc_controller.xml"
+            line="51"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="ContentDescription"
+        message="Missing `contentDescription` attribute on image"
+        errorLine1="    &lt;ImageButton"
+        errorLine2="     ~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_ftc_controller.xml"
+            line="69"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="RelativeOverlap"
+        message="`@id/textDeviceName` can overlap `@id/menu_buttons` if @id/textDeviceName grows due to localized text expansion"
+        errorLine1="    &lt;TextView"
+        errorLine2="     ~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_ftc_controller.xml"
+            line="59"
+            column="6"/>
+    </issue>
+
+</issues>
