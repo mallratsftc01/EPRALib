@@ -17,21 +17,17 @@ public class JSONReader {
 
     private static Gson gson = new Gson();
 
-    /**Reads auto steps from a json.
+    /**Reads objects of type T from a json.
      * @param fileName The filepath of the the json.
-     * @return An array of auto steps.*/
-    public static Step[] readSteps(String fileName) {
-        Type stepListType = new TypeToken<List<Step>>() {}.getType();
-        List<Step> directions;
+     * @return A List of objects of type T. null if the file can not be found.*/
+    public static <T> List<T> read(String fileName) {
+        Type stepListType = new TypeToken<List<T>>() {}.getType();
+        List<T> directions;
         File file = AppUtil.getInstance().getSettingsFile(fileName);
         try (FileReader reader = new FileReader(file)) {
             directions = gson.fromJson(reader, stepListType);
-        } catch (Exception e) { return new Step[1]; }
-        Step[] r = new Step[directions.size()];
-        for (int i = 0; i < r.length; i++) {
-            r[i] = directions.get(i);
-        }
-        return r;
+        } catch (Exception e) { return null; }
+        return directions;
     }
 
     /**Reads filepaths from a json.
