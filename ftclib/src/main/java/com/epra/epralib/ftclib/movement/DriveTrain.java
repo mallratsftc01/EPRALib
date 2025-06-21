@@ -113,9 +113,11 @@ public class DriveTrain {
     private Angle target = new Angle(0);
     private Pose targetPose = new Pose(new Point(0,0), new Angle(0.0));
     private Pose lastTargetPose = new Pose(new Point(0,0), new Angle(0.0));
+    private Vector lastMotionVector = new Vector(0, 0);
     private double toleranceMultiplier = 1.0;
     private PIDController anglePID = new PIDController(1, 0, 0);
     private PIDController pointPID = new PIDController(1, 0, 0);
+    private PIDController vectorPID = new PIDController(1, 0, 0);
 
     /**Coordinates motors in order to create cohesive robot motion.
      * This class can be used for a variable number of motors for several drive types.
@@ -300,7 +302,7 @@ public class DriveTrain {
     public boolean posPIDMecanumDrive(@NonNull Pose current, double posTolerance, double angleTolerance, double maxPower, boolean haltAtTarget) {
         Vector vectorLeft = pointPID.runPIDPoint(current.point, targetPose.point);
         Vector vectorRight = new Vector(1.0, targetPose.angle);
-        boolean b = fieldOrientedMecanumDrive(vectorRight, new Vector(Math.min(maxPower, vectorLeft.getLength()),vectorLeft), current.angle, angleTolerance, haltAtTarget);
+        boolean b = fieldOrientedMecanumDrive(vectorRight, new Vector(Math.min(maxPower, vectorLeft.getLength()), vectorLeft), current.angle, angleTolerance, haltAtTarget);
         if (Geometry.pythagorean(current.point, targetPose.point) <= getAbsolutePosTolerance(posTolerance) && b) {
             if (haltAtTarget) { mecanumDrive(0, 0, 0); }
             pointPID.reset();
@@ -315,6 +317,26 @@ public class DriveTrain {
     public double getAbsolutePosTolerance(double posTolerance) {
         double dst = Geometry.pythagorean(targetPose.point, lastTargetPose.point);
         return Math.abs(posTolerance * dst);
+    }
+
+    /**Field Oriented holonomic drive with mecanum wheels. Uses PID loops to approach target position set. To be used for path following, not precise positioning. Created 6/17/2025.
+     * @param current The current position.
+     * @param deltaPos The change in position over the last loop.
+     * @param posTolerance The range in inches around the target pose for which the method will return true as a positive double.
+     * @param angleTolerance The tolerance for reaching the target angle as a positive double. If this is set to 0.0 the pid will run indefinitely.
+     * @param maxPower The maximum power of the motors.
+     * @return True if the robot has moved withing a radius of posTolerance of the target point, false if not.*/
+    public boolean posPIDMecanumDrive(@NonNull Pose current, Vector deltaPos, double posTolerance, double angleTolerance, double maxPower) {
+        Vector targetVector = new Vector(current.point, targetPose.point);
+        targetVector.setLength(Math.max(1.0, targetVector.getLength()));
+        Vector delta = new Vector(lastMotionVector.getLength(), deltaPos);
+        lastMotionVector = Geometry.add(vectorPID.runPIDPoint(delta.toPoint(), targetVector.toPoint()), lastMotionVector);
+        lastMotionVector.setLength(Math.min(maxPower, lastMotionVector.getLength()));
+        Vector vectorRight = new Vector(1.0, targetPose.angle);
+        fieldOrientedMecanumDrive(vectorRight, lastMotionVector, current.angle, angleTolerance, false);
+        boolean b = Math.abs(Geometry.pythagorean(targetPose.point, current.point)) <= posTolerance;
+        if (b) { vectorPID.reset(); }
+        return b;
     }
 
     /**Tunes the PID loop used to reach the target angle.
@@ -336,6 +358,16 @@ public class DriveTrain {
         pointPID.tuneI(k_i);
         pointPID.tuneD(k_d);
         toleranceMultiplier = 1.0 / k_p;
+    }
+
+    /**Tunes the PID loop used to reach the target motion vector.
+     * @param k_p The P constant.
+     * @param k_i The I constant.
+     * @param k_d the D constant.*/
+    public void tuneVectorPID(double k_p, double k_i, double k_d) {
+        vectorPID.tuneP(k_p);
+        vectorPID.tuneI(k_i);
+        vectorPID.tuneD(k_d);
     }
 
     /**Uses a drive based on the DriveTrain's drive type.

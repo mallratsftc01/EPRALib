@@ -1,13 +1,13 @@
 package com.epra.epralib.ftclib.math.geometry;
 
-/**Stores an length, theta vector.
+/**Stores a length, theta vector.
  *<p></p>
  *Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class Vector extends Angle {
 
     private double length;
 
-    /**Stores an length, theta vector.
+    /**Stores a length, theta vector.
      * @param length
      * @param theta*/
     public Vector(double length, Angle theta) {
@@ -15,7 +15,7 @@ public class Vector extends Angle {
         this.length = length;
     }
 
-    /**Stores an length, theta vector.
+    /**Stores a length, theta vector.
      * @param x
      * @param y*/
     public Vector(double x, double y) {
@@ -23,11 +23,18 @@ public class Vector extends Angle {
         this.length = Geometry.pythagorean(x, y);
     }
 
-    /**Stores an length, theta vector.
+    /**Stores a length, theta vector.
      * @param point Point at the end of the vector.*/
     public Vector(Point point) {
         super((float) (Geometry.atan(Geometry.reverse(point)).getRadian()));
         this.length = Geometry.pythagorean(point.x, point.y);
+    }
+
+    /**Stores a length, theta vector.
+     * @param origin A point representing the origin of the vector.
+     * @param end A point representing the end of the vector.*/
+    public Vector(Point origin, Point end) {
+        this(end.x - origin.x, end.y - origin.y);
     }
 
     /**@return The length of the vector.*/
