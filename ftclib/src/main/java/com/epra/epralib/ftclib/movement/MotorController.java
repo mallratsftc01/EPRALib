@@ -1,6 +1,16 @@
 package com.epra.epralib.ftclib.movement;
 
 import com.epra.epralib.ftclib.storage.MotorControllerData;
+import com.google.gson.Gson;
+
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 /**Gives increase control over DcMotorExs.
  *<p></p>
@@ -12,20 +22,28 @@ public class MotorController implements Motor {
     private double velocity;
     private int savePos;
     private long saveTime;
+    private long startTime;
 
     private PIDController pidT;
     private int startPos;
     private int targetPosition;
     private int lastTarget;
+    private double lastPIDTOutput;
 
     private PIDController pidV;
     private double targetVelocity;
+    private double lastPIDVOutput;
 
     private double holdPow;
 
-    /**Gives increase control over DcMotorExs.
-     *@param motor The motor to be used by this MotorController.*/
-    public MotorController(Motor motor) {
+    private File logJson;
+    private FileWriter logWriter;
+    private Gson gson;
+
+    /**Gives increase control over DcMotorExs. Logs data in a json file on the robot for post-match analysis.
+     *@param motor The motor to be used by this MotorController.
+     * @param id A string that identifies the log files of this MotorController*/
+    public MotorController(Motor motor, String id) throws IOException {
         this.motor = motor;
         velocity = 0;
         startPos = motor.getCurrentPosition();
@@ -33,10 +51,18 @@ public class MotorController implements Motor {
         lastTarget = startPos;
         targetVelocity = 0;
         pidT = new PIDController(1, 0, 0);
+        lastPIDTOutput = 0.0;
         pidV = new PIDController(1, 0, 0);
+        lastPIDVOutput = 0.0;
         savePos = startPos;
         saveTime = System.currentTimeMillis();
+        startTime = saveTime;
         holdPow = 0.0;
+
+        SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
+
+        logJson = AppUtil.getInstance().getSettingsFile("logs\\" + id + "_log_" + ft.format(new Date()) + ".json");
+        logWriter = new FileWriter(logJson);
     }
 
     /**Returns whether the contained Motor is energized.*/
@@ -66,7 +92,7 @@ public class MotorController implements Motor {
     /**Stops the motor.*/
     public void stop() { motor.setPower(0.0); }
 
-    /**Saves motor data to internal logs.
+    /**Saves motor data to internal logs. Also saves log data to a json file on the robot for post-match analysis.
      * @return A MotorControllerData record with data from this log.*/
     public MotorControllerData log() {
         int posChange = motor.getCurrentPosition() - savePos;
@@ -74,7 +100,9 @@ public class MotorController implements Motor {
         savePos += posChange;
         saveTime += timeChange;
         velocity = (double) posChange / (double) timeChange;
-        return new MotorControllerData(saveTime, motor.toString(), motor.getPower(), savePos, targetPosition, velocity, targetVelocity);
+        MotorControllerData data = new MotorControllerData(saveTime - startTime, motor.getPower(), savePos, targetPosition, velocity, targetVelocity, lastPIDTOutput, lastPIDVOutput);
+        gson.toJson(data, logWriter);
+        return data;
     }
 
     /**Returns the current reading of the motor's encoder in ticks relative to the start position.
@@ -117,6 +145,7 @@ public class MotorController implements Motor {
      * @return True once the motor reaches its target, false until then.*/
     public boolean moveToTarget(double maxPower, double tolerance, boolean haltAtTarget) {
         double p = pidT.runPID(getCurrentPosition(), targetPosition);
+        lastPIDTOutput = p;
         double power = Math.min(Math.abs(p), maxPower) * Math.signum(p);
         if (Math.abs(p) > (tolerance * Math.abs(lastTarget - targetPosition))) {
             setPower(power + (holdPow * getCurrentPosition()));
@@ -155,6 +184,7 @@ public class MotorController implements Motor {
      * @return True once the motor reaches its target, false until then.*/
     public boolean maintainVelocity() {
         double power = pidV.runPID(getVelocity(), targetVelocity);
+        lastPIDVOutput = power;
         setPower(power);
         if (Math.abs(targetVelocity - getVelocity()) > 0.001) {
             return false;
