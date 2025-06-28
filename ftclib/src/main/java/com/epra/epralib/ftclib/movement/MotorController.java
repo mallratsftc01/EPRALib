@@ -64,6 +64,8 @@ public class MotorController implements Motor {
         startTime = saveTime;
         holdPow = 0.0;
 
+        gson = new Gson();
+
         SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
 
         logJson = AppUtil.getInstance().getSettingsFile("logs/" + id + "_log_" + ft.format(new Date()) + ".json");
@@ -99,14 +101,14 @@ public class MotorController implements Motor {
 
     /**Saves motor data to internal logs. Also saves log data to a json file on the robot for post-match analysis.
      * @return A MotorControllerData record with data from this log.*/
-    public MotorControllerData log() throws IOException {
+    public MotorControllerData log() {
         int posChange = motor.getCurrentPosition() - savePos;
         long timeChange = System.currentTimeMillis() - saveTime;
         savePos += posChange;
         saveTime += timeChange;
         velocity = (double) posChange / (double) timeChange;
         MotorControllerData data = new MotorControllerData(saveTime - startTime, motor.getPower(), savePos, targetPosition, velocity, targetVelocity, lastPIDTOutput, lastPIDVOutput);
-        logWriter.write(gson.toJson(data));
+        gson.toJson(data, logWriter);
         return data;
     }
 
