@@ -1,5 +1,7 @@
 package com.epra.epralib.ftclib.movement;
 
+import androidx.annotation.NonNull;
+
 import com.epra.epralib.ftclib.storage.MotorControllerData;
 import com.google.gson.Gson;
 
@@ -18,6 +20,7 @@ import java.util.Date;
 public class MotorController implements Motor {
 
     private Motor motor;
+    private String id;
 
     private double velocity;
     private int savePos;
@@ -45,6 +48,8 @@ public class MotorController implements Motor {
      * @param id A string that identifies the log files of this MotorController*/
     public MotorController(Motor motor, String id) throws IOException {
         this.motor = motor;
+        this.id = id;
+
         velocity = 0;
         startPos = motor.getCurrentPosition();
         targetPosition = startPos;
@@ -214,4 +219,9 @@ public class MotorController implements Motor {
     public Object getSelf() {
         return motor;
     }
+
+    /**@return The id of this MotorController*/
+    @NonNull
+    @Override
+    public String toString() { return id; }
 }

@@ -1,5 +1,7 @@
 package com.epra.epralib.ftclib.movement;
 
+import androidx.annotation.NonNull;
+
 /**An interface for generalizing motors of all types.
  * <p></p>
  * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
@@ -21,4 +23,6 @@ public interface Motor {
     int getCurrentPosition();
 
     Object getSelf();
+    @NonNull
+    String toString();
 }

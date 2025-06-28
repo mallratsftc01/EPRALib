@@ -122,33 +122,31 @@ public class DriveTrain {
     /**Coordinates motors in order to create cohesive robot motion.
      * This class can be used for a variable number of motors for several drive types.
      *
-     * @param motorNames   Names that will be associated with each motor. Defaults to tank drive.
      * @param motors       DcMotorExs that will be used by the DriveTrain.
      * @param orientations The orientation of each motor.
      */
-    public DriveTrain(String[] motorNames, MotorController[] motors, Orientation[] orientations) {
-        for (int i = 0; i < Math.min(motorNames.length, motors.length); i++) {
-            motor.put(motorNames[i], motors[i]);
-            power.put(motorNames[i], 0.0);
-            pos.put(motorNames[i], 0);
-            orientation.put(motorNames[i], orientations[i]);
+    public DriveTrain(MotorController[] motors, Orientation[] orientations) {
+        for (int i = 0; i < motors.length; i++) {
+            motor.put(motors[i].toString(), motors[i]);
+            power.put(motors[i].toString(), 0.0);
+            pos.put(motors[i].toString(), 0);
+            orientation.put(motors[i].toString(), orientations[i]);
         }
         driveType = DriveType.TANK;
     }
 
     /**Coordinates motors in order to create cohesive robot motion.
      * This class can be used for a variable number of motors for several drive types.
-     * @param motorNames   Names that will be associated with each motor.
      * @param motors       DcMotorExs that will be used by the DriveTrain.
      * @param orientations The orientation of each motor.
      * @param driveTypeIn  The drive type to be used.
      */
-    public DriveTrain(String[] motorNames, MotorController[] motors, Orientation[] orientations, DriveType driveTypeIn) {
-        for (int i = 0; i < Math.min(motorNames.length, motors.length); i++) {
-            motor.put(motorNames[i], motors[i]);
-            power.put(motorNames[i], 0.0);
-            pos.put(motorNames[i], 0);
-            orientation.put(motorNames[i], orientations[i]);
+    public DriveTrain( MotorController[] motors, Orientation[] orientations, DriveType driveTypeIn) {
+        for (int i = 0; i < motors.length; i++) {
+            motor.put(motors[i].toString(), motors[i]);
+            power.put(motors[i].toString(), 0.0);
+            pos.put(motors[i].toString(), 0);
+            orientation.put(motors[i].toString(), orientations[i]);
         }
         driveType = driveTypeIn;
     }
