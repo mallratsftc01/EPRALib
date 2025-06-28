@@ -99,14 +99,14 @@ public class MotorController implements Motor {
 
     /**Saves motor data to internal logs. Also saves log data to a json file on the robot for post-match analysis.
      * @return A MotorControllerData record with data from this log.*/
-    public MotorControllerData log() {
+    public MotorControllerData log() throws IOException {
         int posChange = motor.getCurrentPosition() - savePos;
         long timeChange = System.currentTimeMillis() - saveTime;
         savePos += posChange;
         saveTime += timeChange;
         velocity = (double) posChange / (double) timeChange;
         MotorControllerData data = new MotorControllerData(saveTime - startTime, motor.getPower(), savePos, targetPosition, velocity, targetVelocity, lastPIDTOutput, lastPIDVOutput);
-        gson.toJson(data, logWriter);
+        logWriter.write(gson.toJson(data));
         return data;
     }
 
@@ -139,7 +139,7 @@ public class MotorController implements Motor {
     /**Checks if the position has passed through the target since the last time this method was called.
      * @param range A range around the target where the target will be considered met in motor-specific ticks.
      * @return If the position has passed through the target.*/
-    public boolean checkTarget(int range) {
+    public boolean checkTarget(int range) throws IOException {
         log();
         return (Math.max(getCurrentPosition(), savePos) > targetPosition && Math.min(getCurrentPosition(), savePos) < targetPosition) || Math.abs(getCurrentPosition() - targetPosition) < range;
     }
