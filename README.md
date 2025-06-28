@@ -151,10 +151,13 @@ of drive train and play. It also supports PID loops, controlled by a `PIDControl
 that can precisely position the robot based on odometry data.
 
 ### Storage
-The storage group was designed to store data to reduce latency. However, our team 
-found other methods to reduce these issues, making this group largely superfluous.
+The storage group holds several records that store data in a way that can be easily
+committed to JSON files. This enables logging for several different classes, including 
+`MotorController`, `IMUExpanded`, `Controller`, and `Odometry`. These log files allow us 
+to fine-tune troubleshooting. We hope to someday create an external AI agent
+that can read these files to tune certain processes such as PID loops.
 
 ## Credits
 This README was written by Striker-909, the lead programmer of FTC 18387. 
 
-This README was last updated 6/26/2025, for version 1.1.2
+This README was last updated 6/28/2025, for version 1.1.10

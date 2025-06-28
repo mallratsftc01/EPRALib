@@ -68,8 +68,9 @@ public class MotorController implements Motor {
 
         SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
 
-        logJson = AppUtil.getInstance().getSettingsFile("logs/" + id + "_log_" + ft.format(new Date()) + ".json");
+        logJson = AppUtil.getInstance().getSettingsFile("logs/MotorController_" + id + "_log_" + ft.format(new Date()) + ".json");
         logWriter = new FileWriter(logJson);
+        logWriter.write("[");
     }
 
     /**Returns whether the contained Motor is energized.*/
@@ -108,8 +109,14 @@ public class MotorController implements Motor {
         saveTime += timeChange;
         velocity = (double) posChange / (double) timeChange;
         MotorControllerData data = new MotorControllerData(saveTime - startTime, motor.getPower(), savePos, targetPosition, velocity, targetVelocity, lastPIDTOutput, lastPIDVOutput);
-        logWriter.write(gson.toJson(data) + ",\n");
+        logWriter.write("\n" + gson.toJson(data) + ",");
         return data;
+    }
+
+    /**Closes the json file that this MotorController is writing to.*/
+    public void closeLog() throws IOException {
+        logWriter.write("]");
+        logWriter.close();
     }
 
     /**Returns the current reading of the motor's encoder in ticks relative to the start position.

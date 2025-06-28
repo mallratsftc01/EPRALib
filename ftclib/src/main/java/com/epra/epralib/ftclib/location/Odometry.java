@@ -9,8 +9,16 @@ import com.epra.epralib.ftclib.math.statistics.RollingAverage;
 import com.epra.epralib.ftclib.movement.MotorController;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.google.gson.Gson;
 
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,6 +62,10 @@ public class Odometry {
     /**A buffer of the angle of the velocity (phi) of the robot in radians.*/
     private RollingAverage phiBuffer = new RollingAverage(25, RollingAverage.Bias.LINEAR);
 
+    private File logJson;
+    private FileWriter logWriter;
+    private Gson gson;
+
     /**Uses odometer encoders to determine robot pose.
      * @param leftEncoder The left parallel encoder.
      * @param rightEncoder The right parallel encoder.
@@ -64,7 +76,7 @@ public class Odometry {
      * @param imu The imu.
      * @param startPose The starting pose of the robot on the field.
      * */
-    public Odometry(MotorController leftEncoder, MotorController rightEncoder, MotorController perpendicularEncoder, Point displacementLeft, Point displacementRight, Point displacementPerpendicular, IMUExpanded imu, Pose startPose) {
+    public Odometry(MotorController leftEncoder, MotorController rightEncoder, MotorController perpendicularEncoder, Point displacementLeft, Point displacementRight, Point displacementPerpendicular, IMUExpanded imu, Pose startPose) throws IOException {
         encoder.put(Orientation.LEFT, leftEncoder);
         encoder.put(Orientation.RIGHT, rightEncoder);
         encoder.put(Orientation.PERPENDICULAR, perpendicularEncoder);
@@ -85,6 +97,13 @@ public class Odometry {
             delta.put(entry.getKey(), (entry.getValue().getCurrentPosition() - start.get(entry.getKey())) - pos.get(entry.getKey()));
         }
         saveTime = System.currentTimeMillis();
+
+        gson = new Gson();
+
+        SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
+        logJson = AppUtil.getInstance().getSettingsFile("logs/Pose_log_" + ft.format(new Date()) + ".json");
+        logWriter = new FileWriter(logJson);
+        logWriter.write("[");
     }
 
     /**Updates the delta and pos save of the encoders.*/
@@ -125,9 +144,9 @@ public class Odometry {
     /**Finds the displacement of the perpendicular encoder.*/
     public double perpendicularDisplacement() { return delta.get(Orientation.PERPENDICULAR) - (displacement.get(Orientation.PERPENDICULAR).y * phi.getRadian()); }
 
-    /**Estimates the new pose value
+    /**Estimates the new pose value. Store the new pose in a json log file.
      * @return The new pose value.*/
-    public Pose estimatePose() {
+    public Pose estimatePose() throws IOException {
         updateDeltaPos();
         phiEncoder();
         Point p0 = new Point(
@@ -151,6 +170,9 @@ public class Odometry {
         velocityBuffer.addValue(Geometry.pythagorean(p2.x, p2.y) / time);
         phiBuffer.addValue(Geometry.add(phi, new Vector(p2)).getRadian() / time);
         saveTime = System.currentTimeMillis();
+
+        logWriter.write("\n" + gson.toJson(pose.toPoseData()) + ",");
+
         return pose;
     }
 
@@ -211,5 +233,10 @@ public class Odometry {
         return p;
     }
 
+    /**Closes the json file that this Odometry is writing to.*/
+    public void closeLog() throws IOException {
+        logWriter.write("]");
+        logWriter.close();
+    }
 
 }

@@ -1,8 +1,18 @@
 package com.epra.epralib.ftclib.control;
 
 import com.epra.epralib.ftclib.math.geometry.Vector;
+import com.epra.epralib.ftclib.storage.ControllerData;
+import com.epra.epralib.ftclib.storage.IMUData;
+import com.google.gson.Gson;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,13 +58,18 @@ public class Controller extends Gamepad {
 
     private float deadband;
 
+    private File logJson;
+    private FileWriter logWriter;
+    private Gson gson;
+
     /**Extends the Gamepad Class.
      * <p></p>
      * Introduces new functionality to joysticks, triggers, and buttons.
      * @param deadbandIn The starting deadband range.
      * @param g The gamepad this controller instance will extend.
+     * @param id A string that identifies the log files of this Controller.
      * */
-    public Controller(Gamepad g, float deadbandIn) {
+    public Controller(Gamepad g, float deadbandIn, String id) throws IOException {
         gamepad = g;
         deadband = deadbandIn;
         map.put(Key.A, new BooleanButton(g, gp -> gp.a));
@@ -77,6 +92,13 @@ public class Controller extends Gamepad {
         map.put(Key.RIGHT_TRIGGER, new FloatButton(g, gp -> gp.right_trigger));
         stick.put(Stick.RIGHT_STICK, new VectorButton(g, gp -> gp.right_stick_x, gp -> gp.right_stick_y));
         stick.put(Stick.LEFT_STICK, new VectorButton(g, gp -> gp.left_stick_x, gp -> gp.left_stick_y));
+
+        gson = new Gson();
+
+        SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
+        logJson = AppUtil.getInstance().getSettingsFile("logs/Controller_" + id + "_log_" + ft.format(new Date()) + ".json");
+        logWriter = new FileWriter(logJson);
+        logWriter.write("[");
     }
 
     /**Returns the float value of an analog.
@@ -228,4 +250,37 @@ public class Controller extends Gamepad {
     /**If true will return 1, if false will return 0.
      * @param b The input boolean.*/
     public int boolToInt(boolean b) {return (b) ? 1 : 0;}
+
+    /**Saves Controller data to internal logs. Also saves log data to a json file on the robot for post-match analysis.
+     * @return A IMUData record with data from this log.*/
+    public ControllerData log() throws IOException {
+        ControllerData data = new ControllerData(
+                map.get(Key.A).getBoolean(),
+                map.get(Key.B).getBoolean(),
+                map.get(Key.X).getBoolean(),
+                map.get(Key.Y).getBoolean(),
+                map.get(Key.UP).getBoolean(),
+                map.get(Key.DOWN).getBoolean(),
+                map.get(Key.LEFT).getBoolean(),
+                map.get(Key.RIGHT).getBoolean(),
+                map.get(Key.BUMPER_LEFT).getBoolean(),
+                map.get(Key.BUMPER_RIGHT).getBoolean(),
+                map.get(Key.STICK_LEFT).getBoolean(),
+                map.get(Key.STICK_RIGHT).getBoolean(),
+                map.get(Key.LEFT_STICK_X).getFloat(),
+                map.get(Key.RIGHT_STICK_X).getFloat(),
+                map.get(Key.LEFT_STICK_Y).getFloat(),
+                map.get(Key.RIGHT_STICK_Y).getFloat(),
+                map.get(Key.LEFT_TRIGGER).getFloat(),
+                map.get(Key.RIGHT_TRIGGER).getFloat()
+                );
+        logWriter.write("\n" + gson.toJson(data) + ",");
+        return data;
+    }
+
+    /**Closes the json file that this Controller is writing to.*/
+    public void closeLog() throws IOException {
+        logWriter.write("]");
+        logWriter.close();
+    }
 }

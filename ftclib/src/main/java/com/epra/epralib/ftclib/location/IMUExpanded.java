@@ -1,10 +1,18 @@
 package com.epra.epralib.ftclib.location;
 
+import com.epra.epralib.ftclib.storage.IMUData;
+import com.google.gson.Gson;
 import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 
 import com.epra.epralib.ftclib.math.geometry.Angle;
 import com.epra.epralib.ftclib.math.geometry.Geometry;
@@ -17,6 +25,10 @@ public class IMUExpanded {
     private Angle baseYaw = new Angle(0);
     private Angle basePitch = new Angle(0);
     private Angle baseRoll = new Angle(0);
+
+    private File logJson;
+    private FileWriter logWriter;
+    private Gson gson;
 
     public enum AXIS {
         YAW,
@@ -32,8 +44,15 @@ public class IMUExpanded {
      * Expands the functionality of one IMU.
      * @param imu An IMU.
      */
-    public IMUExpanded(IMU imu) {
+    public IMUExpanded(IMU imu) throws IOException {
         imus.add(imu);
+
+        gson = new Gson();
+
+        SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
+        logJson = AppUtil.getInstance().getSettingsFile("logs/IMU_log_" + ft.format(new Date()) + ".json");
+        logWriter = new FileWriter(logJson);
+        logWriter.write("[");
     }
 
     /**
@@ -43,9 +62,16 @@ public class IMUExpanded {
      * @param imu1 First IMU.
      * @param imu2 Second IMU.
      */
-    public IMUExpanded(IMU imu1, IMU imu2) {
+    public IMUExpanded(IMU imu1, IMU imu2) throws IOException {
         imus.add(imu1);
         imus.add(imu2);
+
+        gson = new Gson();
+
+        SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
+        logJson = AppUtil.getInstance().getSettingsFile("logs/IMU_log_" + ft.format(new Date()) + ".json");
+        logWriter = new FileWriter(logJson);
+        logWriter.write("[");
     }
 
     /**
@@ -54,7 +80,16 @@ public class IMUExpanded {
      * Expands the functionality of multiple IMUs.
      * @param imu Array of IMUs.
      */
-    public IMUExpanded(IMU[] imu) { Collections.addAll(imus, imu); }
+    public IMUExpanded(IMU[] imu) throws IOException {
+        Collections.addAll(imus, imu);
+
+        gson = new Gson();
+
+        SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
+        logJson = AppUtil.getInstance().getSettingsFile("logs/IMU_log_" + ft.format(new Date()) + ".json");
+        logWriter = new FileWriter(logJson);
+        logWriter.write("[");
+    }
 
     /**
      * @return The average yaw angle.
@@ -111,5 +146,19 @@ public class IMUExpanded {
         baseYaw = Geometry.average(yaw);
         basePitch = Geometry.average(pitch);
         baseRoll = Geometry.average(roll);
+    }
+
+    /**Saves IMU data to internal logs. Also saves log data to a json file on the robot for post-match analysis.
+     * @return A IMUData record with data from this log.*/
+    public IMUData log() throws IOException {
+        IMUData data = new IMUData(getYaw().getDegree(), getPitch().getDegree(), getRoll().getDegree());
+        logWriter.write("\n" + gson.toJson(data) + ",");
+        return data;
+    }
+
+    /**Closes the json file that this IMUExpanded is writing to.*/
+    public void closeLog() throws IOException {
+        logWriter.write("]");
+        logWriter.close();
     }
 }
