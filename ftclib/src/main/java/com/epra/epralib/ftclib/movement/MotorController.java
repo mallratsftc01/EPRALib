@@ -3,6 +3,7 @@ package com.epra.epralib.ftclib.movement;
 import androidx.annotation.NonNull;
 
 import com.epra.epralib.ftclib.storage.MotorControllerData;
+import com.epra.epralib.ftclib.storage.PIDGains;
 import com.google.gson.Gson;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
@@ -182,11 +183,11 @@ public class MotorController implements Motor {
      * @param k_p The P constant.
      * @param k_i The I constant.
      * @param k_d the D constant.*/
-    public void tuneTargetPID(double k_p, double k_i, double k_d) {
-        pidT.tuneP(k_p);
-        pidT.tuneI(k_i);
-        pidT.tuneD(k_d);
-    }
+    public void tuneTargetPID(double k_p, double k_i, double k_d) { pidT.tune(k_p, k_i, k_d); }
+    /**Tunes the PID loop used to reach a target.
+     * @param pidGains A PIDGains record containing the gains for a PIDController.
+     */
+    public void tuneTargetPID(PIDGains pidGains) { pidT.tune(pidGains); }
     /**Resets the PID loop used to reach a target.*/
     public void resetTargetPID() { pidT.reset(); }
 
@@ -211,11 +212,10 @@ public class MotorController implements Motor {
      * @param k_p The P constant.
      * @param k_i The I constant.
      * @param k_d the D constant.*/
-    public void tuneVelocityPID(double k_p, double k_i, double k_d) {
-        pidV.tuneP(k_p);
-        pidV.tuneI(k_i);
-        pidV.tuneD(k_d);
-    }
+    public void tuneVelocityPID(double k_p, double k_i, double k_d) { pidV.tune(k_p, k_i, k_d); }
+    /**Tunes the PID loop used to maintain a velocity.
+     * @param pidGains A PIDGains record containing the gains for a PIDController.*/
+    public void tuneVelocityPID(PIDGains pidGains) { pidV.tune(pidGains); }
     /**Resets the PID loop used to maintain a velocity.*/
     public void resetVelocityPID() { pidV.reset(); }
 

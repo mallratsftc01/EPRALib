@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.epra.epralib.ftclib.math.geometry.Angle;
+import com.epra.epralib.ftclib.storage.PIDGains;
 
 /**Coordinates motors in order to create cohesive robot motion.
  * This class can be used for a variable number of motors for several drive types.
@@ -341,32 +342,35 @@ public class DriveTrain {
      * @param k_p The P constant.
      * @param k_i The I constant.
      * @param k_d the D constant.*/
-    public void tuneAnglePID(double k_p, double k_i, double k_d) {
-        anglePID.tuneP(k_p);
-        anglePID.tuneI(k_i);
-        anglePID.tuneD(k_d);
-    }
+    public void tuneAnglePID(double k_p, double k_i, double k_d) { anglePID.tune(k_p, k_i, k_d); }
+
+    /**Tunes the PID loop used to reach the target angle.
+     * @param pidGains A PIDGains record containing the gains for a PIDController.
+     */
+    public void tuneAnglePID(PIDGains pidGains) { anglePID.tune(pidGains); }
 
     /**Tunes the PID loop used to reach the target position.
      * @param k_p The P constant.
      * @param k_i The I constant.
      * @param k_d the D constant.*/
     public void tunePointPID(double k_p, double k_i, double k_d) {
-        pointPID.tuneP(k_p);
-        pointPID.tuneI(k_i);
-        pointPID.tuneD(k_d);
+        pointPID.tune(k_p, k_i, k_d);
         toleranceMultiplier = 1.0 / k_p;
     }
+    /**Tunes the PID loop used to reach the target position.
+     * @param pidGains A PIDGains record containing the gains for a PIDController.
+     */
+    public void tunePointPID(PIDGains pidGains) { pointPID.tune(pidGains); }
 
     /**Tunes the PID loop used to reach the target motion vector.
      * @param k_p The P constant.
      * @param k_i The I constant.
      * @param k_d the D constant.*/
-    public void tuneVectorPID(double k_p, double k_i, double k_d) {
-        vectorPID.tuneP(k_p);
-        vectorPID.tuneI(k_i);
-        vectorPID.tuneD(k_d);
-    }
+    public void tuneVectorPID(double k_p, double k_i, double k_d) { vectorPID.tune(k_p, k_i, k_d); }
+    /**Tunes the PID loop used to reach the target motion vector.
+     * @param pidGains A PIDGains record containing the gains for a PIDController.
+     */
+    public void tuneVectorPID(PIDGains pidGains) { vectorPID.tune(pidGains); }
 
     /**Uses a drive based on the DriveTrain's drive type.
      * @param powerRightX X position of the right joystick.

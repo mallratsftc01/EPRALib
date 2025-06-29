@@ -4,6 +4,7 @@ import com.epra.epralib.ftclib.math.geometry.Angle;
 import com.epra.epralib.ftclib.math.geometry.Geometry;
 import com.epra.epralib.ftclib.math.geometry.Point;
 import com.epra.epralib.ftclib.math.geometry.Vector;
+import com.epra.epralib.ftclib.storage.PIDGains;
 
 /**Handles the processes of a PID loop.
  *<p></p>
@@ -27,6 +28,10 @@ public class PIDController {
         reset();
     }
 
+    /**Handles the processes of a PID loop.
+     * @param pidGains A PIDGains record containing the gains for this PIDController.*/
+    public PIDController(PIDGains pidGains) { this(pidGains.kp(), pidGains.ki(), pidGains.kd()); }
+
     /**Sets the proportional gain to a certain value.
      * @param k_p The proportional gain. */
     public void tuneP(double k_p) { this.k_p = k_p; }
@@ -36,6 +41,20 @@ public class PIDController {
     /**Sets the derivative gain to a certain value.
      * @param k_d The derivative gain. */
     public void tuneD(double k_d) { this.k_d = k_d; }
+    /**Sets the gains to certain values.
+     * @param k_p The proportional gain.
+     * @param k_i The integral gain.
+     * @param k_d The derivative gain.*/
+    public void tune(double k_p, double k_i, double k_d) {
+        this.k_p = k_p;
+        this.k_i = k_i;
+        this.k_d = k_d;
+    }
+
+    /**Sets the gains to certain values.
+     * @param pidGains A PIDGains record containing the gains for this PIDController.
+     */
+    public void tune(PIDGains pidGains) { this.tune(pidGains.kp(), pidGains.ki(), pidGains.kd()); }
 
     /**Runs one instance of a PID loop.
      * @param current The current position.
