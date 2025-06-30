@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.epra.epralib.ftclib.math.geometry.Angle;
+import com.epra.epralib.ftclib.storage.DriveTrainAutoModule;
 import com.epra.epralib.ftclib.storage.PIDGains;
 
 /**Coordinates motors in order to create cohesive robot motion.
@@ -336,6 +337,22 @@ public class DriveTrain {
         boolean b = Math.abs(Geometry.pythagorean(targetPose.point, current.point)) <= posTolerance;
         if (b) { vectorPID.reset(); }
         return b;
+    }
+
+    /**
+     * Field Oriented holonomic drive with mecanum wheels. Uses PID loops to reach the target position set. Created 11/27/2024.
+     * @param current The current position.
+     * @param deltaPos The change in position over the last loop.
+     * @param driveTrainAutoModule A DriveTrainAutoModule that stores instructions for this DriveTrain.
+     * @return True if the robot has reached the target position, false if not.
+     *  */
+    public boolean posPIDMecanumDrive(@NonNull Pose current, Vector deltaPos, DriveTrainAutoModule driveTrainAutoModule) {
+        setTargetPose(driveTrainAutoModule.targetPose());
+        if (driveTrainAutoModule.usePrecision()) {
+            return posPIDMecanumDrive(current, driveTrainAutoModule.posTolerance(), driveTrainAutoModule.angleTolerance(), driveTrainAutoModule.maxPower(), true);
+        } else {
+            return posPIDMecanumDrive(current, deltaPos, driveTrainAutoModule.posTolerance(), driveTrainAutoModule.angleTolerance(), driveTrainAutoModule.maxPower());
+        }
     }
 
     /**Tunes the PID loop used to reach the target angle.

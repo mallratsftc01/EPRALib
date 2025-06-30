@@ -55,6 +55,11 @@ potentially unstable, unless otherwise stated in the commit notes.
 We try our best to add javadocs to every class and method, but we have definitely 
 missed a few. Please be patient with us and our code and report any bugs you may find.
 
+Examples of programs for both TeleOp and Auto can be found in `org.firstinspires.ftc.examples`. These
+examples can either help you learn EPRALib, or be used as templates to build your competition code off of.
+We tried to make them as adaptable as possible. More examples may come in the future as we expand
+the library's capabilities.
+
 ## Using EPRALib
 For importing any classes from EPRALib, use the following.
 ```java
@@ -160,4 +165,4 @@ that can read these files to tune certain processes such as PID loops.
 ## Credits
 This README was written by Striker-909, the lead programmer of FTC 18387. 
 
-This README was last updated 6/28/2025, for version 1.1.10
+This README was last updated 6/30/2025, for version 1.1.12

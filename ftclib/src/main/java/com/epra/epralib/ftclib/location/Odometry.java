@@ -54,6 +54,7 @@ public class Odometry {
     private IMUExpanded imu;
 
     private Pose pose;
+    private Vector deltaPose;
 
     private long saveTime;
 
@@ -147,6 +148,7 @@ public class Odometry {
     /**Estimates the new pose value. Store the new pose in a json log file.
      * @return The new pose value.*/
     public Pose estimatePose() throws IOException {
+        Pose lastPose = pose;
         updateDeltaPos();
         phiEncoder();
         Point p0 = new Point(
@@ -171,6 +173,10 @@ public class Odometry {
         phiBuffer.addValue(Geometry.add(phi, new Vector(p2)).getRadian() / time);
         saveTime = System.currentTimeMillis();
 
+        if (lastPose != null) {
+            deltaPose = new Vector(lastPose.point, pose.point);
+        }
+
         logWriter.write("\n" + gson.toJson(pose.toPoseData()) + ",");
 
         return pose;
@@ -178,6 +184,9 @@ public class Odometry {
 
     /**@return The most recent pose value.*/
     public Pose getPose() { return pose; }
+
+    /**@return the difference between the last two estimated poses as a vector.*/
+    public Vector getDeltaPose() { return deltaPose; }
 
     /**Returns the velocity of the robot as a vector (inch/second).*/
     public Vector getVelocity() { return new Vector(velocityBuffer.getAverage(), new Angle((float) phiBuffer.getAverage())); }

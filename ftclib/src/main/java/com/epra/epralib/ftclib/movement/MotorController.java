@@ -2,6 +2,7 @@ package com.epra.epralib.ftclib.movement;
 
 import androidx.annotation.NonNull;
 
+import com.epra.epralib.ftclib.storage.MotorControllerAutoModule;
 import com.epra.epralib.ftclib.storage.MotorControllerData;
 import com.epra.epralib.ftclib.storage.PIDGains;
 import com.google.gson.Gson;
@@ -170,6 +171,14 @@ public class MotorController implements Motor {
             resetTargetPID();
             return true;
         }
+    }
+
+    /**Moves the motor towards the set target.
+     * @param motorControllerAutoModule A MotorControllerAutoModule that contains information to run this MotorController.
+     * @return True once the motor reaches its target, false until then.*/
+    public boolean moveToTarget(MotorControllerAutoModule motorControllerAutoModule) {
+        setTarget(motorControllerAutoModule.target());
+        return moveToTarget(motorControllerAutoModule.maxPower(), motorControllerAutoModule.tolerance(), true);
     }
 
     /**Sets the hold power, a multiple added to the power to counteract gravity and hold the motor at a specific position.
