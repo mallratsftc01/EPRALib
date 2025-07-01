@@ -127,7 +127,7 @@ public class AutoExample extends LinearOpMode {
 
             //If no steps are in the queue, refills the queue from the next step file in the list
             if (steps.isEmpty()) {
-                steps.addAll(JSONReader.read(filenames.get(0), new AutoStep(0, 0, null, null)));
+                JSONReader.read(filenames.get(0), steps);
                 filenames.remove(0);
                 saveTime = System.currentTimeMillis();
                 currentStep = steps.get(0);
@@ -159,7 +159,7 @@ public class AutoExample extends LinearOpMode {
         }
 
         //Repeats everything from the main loop for the final step file
-        steps.addAll(JSONReader.read(FINAL_STEP_FILENAME, new AutoStep(0, 0, null, null)));
+        JSONReader.read(FINAL_STEP_FILENAME, steps);
         saveTime = System.currentTimeMillis();
         currentStep = steps.get(0);
 

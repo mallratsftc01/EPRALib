@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import java.io.File;
 import java.io.FileReader;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,24 +22,23 @@ public class JSONReader {
 
     /**Reads objects of type T from a json.
      * @param filename The filepath of the the json.
-     * @param reference A reference object of type T. This object is not used in the reading of the json.
+     * @param directions The ArrayList the objects from the json will be added to.
      * @return A List of objects of type T. Null if the file can not be found.*/
-    public static <T> List<T> read(String filename, T reference) {
+    public static <T> void read(String filename, List<T> directions) {
         Type stepListType = new TypeToken<List<T>>() {}.getType();
-        List<T> directions;
         File file = AppUtil.getInstance().getSettingsFile(filename);
         try (FileReader reader = new FileReader(file)) {
-            directions = gson.fromJson(reader, stepListType);
-        } catch (Exception e) { return null; }
-        return directions;
+            List<T> tempList = gson.fromJson(reader, stepListType);
+            directions.addAll(tempList);
+        } catch (Exception e) { }
     }
 
     /**Reads a json file containing pid settings.
      * @param filename The filepath of the json.
      * @return A HashMap with string ids as keys and PIDGains records as values. Null if the file can not be found. */
     public static HashMap<String, PIDGains> readPIDGains(String filename) {
-        List<PIDGains> list = read(filename, new PIDGains("", 0, 0, 0));
-        if (list == null) { return null; }
+        ArrayList<PIDGains> list = new ArrayList<>();
+        read(filename, list);
         HashMap<String, PIDGains> out = new HashMap<>();
         for (PIDGains p : list) {
             out.put(p.id(), p);
