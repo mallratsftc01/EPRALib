@@ -23,13 +23,12 @@ public class JSONReader {
     /**Reads objects of type T from a json.
      * @param filename The filepath of the the json.
      * @param directions The ArrayList the objects from the json will be added to.
+     * @param listType The Type of the list (use new TypeToken<List<T>>() {}.getType())
      * @return A List of objects of type T. Null if the file can not be found.*/
-    public static <T> void read(String filename, List<T> directions) {
-        Type stepListType = new TypeToken<List<T>>() {}.getType();
+    public static void read(String filename, List<?> directions, Type listType) {
         File file = AppUtil.getInstance().getSettingsFile(filename);
         try (FileReader reader = new FileReader(file)) {
-            List<T> tempList = gson.fromJson(reader, stepListType);
-            directions.addAll(tempList);
+            directions.addAll(gson.fromJson(reader, listType));
         } catch (Exception e) { }
     }
 
@@ -38,7 +37,7 @@ public class JSONReader {
      * @return A HashMap with string ids as keys and PIDGains records as values. Null if the file can not be found. */
     public static HashMap<String, PIDGains> readPIDGains(String filename) {
         ArrayList<PIDGains> list = new ArrayList<>();
-        read(filename, list);
+        read(filename, list, new TypeToken<List<PIDGains>>() {}.getType());
         HashMap<String, PIDGains> out = new HashMap<>();
         for (PIDGains p : list) {
             out.put(p.id(), p);

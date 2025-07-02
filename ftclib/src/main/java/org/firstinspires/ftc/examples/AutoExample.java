@@ -12,6 +12,7 @@ import com.epra.epralib.ftclib.movement.MotorController;
 import com.epra.epralib.ftclib.storage.AutoStep;
 import com.epra.epralib.ftclib.storage.MotorControllerAutoModule;
 import com.epra.epralib.ftclib.storage.PIDGains;
+import com.google.gson.reflect.TypeToken;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 @Autonomous
 public class AutoExample extends LinearOpMode {
@@ -127,7 +129,7 @@ public class AutoExample extends LinearOpMode {
 
             //If no steps are in the queue, refills the queue from the next step file in the list
             if (steps.isEmpty()) {
-                JSONReader.read(filenames.get(0), steps);
+                JSONReader.read(filenames.get(0), steps, new TypeToken <List<AutoStep>>() {}.getType());
                 filenames.remove(0);
                 saveTime = System.currentTimeMillis();
                 currentStep = steps.get(0);
@@ -159,7 +161,7 @@ public class AutoExample extends LinearOpMode {
         }
 
         //Repeats everything from the main loop for the final step file
-        JSONReader.read(FINAL_STEP_FILENAME, steps);
+        JSONReader.read(FINAL_STEP_FILENAME, steps, new TypeToken <List<AutoStep>>() {}.getType());
         saveTime = System.currentTimeMillis();
         currentStep = steps.get(0);
 
