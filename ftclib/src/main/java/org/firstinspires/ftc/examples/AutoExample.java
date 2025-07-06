@@ -10,14 +10,18 @@ import com.epra.epralib.ftclib.movement.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
 import com.epra.epralib.ftclib.storage.AutoStep;
+import com.epra.epralib.ftclib.storage.CRServoAutoModule;
 import com.epra.epralib.ftclib.storage.MotorControllerAutoModule;
 import com.epra.epralib.ftclib.storage.PIDGains;
+import com.epra.epralib.ftclib.storage.ServoAutoModule;
 import com.google.gson.reflect.TypeToken;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,6 +46,8 @@ public class AutoExample extends LinearOpMode {
     private DriveTrain drive;
 
     private HashMap<String, MotorController> nonDriveMotors;
+    private HashMap<String, CRServo> crServos;
+    private HashMap<String, Servo> servos;
 
     private IMUExpanded imu;
 
@@ -71,6 +77,10 @@ public class AutoExample extends LinearOpMode {
 
             //Setting up the PID gains for the DriveTrain and MotorControllers
             HashMap<String, PIDGains> pidGains = JSONReader.readPIDGains(PID_SETTINGS_FILENAME);
+
+            //Setting up CRServos and Servos is similar to setting up MotorControllers
+            crServos = new HashMap<>();
+            servos = new HashMap<>();
 
             drive.tunePointPID(pidGains.get("DriveTrain_point"));
             drive.tuneAnglePID(pidGains.get("DriveTrain_angle"));
@@ -143,10 +153,24 @@ public class AutoExample extends LinearOpMode {
             }
 
             //Updates all the MotorControllers with new instructions
-            for (MotorControllerAutoModule mcam : currentStep.motorControllerModules()) {
-                if (nonDriveMotors.get(mcam.id()).moveToTarget(mcam)) {
-                    weight += mcam.weight();
+            for (MotorControllerAutoModule m : currentStep.motorControllerModules()) {
+                if (nonDriveMotors.get(m.id()).moveToTarget(m)) {
+                    weight += m.weight();
                 }
+            }
+
+            //Sets powers and checks times for CRServos
+            for (CRServoAutoModule c : currentStep.crServoModules()) {
+                if (System.currentTimeMillis() - saveTime < c.time()) {
+                    crServos.get(c.id()).setPower(c.power());
+                } else {
+                    crServos.get(c.id()).setPower(0);
+                }
+            }
+
+            //Moves all servos to their target positions
+            for (ServoAutoModule s : currentStep.servoModules()) {
+                servos.get(s.id()).setPosition(s.targetPosition());
             }
 
             //Checks if enough time has elapsed
@@ -187,6 +211,18 @@ public class AutoExample extends LinearOpMode {
                 if (nonDriveMotors.get(mcam.id()).moveToTarget(mcam)) {
                     weight += mcam.weight();
                 }
+            }
+
+            for (CRServoAutoModule c : currentStep.crServoModules()) {
+                if (System.currentTimeMillis() - saveTime < c.time()) {
+                    crServos.get(c.id()).setPower(c.power());
+                } else {
+                    crServos.get(c.id()).setPower(0);
+                }
+            }
+
+            for (ServoAutoModule s : currentStep.servoModules()) {
+                servos.get(s.id()).setPosition(s.targetPosition());
             }
 
             if (System.currentTimeMillis() - saveTime >= currentStep.time()) { weight += currentStep.timeWeight(); }
