@@ -24,12 +24,14 @@ public class JSONReader {
      * @param filename The filepath of the the json.
      * @param directions The ArrayList the objects from the json will be added to.
      * @param listType The Type of the list (use new TypeToken<List<T>>() {}.getType())
-     * @return A List of objects of type T. Null if the file can not be found.*/
-    public static void read(String filename, List<?> directions, Type listType) {
+     * @return True if the file was properly read and List written to, false if not.*/
+    public static boolean read(String filename, List<?> directions, Type listType) {
         File file = AppUtil.getInstance().getSettingsFile(filename);
         try (FileReader reader = new FileReader(file)) {
             directions.addAll(gson.fromJson(reader, listType));
-        } catch (Exception e) { }
+        } catch (Exception e) { return false; }
+        if (directions.isEmpty()) { return false; }
+        return true;
     }
 
     /**Reads a json file containing pid settings.

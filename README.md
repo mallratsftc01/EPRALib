@@ -165,4 +165,4 @@ that can read these files to tune certain processes such as PID loops.
 ## Credits
 This README was written by Striker-909, the lead programmer of FTC 18387. 
 
-This README was last updated 6/30/2025, for version 1.1.12
+This README was last updated 7/10/2025, for version 1.2.0

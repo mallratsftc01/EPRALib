@@ -138,7 +138,7 @@ public class AutoExample extends LinearOpMode {
             }
 
             //If no steps are in the queue, refills the queue from the next step file in the list
-            if (steps.isEmpty()) {
+            if (steps.isEmpty() && !filenames.isEmpty()) {
                 JSONReader.read(filenames.get(0), steps, new TypeToken <List<AutoStep>>() {}.getType());
                 filenames.remove(0);
                 saveTime = System.currentTimeMillis();
@@ -177,7 +177,7 @@ public class AutoExample extends LinearOpMode {
             if (System.currentTimeMillis() - saveTime >= currentStep.time()) { weight += currentStep.timeWeight(); }
 
             //Checks if the weight is large enough to move on to the next step
-            if (weight >= 1.0) {
+            if (weight >= 1.0 && !steps.isEmpty()) {
                 steps.remove(0);
                 saveTime = System.currentTimeMillis();
                 currentStep = steps.get(0);
@@ -227,7 +227,7 @@ public class AutoExample extends LinearOpMode {
 
             if (System.currentTimeMillis() - saveTime >= currentStep.time()) { weight += currentStep.timeWeight(); }
 
-            if (weight >= 1.0) {
+            if (weight >= 1.0 && !steps.isEmpty()) {
                 steps.remove(0);
                 saveTime = System.currentTimeMillis();
                 currentStep = steps.get(0);
