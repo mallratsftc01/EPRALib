@@ -51,7 +51,7 @@ public class IMUExpanded {
 
         SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
         logJson = AppUtil.getInstance().getSettingsFile("logs/IMU_log_" + ft.format(new Date()) + ".json");
-        logWriter = new FileWriter(logJson);
+        logWriter = new FileWriter(logJson, true);
         logWriter.write("[");
     }
 
