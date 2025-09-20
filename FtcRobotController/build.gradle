@@ -27,7 +27,4 @@ android {
     namespace = 'com.qualcomm.ftcrobotcontroller'
 }
 
-group = 'com.epra.epralib'
-version = '1.0.7'
-
 apply from: '../build.dependencies.gradle'

@@ -46,7 +46,7 @@ public class TeleOpExample extends LinearOpMode {
             //Setting up the MotorControllers that are not part of the DriveTrain
             nonDriveMotors = new HashMap<>();
             //Add MotorControllers like so:
-            //nonDriveMotors.put(new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, MOTOR_NAME)), ID), ID);
+            //nonDriveMotors.put("ID", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "MOTOR_NAME")), "ID"));
 
             RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
             RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;

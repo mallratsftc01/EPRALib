@@ -73,7 +73,7 @@ public class AutoExample extends LinearOpMode {
             //Setting up the MotorControllers that are not part of the DriveTrain
             nonDriveMotors = new HashMap<>();
             //Add MotorControllers like so:
-            //nonDriveMotors.put(new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, MOTOR_NAME)), ID), ID);
+            //nonDriveMotors.put("ID", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "MOTOR_NAME")), "ID"));
 
             //Setting up the PID gains for the DriveTrain and MotorControllers
             HashMap<String, PIDGains> pidGains = JSONReader.readPIDGains(PID_SETTINGS_FILENAME);
