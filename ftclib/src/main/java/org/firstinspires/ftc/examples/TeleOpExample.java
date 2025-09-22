@@ -2,9 +2,14 @@ package org.firstinspires.ftc.examples;
 
 import com.epra.epralib.ftclib.control.Controller;
 import com.epra.epralib.ftclib.location.IMUExpanded;
+import com.epra.epralib.ftclib.location.Odometry;
+import com.epra.epralib.ftclib.location.Pose;
+import com.epra.epralib.ftclib.math.geometry.Angle;
+import com.epra.epralib.ftclib.math.geometry.Point;
 import com.epra.epralib.ftclib.movement.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
+import com.epra.epralib.ftclib.movement.PIDController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -17,6 +22,8 @@ import java.util.HashMap;
 @TeleOp
 public class TeleOpExample extends LinearOpMode {
 
+    private final Pose START_POSE = new Pose(new Point(0, 0), new Angle(0));
+
     private MotorController frontLeft;
     private MotorController frontRight;
     private MotorController backLeft;
@@ -26,6 +33,7 @@ public class TeleOpExample extends LinearOpMode {
     private HashMap<String, MotorController> nonDriveMotors;
 
     private IMUExpanded imu;
+    private Odometry odometry;
 
     private Controller controller1;
 
@@ -41,6 +49,8 @@ public class TeleOpExample extends LinearOpMode {
             //Initializing the DriveTrain
             drive = new DriveTrain(new MotorController[] {frontLeft, frontRight, backLeft, backRight},
                     new DriveTrain.Orientation[] {DriveTrain.Orientation.LEFT_FRONT, DriveTrain.Orientation.RIGHT_FRONT, DriveTrain.Orientation.LEFT_BACK, DriveTrain.Orientation.RIGHT_BACK},
+                    odometry::getPose,
+                    odometry::getDeltaPose,
                     DriveTrain.DriveType.MECANUM);
 
             //Setting up the MotorControllers that are not part of the DriveTrain
@@ -56,6 +66,15 @@ public class TeleOpExample extends LinearOpMode {
             IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
             tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
             imu = new IMUExpanded(tempIMU);
+
+            //Setting up the Odometry
+            odometry = new Odometry(frontLeft, backLeft, frontRight,
+                    new Point(7.92784216, 3.75),
+                    new Point(-8, 3.75),
+                    new Point(0, 2.0),
+                    imu,
+                    START_POSE
+            );
 
             //Setting up the controller
             controller1 = new Controller(gamepad1, 0.05f, "1");
@@ -80,6 +99,8 @@ public class TeleOpExample extends LinearOpMode {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+            //Updates all active PID loops
+            PIDController.update();
 
             //Uses the joysticks to drive the robot with fieldOrientedMecanumDrive
             drive.fieldOrientedMecanumDrive(controller1.analogDeadband(Controller.Key.RIGHT_STICK_X), controller1.analogDeadband(Controller.Stick.LEFT_STICK), imu.getYaw());

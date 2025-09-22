@@ -1,130 +1,163 @@
 package com.epra.epralib.ftclib.movement;
 
-import com.epra.epralib.ftclib.math.geometry.Angle;
-import com.epra.epralib.ftclib.math.geometry.Geometry;
-import com.epra.epralib.ftclib.math.geometry.Point;
-import com.epra.epralib.ftclib.math.geometry.Vector;
 import com.epra.epralib.ftclib.storage.PIDGains;
 
-/**Handles the processes of a PID loop.
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.function.Supplier;
+
+/**Handles the processes of multiple PID loops.
  *<p></p>
  * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class PIDController {
 
-    private double k_p, k_i, k_d;
-
-    private double p,i,d;
-
-    private long saveTime;
-    private double saveError;
-    /**Handles the processes of a PID loop.
-     * @param k_p The proportional gain.
-     * @param k_i The integral gain.
-     * @param k_d The derivative gain.*/
-    public PIDController(double k_p, double k_i, double k_d) {
-        this.k_p = k_p;
-        this.k_i = k_i;
-        this.k_d = k_d;
-        reset();
+    private enum PIDVal {
+        KP, KI, KD, I, SAVE_ERR, OUT
     }
 
-    /**Handles the processes of a PID loop.
-     * @param pidGains A PIDGains record containing the gains for this PIDController.*/
-    public PIDController(PIDGains pidGains) { this(pidGains.kp(), pidGains.ki(), pidGains.kd()); }
+    private static ArrayList<String> activeIds = new ArrayList<>();
+    private static HashMap<String, HashMap<PIDVal, Double>> pidVals = new HashMap<>();
+    private static HashMap<String, Supplier<Double>> errorSuppliers = new HashMap<>();
 
-    /**Sets the proportional gain to a certain value.
-     * @param k_p The proportional gain. */
-    public void tuneP(double k_p) { this.k_p = k_p; }
-    /**Sets the integral gain to a certain value.
-     * @param k_i The integral gain. */
-    public void tuneI(double k_i) { this.k_i = k_i; }
-    /**Sets the derivative gain to a certain value.
-     * @param k_d The derivative gain. */
-    public void tuneD(double k_d) { this.k_d = k_d; }
-    /**Sets the gains to certain values.
-     * @param k_p The proportional gain.
-     * @param k_i The integral gain.
-     * @param k_d The derivative gain.*/
-    public void tune(double k_p, double k_i, double k_d) {
-        this.k_p = k_p;
-        this.k_i = k_i;
-        this.k_d = k_d;
+    private static long saveTime = 0;
+
+    /**Adds a new PID loop and automatically activates it.
+     * @param id The string id for the PID loop.
+     * @param pidGains The gains for the PID loop.
+     * @param errorSupplier A supplier that returns the error in position.*/
+    public static void addPID(String id, PIDGains pidGains, Supplier<Double> errorSupplier) {
+        addPID(id, pidGains.kp(), pidGains.ki(), pidGains.kd(), errorSupplier);
     }
 
-    /**Sets the gains to certain values.
-     * @param pidGains A PIDGains record containing the gains for this PIDController.
-     */
-    public void tune(PIDGains pidGains) { this.tune(pidGains.kp(), pidGains.ki(), pidGains.kd()); }
-
-    /**Runs one instance of a PID loop.
-     * @param current The current position.
-     * @param target The targeted position.
-     * @return The outputted power of the PID loop.*/
-    public double runPID(double current, double target) {
-        double currentError = target - current;
-        if (saveError == 0) { saveError = currentError; }
-        long currentTime = System.currentTimeMillis();
-
-        p = k_p * currentError;
-        i += k_i * (currentError * (currentTime - saveTime));
-        if (Math.abs(i) > 1) { i = Math.signum(i); }
-        d = k_d * (currentError - saveError) / (currentTime - saveTime);
-
-        saveError = currentError;
-        saveTime = currentTime;
-
-        return p + i + d;
+    /**Adds a new PID loop.
+     * @param id The string id for the PID loop.
+     * @param pidGains The gains for the PID loop.
+     * @param errorSupplier A supplier that returns the error in position.
+     * @param active Will activate the PID if true, will idle otherwise.*/
+    public static void addPID(String id, PIDGains pidGains, Supplier<Double> errorSupplier, boolean active) {
+        addPID(id, pidGains, errorSupplier);
+        if (!active) {
+            idle(id);
+        }
     }
 
-    /**Runs one instance of a PID loop for an angle. This can be useful for turning the robot to a target angle.
-     * @param current The current angle.
-     * @param target The targeted angle.
-     * @return The outputted power of the PID loop.*/
-    public double runPIDAngle(Angle current, Angle target) {
-        double currentError = Geometry.subtract(target, current).getRadian();
-        currentError -= (currentError > Math.PI) ? Math.PI * 2: 0;
-        currentError *= -1.0;
-        if (saveError == 0) { saveError = currentError; }
-        long currentTime = System.currentTimeMillis();
-
-        p = k_p * currentError;
-        i += k_i * (currentError * (currentTime - saveTime));
-        if (Math.abs(i) > 1) { i = Math.signum(i); }
-        d = k_d * (currentError - saveError) / (currentTime - saveTime);
-
-        saveError = currentError;
-        saveTime = currentTime;
-
-        return p + i + d;
+    /**Adds a new PID loop and automatically activates it.
+     * @param id The string id for the PID loop.
+     * @param kp The p gain for the PID loop.
+     * @param ki The i gain for the PID loop.
+     * @param kd the d gain for the PID loop.
+     * @param errorFunction A supplier function that returns the error in position.*/
+    public static void addPID(String id, double kp, double ki, double kd, Supplier<Double> errorFunction) {
+        if (saveTime == 0) {
+            saveTime = System.currentTimeMillis();
+        }
+        activeIds.add(id);
+        errorSuppliers.put(id, errorFunction);
+        HashMap<PIDVal, Double> temp = new HashMap<>();
+        temp.put(PIDVal.KP, kp);
+        temp.put(PIDVal.KI, ki);
+        temp.put(PIDVal.KD, kd);
+        temp.put(PIDVal.I, 0.0);
+        temp.put(PIDVal.SAVE_ERR, 0.0);
+        temp.put(PIDVal.OUT, 0.0);
+        pidVals.put(id, temp);
     }
 
-    /**Runs one instance of a PID loop for a point. This can be useful for moving the robot to a target point.
-     * @param current The current position.
-     * @param target The targeted position.
-     * @return A vector of the outputted power and angle of the PID loop.*/
-    public Vector runPIDPoint(Point current, Point target) {
-        double currentError = Geometry.pythagorean(target, current);
-        Angle angle = Geometry.atan(new Point(-1 * (target.y - current.y), (target.x - current.x)));
-        if (saveError == 0) { saveError = currentError; }
-        long currentTime = System.currentTimeMillis();
-
-        p = k_p * currentError;
-        i += k_i * (currentError * (currentTime - saveTime));
-        if (Math.abs(i) > 1) { i = Math.signum(i); }
-        d = k_d * (currentError - saveError) / (currentTime - saveTime);
-
-        saveError = currentError;
-        saveTime = currentTime;
-
-        return new Vector(p + i + d, angle);
+    /**Adds a new PID loop.
+     * @param id The string id for the PID loop.
+     * @param kp The p gain for the PID loop.
+     * @param ki The i gain for the PID loop.
+     * @param kd the d gain for the PID loop.
+     * @param errorSupplier A supplier that returns the error in position.
+     * @param active Will activate the PID if true, will idle otherwise.*/
+    public static void addPID(String id, double kp, double ki, double kd, Supplier<Double> errorSupplier, boolean active) {
+        addPID(id, kp, ki, kd, errorSupplier);
+        if (!active) {
+            idle(id);
+        }
     }
 
-    /**Resets the PID loop and all the gains to 0.*/
-    public void reset() {
-        p = 0;
-        i = 0;
-        d = 0;
+    /**Resets the non-gain values for a specific PID loop.
+     * @param id The string id of the PID loop to reset.*/
+    public static void reset(String id) {
+        pidVals.get(id).replace(PIDVal.SAVE_ERR, 0.0);
+        pidVals.get(id).replace(PIDVal.I, 0.0);
+    }
+
+    /**Idles a specific PID loop so that computation power will not be spent to run it. Also resets that PID loop.
+     * @param id The string id of the PID loop to idle.
+     * @return True if the PID loop was active, false if not.*/
+    public static boolean idle(String id) {
+        reset(id);
+        return activeIds.remove(id);
+    }
+
+    /**Activates a specific PID loop.
+     * @param id The string id of the PID loop to activate.
+     * @return True if the PID loop was idle, false if not.*/
+    public static boolean activate(String id) {
+        if (activeIds.contains(id)) {
+            return false;
+        }
+        activeIds.add(id);
+        return true;
+    }
+
+    /**Returns if a specific PID loop is active.
+     * @return True if the PID loop is active, false if not.*/
+    public static boolean isActive(String id) {
+        return activeIds.contains(id);
+    }
+
+    public static boolean tune(String id, PIDGains pidGains) {
+        if (!pidVals.containsKey(id)) {
+            return false;
+        }
+        pidVals.get(id).replace(PIDVal.KP, pidGains.kp());
+        pidVals.get(id).replace(PIDVal.KI, pidGains.ki());
+        pidVals.get(id).replace(PIDVal.KD, pidGains.kd());
+        return true;
+    }
+
+    public static boolean tune(String id, double kp, double ki, double kd) {
+        if (!pidVals.containsKey(id)) {
+            return false;
+        }
+        pidVals.get(id).replace(PIDVal.KP, kp);
+        pidVals.get(id).replace(PIDVal.KI, ki);
+        pidVals.get(id).replace(PIDVal.KD, kd);
+        return true;
+    }
+
+    /**Updates all active PID loops.
+     * @returns True if PID loops were successfully updated, false if no PID loops were active.*/
+    public static boolean update() {
+        if (activeIds.isEmpty() || saveTime == 0) {
+            saveTime = System.currentTimeMillis();
+            return false;
+        }
+        long timeElapsed = System.currentTimeMillis() - saveTime;
         saveTime = System.currentTimeMillis();
-        saveError = 0;
+
+        for (String id : activeIds) {
+            double currentError = errorSuppliers.get(id).get();
+            if (pidVals.get(id).get(PIDVal.SAVE_ERR) == 0) {
+                pidVals.get(id).replace(PIDVal.SAVE_ERR, currentError);
+            }
+            double p = currentError * pidVals.get(id).get(PIDVal.KP);
+            double i = currentError * timeElapsed * pidVals.get(id).get(PIDVal.KI);
+            double d =  ((currentError - pidVals.get(id).get(PIDVal.SAVE_ERR)) / timeElapsed) * pidVals.get(id).get(PIDVal.KD);
+            pidVals.get(id).replace(PIDVal.SAVE_ERR, currentError);
+            pidVals.get(id).replace(PIDVal.I, i);
+            pidVals.get(id).replace(PIDVal.OUT, p + i + d);
+        }
+        return true;
+    }
+
+    /**Returns the most recent output of a specific PID loop.
+     * @param id The string id of the PID output to return.
+     * @return The most recent output of a specific PID loop.*/
+    public static double get(String id) {
+        return  pidVals.get(id).get(PIDVal.OUT);
     }
 }

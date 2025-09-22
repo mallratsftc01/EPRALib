@@ -29,13 +29,11 @@ public class MotorController implements Motor {
     private long saveTime;
     private long startTime;
 
-    private PIDController pidT;
     private int startPos;
     private int targetPosition;
     private int lastTarget;
     private double lastPIDTOutput;
 
-    private PIDController pidV;
     private double targetVelocity;
     private double lastPIDVOutput;
 
@@ -57,9 +55,9 @@ public class MotorController implements Motor {
         targetPosition = startPos;
         lastTarget = startPos;
         targetVelocity = 0;
-        pidT = new PIDController(1, 0, 0);
+        PIDController.addPID(id + "_T", 1, 0, 0, this::getTargetError, false);
+        PIDController.addPID(id + "_V", 1, 0, 0, this::getVelocityError, false);
         lastPIDTOutput = 0.0;
-        pidV = new PIDController(1, 0, 0);
         lastPIDVOutput = 0.0;
         savePos = startPos;
         saveTime = System.currentTimeMillis();
@@ -139,6 +137,7 @@ public class MotorController implements Motor {
     /**Sets a target position for the motor to try to move towards.
      * @param target The position for the motor to try to move to in motor-specific ticks.*/
     public void setTarget(int target) {
+        PIDController.activate(id + "_T");
         if (target != targetPosition) {
             lastTarget = targetPosition;
             targetPosition = target;
@@ -147,6 +146,10 @@ public class MotorController implements Motor {
     /**Returns the current target position of the motor.
      * @return The target position of the motor.*/
     public int getTarget() { return targetPosition; }
+
+    /**Returns the error between the target position and the current position.
+     * @return The error to the target position.*/
+    public double getTargetError() { return targetPosition - getCurrentPosition(); }
     /**Checks if the position has passed through the target since the last time this method was called.
      * @param range A range around the target where the target will be considered met in motor-specific ticks.
      * @return If the position has passed through the target.*/
@@ -160,7 +163,7 @@ public class MotorController implements Motor {
      * @param haltAtTarget If true the motor will halt once the target is reached within the set tolerance.
      * @return True once the motor reaches its target, false until then.*/
     public boolean moveToTarget(double maxPower, double tolerance, boolean haltAtTarget) {
-        double p = pidT.runPID(getCurrentPosition(), targetPosition);
+        double p = PIDController.get(id + "_T");
         lastPIDTOutput = p;
         double power = Math.min(Math.abs(p), maxPower) * Math.signum(p);
         if (Math.abs(p) > (tolerance * Math.abs(lastTarget - targetPosition))) {
@@ -168,7 +171,7 @@ public class MotorController implements Motor {
             return false;
         } else {
             if (haltAtTarget) { setPower(holdPow * getCurrentPosition() ); }
-            resetTargetPID();
+            PIDController.idle(id + "_T");
             return true;
         }
     }
@@ -181,6 +184,25 @@ public class MotorController implements Motor {
         return moveToTarget(motorControllerAutoModule.maxPower(), motorControllerAutoModule.tolerance(), true);
     }
 
+    /**Idles the PID loop used to reach a target position.
+     * @return True if the PID loop was active, false if not.*/
+    public boolean idleTargetPID() {
+        return PIDController.idle(id + "_T");
+    }
+    /**Sets the gains of the PID loop used for reaching a target position.
+     * @param pidGains The new gains for the PID loop.*/
+    public void tuneTargetPID(PIDGains pidGains) {
+        PIDController.tune(id + "_T", pidGains);
+    }
+
+    /**Sets the gains of the PID loop used for reaching a target position.
+     * @param kp The p gain for the PID loop.
+     * @param ki The i gain for the PID loop.
+     * @param kd The d gain for the PID loop.*/
+    public void tuneTargetPID(double kp, double ki, double kd) {
+        PIDController.tune(id + "_T", kp, ki, kd);
+    }
+
     /**Sets the hold power, a multiple added to the power to counteract gravity and hold the motor at a specific position.
      * @param holdPow A double between -1.0 and 1.0.*/
     public void setHoldPow(double holdPow) { this.holdPow = holdPow; }
@@ -188,26 +210,21 @@ public class MotorController implements Motor {
      * @return The hold power.*/
     public double getHoldPow() { return holdPow; }
 
-    /**Tunes the PID loop used to reach a target.
-     * @param k_p The P constant.
-     * @param k_i The I constant.
-     * @param k_d the D constant.*/
-    public void tuneTargetPID(double k_p, double k_i, double k_d) { pidT.tune(k_p, k_i, k_d); }
-    /**Tunes the PID loop used to reach a target.
-     * @param pidGains A PIDGains record containing the gains for a PIDController.
-     */
-    public void tuneTargetPID(PIDGains pidGains) { pidT.tune(pidGains); }
-    /**Resets the PID loop used to reach a target.*/
-    public void resetTargetPID() { pidT.reset(); }
-
     /**Sets a target velocity for the motor to try to maintain.
      * Setting the target velocity higher than the motor's maximum velocity could lead to unwanted side effects.
      * @param target The velocity for the motor to try to maintain in motor-specific ticks/millisecond.*/
-    public void setTargetVelocity(double target) { targetVelocity = target; }
+    public void setTargetVelocity(double target) {
+        PIDController.activate(id + "_V");
+        targetVelocity = target;
+    }
+
+    /**Return the error between the target velocity and the current velocity.
+     * @return The error of the target velocity.*/
+    public double getVelocityError() { return targetVelocity - getVelocity(); }
     /**Maintains the targeted velocity.
      * @return True once the motor reaches its target, false until then.*/
     public boolean maintainVelocity() {
-        double power = pidV.runPID(getVelocity(), targetVelocity);
+        double power = PIDController.get(id + "_V");
         lastPIDVOutput = power;
         setPower(power);
         if (Math.abs(targetVelocity - getVelocity()) > 0.001) {
@@ -217,16 +234,25 @@ public class MotorController implements Motor {
         }
     }
 
-    /**Tunes the PID loop used to maintain a velocity.
-     * @param k_p The P constant.
-     * @param k_i The I constant.
-     * @param k_d the D constant.*/
-    public void tuneVelocityPID(double k_p, double k_i, double k_d) { pidV.tune(k_p, k_i, k_d); }
-    /**Tunes the PID loop used to maintain a velocity.
-     * @param pidGains A PIDGains record containing the gains for a PIDController.*/
-    public void tuneVelocityPID(PIDGains pidGains) { pidV.tune(pidGains); }
-    /**Resets the PID loop used to maintain a velocity.*/
-    public void resetVelocityPID() { pidV.reset(); }
+    /**Idles the PID loop used to maintain velocity.
+     * @return True if the PID loop was active, false if not.*/
+    public boolean idleVelocityPID() {
+        return PIDController.idle(id + "_V");
+    }
+
+    /**Sets the gains of the PID loop used for maintaining velocity.
+     * @param pidGains The new gains for the PID loop.*/
+    public void tuneVelocityPID(PIDGains pidGains) {
+        PIDController.tune(id + "_V", pidGains);
+    }
+
+    /**Sets the gains of the PID loop used for maintaing velocity.
+     * @param kp The p gain for the PID loop.
+     * @param ki The i gain for the PID loop.
+     * @param kd The d gain for the PID loop.*/
+    public void tuneVelocityPID(double kp, double ki, double kd) {
+        PIDController.tune(id + "_V", kp, ki, kd);
+    }
 
     /**Sets the current position of the motor to 0.*/
     public void zero() { startPos = motor.getCurrentPosition(); }

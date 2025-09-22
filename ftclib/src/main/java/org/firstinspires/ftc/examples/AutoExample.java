@@ -9,6 +9,7 @@ import com.epra.epralib.ftclib.math.geometry.Point;
 import com.epra.epralib.ftclib.movement.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
+import com.epra.epralib.ftclib.movement.PIDController;
 import com.epra.epralib.ftclib.storage.AutoStep;
 import com.epra.epralib.ftclib.storage.CRServoAutoModule;
 import com.epra.epralib.ftclib.storage.MotorControllerAutoModule;
@@ -68,6 +69,8 @@ public class AutoExample extends LinearOpMode {
             //Initializing the DriveTrain
             drive = new DriveTrain(new MotorController[] {frontLeft, frontRight, backLeft, backRight},
                     new DriveTrain.Orientation[] {DriveTrain.Orientation.LEFT_FRONT, DriveTrain.Orientation.RIGHT_FRONT, DriveTrain.Orientation.LEFT_BACK, DriveTrain.Orientation.RIGHT_BACK},
+                    odometry::getPose,
+                    odometry::getDeltaPose,
                     DriveTrain.DriveType.MECANUM);
 
             //Setting up the MotorControllers that are not part of the DriveTrain
@@ -136,6 +139,8 @@ public class AutoExample extends LinearOpMode {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+            //Updates all active PID loops
+            PIDController.update();
 
             //If no steps are in the queue, refills the queue from the next step file in the list
             if (steps.isEmpty() && !filenames.isEmpty()) {
@@ -148,7 +153,7 @@ public class AutoExample extends LinearOpMode {
             double weight = 0.0;
 
             //Updates the DriveTrain with new instructions
-            if (drive.posPIDMecanumDrive(odometry.getPose(), odometry.getDeltaPose(), currentStep.driveTrainModule())) {
+            if (drive.posPIDMecanumDrive(currentStep.driveTrainModule())) {
                 weight += currentStep.driveTrainModule().weight();
             }
 
@@ -200,10 +205,12 @@ public class AutoExample extends LinearOpMode {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+            //Updates all active PID loops
+            PIDController.update();
 
             double weight = 0.0;
 
-            if (drive.posPIDMecanumDrive(odometry.getPose(), odometry.getDeltaPose(), currentStep.driveTrainModule())) {
+            if (drive.posPIDMecanumDrive(currentStep.driveTrainModule())) {
                 weight += currentStep.driveTrainModule().weight();
             }
 
