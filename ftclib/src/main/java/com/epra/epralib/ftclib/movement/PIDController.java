@@ -1,5 +1,6 @@
 package com.epra.epralib.ftclib.movement;
 
+import com.epra.epralib.ftclib.storage.PIDData;
 import com.epra.epralib.ftclib.storage.PIDGains;
 
 import java.util.ArrayList;
@@ -11,13 +12,8 @@ import java.util.function.Supplier;
  * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class PIDController {
 
-    private enum PIDVal {
-        KP, KI, KD, I, SAVE_ERR, OUT
-    }
-
-    private static ArrayList<String> activeIds = new ArrayList<>();
-    private static HashMap<String, HashMap<PIDVal, Double>> pidVals = new HashMap<>();
-    private static HashMap<String, Supplier<Double>> errorSuppliers = new HashMap<>();
+    private static final ArrayList<String> activeIds = new ArrayList<>();
+    private static final HashMap<String, PIDData> pidData = new HashMap<>();
 
     private static long saveTime = 0;
 
@@ -46,21 +42,13 @@ public class PIDController {
      * @param kp The p gain for the PID loop.
      * @param ki The i gain for the PID loop.
      * @param kd the d gain for the PID loop.
-     * @param errorFunction A supplier function that returns the error in position.*/
-    public static void addPID(String id, double kp, double ki, double kd, Supplier<Double> errorFunction) {
+     * @param errorSupplier A supplier that returns the error in position.*/
+    public static void addPID(String id, double kp, double ki, double kd, Supplier<Double> errorSupplier) {
         if (saveTime == 0) {
             saveTime = System.currentTimeMillis();
         }
         activeIds.add(id);
-        errorSuppliers.put(id, errorFunction);
-        HashMap<PIDVal, Double> temp = new HashMap<>();
-        temp.put(PIDVal.KP, kp);
-        temp.put(PIDVal.KI, ki);
-        temp.put(PIDVal.KD, kd);
-        temp.put(PIDVal.I, 0.0);
-        temp.put(PIDVal.SAVE_ERR, 0.0);
-        temp.put(PIDVal.OUT, 0.0);
-        pidVals.put(id, temp);
+        pidData.put(id, new PIDData(kp, ki, kd, errorSupplier));
     }
 
     /**Adds a new PID loop.
@@ -78,10 +66,15 @@ public class PIDController {
     }
 
     /**Resets the non-gain values for a specific PID loop.
-     * @param id The string id of the PID loop to reset.*/
-    public static void reset(String id) {
-        pidVals.get(id).replace(PIDVal.SAVE_ERR, 0.0);
-        pidVals.get(id).replace(PIDVal.I, 0.0);
+     * @param id The string id of the PID loop to reset.
+     * @return True if the specified PID loop exists, false if not.*/
+    public static boolean reset(String id) {
+        if (!pidData.containsKey(id) || pidData.get(id) == null) {
+            return false;
+        }
+        pidData.get(id).saveError = 0.0;
+        pidData.get(id).i = 0.0;
+        return true;
     }
 
     /**Idles a specific PID loop so that computation power will not be spent to run it. Also resets that PID loop.
@@ -109,23 +102,28 @@ public class PIDController {
         return activeIds.contains(id);
     }
 
+    /**Sets the PID gains of the specified PID loop to the specified values.
+     * @param id The string id of the PID loop to tune.
+     * @param pidGains The gains for the PID loop.
+     * @return True if the specified PID loop exists, false if not.*/
     public static boolean tune(String id, PIDGains pidGains) {
-        if (!pidVals.containsKey(id)) {
+        if (!pidData.containsKey(id)) {
             return false;
         }
-        pidVals.get(id).replace(PIDVal.KP, pidGains.kp());
-        pidVals.get(id).replace(PIDVal.KI, pidGains.ki());
-        pidVals.get(id).replace(PIDVal.KD, pidGains.kd());
+        pidData.get(id).tune(pidGains);
         return true;
     }
-
+    /**Sets the PID gains of the specified PID loop to the specified values.
+     * @param id The string id of the PID loop to tune.
+     * @param kp The p gain for the PID loop.
+     * @param ki The i gain for the PID loop.
+     * @param kd The d gain for the PID loop.
+     * @return True if the specified PID loop exists, false if not.*/
     public static boolean tune(String id, double kp, double ki, double kd) {
-        if (!pidVals.containsKey(id)) {
+        if (!pidData.containsKey(id) || pidData.get(id) == null) {
             return false;
         }
-        pidVals.get(id).replace(PIDVal.KP, kp);
-        pidVals.get(id).replace(PIDVal.KI, ki);
-        pidVals.get(id).replace(PIDVal.KD, kd);
+        pidData.get(id).tune(kp, ki, kd);
         return true;
     }
 
@@ -140,16 +138,19 @@ public class PIDController {
         saveTime = System.currentTimeMillis();
 
         for (String id : activeIds) {
-            double currentError = errorSuppliers.get(id).get();
-            if (pidVals.get(id).get(PIDVal.SAVE_ERR) == 0) {
-                pidVals.get(id).replace(PIDVal.SAVE_ERR, currentError);
+            if (pidData.get(id) == null) {
+                continue;
             }
-            double p = currentError * pidVals.get(id).get(PIDVal.KP);
-            double i = currentError * timeElapsed * pidVals.get(id).get(PIDVal.KI);
-            double d =  ((currentError - pidVals.get(id).get(PIDVal.SAVE_ERR)) / timeElapsed) * pidVals.get(id).get(PIDVal.KD);
-            pidVals.get(id).replace(PIDVal.SAVE_ERR, currentError);
-            pidVals.get(id).replace(PIDVal.I, i);
-            pidVals.get(id).replace(PIDVal.OUT, p + i + d);
+            double currentError = pidData.get(id).getError();
+            if (pidData.get(id).saveError == 0.0 && currentError != 0.0) {
+                pidData.get(id).saveError = currentError;
+            }
+            double p = currentError * pidData.get(id).kp;
+            double i = currentError * timeElapsed * pidData.get(id).ki;
+            double d =  ((currentError - pidData.get(id).saveError) / timeElapsed) * pidData.get(id).kd;
+            pidData.get(id).saveError = currentError;
+            pidData.get(id).i = i;
+            pidData.get(id).output = p + i + d;
         }
         return true;
     }
@@ -158,6 +159,6 @@ public class PIDController {
      * @param id The string id of the PID output to return.
      * @return The most recent output of a specific PID loop.*/
     public static double get(String id) {
-        return  pidVals.get(id).get(PIDVal.OUT);
+        return  pidData.get(id).output;
     }
 }
