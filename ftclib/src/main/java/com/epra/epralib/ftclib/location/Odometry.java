@@ -48,7 +48,7 @@ public class Odometry {
     private Map<Orientation, Point> displacement = new HashMap<>();
     private Map<Orientation, Integer> pos = new HashMap<>();
     private Map<Orientation, Integer> delta = new HashMap<>();
-    private Angle phi = new Angle(0.0);
+    private Angle phi = new Angle();
     private Pose startPose;
 
     private IMUExpanded imu;
@@ -125,9 +125,9 @@ public class Odometry {
      * @return The new phi value. */
     public Angle phiEncoder() {
         double l = Math.abs(Geometry.subtract(displacement.get(Orientation.LEFT), displacement.get(Orientation.RIGHT)).x);
-        phi = new Angle((((delta.get(Orientation.RIGHT) - delta.get(Orientation.LEFT)) * INCH_PER_TICK) / l) * (180.0 / Math.PI) * -1.0);
+        phi = Angle.degree((((delta.get(Orientation.RIGHT) - delta.get(Orientation.LEFT)) * INCH_PER_TICK) / l) * (180.0 / Math.PI) * -1.0);
         //compensates for previous error
-        Angle diff = Geometry.subtract(Geometry.add(new Angle((((pos.get(Orientation.RIGHT) - pos.get(Orientation.LEFT)) * INCH_PER_TICK) / l) * (180.0 / Math.PI) * -1.0), startPose.angle), this.pose.angle);
+        Angle diff = Geometry.subtract(Geometry.add(Angle.degree((((pos.get(Orientation.RIGHT) - pos.get(Orientation.LEFT)) * INCH_PER_TICK) / l) * (180.0 / Math.PI) * -1.0), startPose.angle), this.pose.angle);
         phi = Geometry.add(diff, phi);
         return phi;
     }
@@ -189,12 +189,12 @@ public class Odometry {
     public Vector getDeltaPose() { return deltaPose; }
 
     /**Returns the velocity of the robot as a vector (inch/second).*/
-    public Vector getVelocity() { return new Vector(velocityBuffer.getAverage(), new Angle((float) phiBuffer.getAverage())); }
+    public Vector getVelocity() { return new Vector(velocityBuffer.getAverage(), Angle.radian(phiBuffer.getAverage())); }
     /**Returns the acceleration of the robot as a vector (inch/second²).*/
     public Vector getAcceleration() {
         RollingAverage vd = velocityBuffer.getDerivative();
         RollingAverage ad = phiBuffer.getDerivative();
-        return new Vector(vd.getAverage(), new Angle((float) ad.getAverage()));
+        return new Vector(vd.getAverage(), Angle.radian(ad.getAverage()));
     }
 
     /**Draws the robot, its velocity, acceleration, and odometer velocity onto the field map.
@@ -232,7 +232,7 @@ public class Odometry {
             //draw odometer velocities
             for (Map.Entry<Orientation, MotorController> entry : encoder.entrySet()) {
                 Point start = Geometry.add(pose.point, displacement.get(entry.getKey()));
-                Vector velo = new Vector(delta.get(entry.getKey()), Geometry.add(pose.angle, (entry.getKey() == Orientation.PERPENDICULAR) ? new Angle(90.0) : new Angle()));
+                Vector velo = new Vector(delta.get(entry.getKey()), Geometry.add(pose.angle, (entry.getKey() == Orientation.PERPENDICULAR) ? Angle.degree(90.0) : new Angle()));
                 Point end = Geometry.add(start, velo.toPoint());
                 p.fieldOverlay()
                         .setFill("green")

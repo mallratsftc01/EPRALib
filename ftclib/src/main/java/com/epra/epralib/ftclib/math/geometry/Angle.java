@@ -10,11 +10,20 @@ public class Angle {
     /**Stores an Angle value.
      *<p></p>
      * @param radian Radian value to set stored value to.*/
-    public Angle(float radian) { this.radian = radian; }
+    public static Angle radian(double radian) { return new Angle((float)radian); }
     /**Stores an Angle value.
      *<p></p>
      * @param degree Degree value to set stored value to.*/
-    public Angle(double degree) { this.radian = (Math.PI / 180.0) * degree; }
+    public static Angle degree(double degree) { return new Angle(degree); }
+
+    /**Stores an Angle value.
+     *<p></p>
+     * @param radian Radian value to set stored value to.*/
+    protected Angle(float radian) { this.radian = radian; }
+    /**Stores an Angle value.
+     *<p></p>
+     * @param degree Degree value to set stored value to.*/
+    protected Angle(double degree) { this.radian = (Math.PI / 180.0) * degree; }
     /**Stores an Angle value.*/
     public Angle() { this.radian = 0.0; }
 

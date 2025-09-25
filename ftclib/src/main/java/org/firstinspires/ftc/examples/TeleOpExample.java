@@ -22,7 +22,7 @@ import java.util.HashMap;
 @TeleOp
 public class TeleOpExample extends LinearOpMode {
 
-    private final Pose START_POSE = new Pose(new Point(0, 0), new Angle(0));
+    private final Pose START_POSE = new Pose(new Point(0, 0), new Angle());
 
     private MotorController frontLeft;
     private MotorController frontRight;

@@ -15,8 +15,8 @@ public class Circle implements Shape2D {
     public Circle(Point center, double radius) {
         this.center = center;
         this.radius = radius;
-        start = new Angle(0.0);
-        end = new Angle(360.0);
+        start = new Angle();
+        end = new Angle();
     }
     /**Stores a full circle or partial circle. The partial circle is defined between the start angle and end angle COUNTERCLOCKWISE.
      *<p></p>

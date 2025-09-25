@@ -22,9 +22,9 @@ import com.epra.epralib.ftclib.math.geometry.Geometry;
  * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class IMUExpanded {
 
-    private Angle baseYaw = new Angle(0);
-    private Angle basePitch = new Angle(0);
-    private Angle baseRoll = new Angle(0);
+    private Angle baseYaw = new Angle();
+    private Angle basePitch = new Angle();
+    private Angle baseRoll = new Angle();
 
     private File logJson;
     private FileWriter logWriter;
@@ -97,7 +97,7 @@ public class IMUExpanded {
     public Angle getYaw() {
         Angle[] angle = new Angle[imus.size()];
         for (int i = 0; i < imus.size(); i++) {
-            angle[i] = new Angle(imus.get(i).getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
+            angle[i] = Angle.degree(imus.get(i).getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
         }
         return Geometry.subtract(Geometry.average(angle), baseYaw);
     }
@@ -108,7 +108,7 @@ public class IMUExpanded {
     public Angle getPitch() {
         Angle[] angle = new Angle[imus.size()];
         for (int i = 0; i < imus.size(); i++) {
-            angle[i] = new Angle(imus.get(i).getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES));
+            angle[i] = Angle.degree(imus.get(i).getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES));
         }
         return Geometry.subtract(Geometry.average(angle), basePitch);
     }
@@ -119,7 +119,7 @@ public class IMUExpanded {
     public Angle getRoll() {
         Angle[] angle = new Angle[imus.size()];
         for (int i = 0; i < imus.size(); i++) {
-            angle[i] = new Angle(imus.get(i).getRobotYawPitchRollAngles().getRoll(AngleUnit.DEGREES));
+            angle[i] = Angle.degree(imus.get(i).getRobotYawPitchRollAngles().getRoll(AngleUnit.DEGREES));
         }
         return Geometry.subtract(Geometry.average(angle), baseRoll);
     }
@@ -139,9 +139,9 @@ public class IMUExpanded {
         Angle[] pitch = new Angle[imus.size()];
         Angle[] roll = new Angle[imus.size()];
         for (int i = 0; i < imus.size(); i++) {
-            yaw[i] = new Angle(imus.get(i).getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
-            pitch[i] = new Angle(imus.get(i).getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES));
-            roll[i] = new Angle(imus.get(i).getRobotYawPitchRollAngles().getRoll(AngleUnit.DEGREES));
+            yaw[i] = Angle.degree(imus.get(i).getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
+            pitch[i] = Angle.degree(imus.get(i).getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES));
+            roll[i] = Angle.degree(imus.get(i).getRobotYawPitchRollAngles().getRoll(AngleUnit.DEGREES));
         }
         baseYaw = Geometry.average(yaw);
         basePitch = Geometry.average(pitch);

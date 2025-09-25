@@ -5,29 +5,29 @@ package com.epra.epralib.ftclib.math.geometry;
  *Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class Geometry {
     /**A unit vector pointing to the right.*/
-    public static final Vector I_HAT = new Vector(1, new Angle(0.0));
+    public static final Vector I_HAT = new Vector(1, new Angle());
     /**A unit vector pointing upwards.*/
-    public static final Vector J_HAT = new Vector(1, new Angle(90.0));
+    public static final Vector J_HAT = new Vector(1, Angle.degree(90));
     /**Represents an angle of pi radians or 180.0 degrees.*/
-    public static final Angle PI = new Angle((float)Math.PI);
+    public static final Angle PI = Angle.radian(Math.PI);
     /**Represents an angle of 1.0 radian or ~57.296 degrees.*/
-    public static final Angle RAD = new Angle(1.0f);
+    public static final Angle RAD = Angle.radian(1);
 
     /**@param angle1 First angle.
      * @param angle2 Second angle.
      * @return The resulting angle from adding the first to the second, in a range between 0 and 360 degrees (0 to 2pi).*/
-    public static Angle add(Angle angle1, Angle angle2) { return new Angle((angle1.getDegree() + angle2.getDegree()) % 360); }
+    public static Angle add(Angle angle1, Angle angle2) { return Angle.degree((angle1.getDegree() + angle2.getDegree()) % 360); }
     /**@param angle1 First angle.
      * @param angle2 Second angle.
      * @return The resulting angle from subtracting the second from the first, in a range between 0 and 360 degrees (0 to 2pi).*/
-    public static Angle subtract(Angle angle1, Angle angle2) { return new Angle((angle1.getDegree() - angle2.getDegree()) % 360); }
+    public static Angle subtract(Angle angle1, Angle angle2) { return Angle.degree((angle1.getDegree() - angle2.getDegree()) % 360); }
     /**@param angle Array of angles.
      * @return The average angle of the array.*/
     public static Angle average(Angle[] angle) {
         double degrees = 0.0;
         for (Angle a : angle) { degrees += a.getDegree(); }
         degrees /= angle.length;
-        return new Angle(degrees % 360.0);
+        return Angle.degree(degrees % 360.0);
     }
 
     /**@param angle An angle.
@@ -50,19 +50,19 @@ public class Geometry {
     public static double cot(Angle angle) { return 1.0 / Math.tan(angle.getRadian()); }
     /**@param a The value whose arc sine is to be returned.
      * @return The arc sine of a value; the returned angle is in the range -pi/2 to pi/2.*/
-    public static Angle asin(double a) { return new Angle((float) Math.asin(a)); }
+    public static Angle asin(double a) { return Angle.radian(Math.asin(a)); }
     /**@param a The value whose arc cosine is to be returned.
      * @return The arc cosine of a value; the returned angle is in the range 0.0 to pi.*/
-    public static Angle acos(double a) { return new Angle((float) Math.acos(a)); }
+    public static Angle acos(double a) { return Angle.radian(Math.acos(a)); }
     /**@param a The value whose arc tangent is to be returned.
      * @return The arc tangent of a value; the returned angle is in the range -pi/2 to pi/2.*/
-    public static Angle atan(double a) { return new Angle((float) Math.atan(a)); }
+    public static Angle atan(double a) { return Angle.radian(Math.atan(a)); }
     /**Finds the angle of a vector from a point to (0,0). If the point is (0,0), will return an angle of 0.
      * @param p The point whose arc tangent is to be returned.
      * @return The arc tangent of a value; the returned angle is in the range 0.0 to 2pi.*/
     public static Angle atan(Point p) {
-        return new Angle (
-                (float) switch (p.quadrant()) {
+        return Angle.radian(
+                switch (p.quadrant()) {
                     case 0 -> (p.x == 0) ? (p.y == 0) ? 0 : (p.y > 0) ? Math.PI / 2 : -1 * Math.PI / 2 : (p.x > 0) ? 0 : 3 * Math.PI;
                     case 1, 4 -> Math.atan(p.y / p.x);
                     case 2, 3 -> Math.atan(p.y / p.x) + Math.PI;
