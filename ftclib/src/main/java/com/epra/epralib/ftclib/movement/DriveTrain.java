@@ -24,14 +24,14 @@ import com.epra.epralib.ftclib.storage.PIDGains;
 public class DriveTrain {
     /**All the orientations a motor can be in relative to the DriveTrain.*/
     public static enum Orientation {
-        RIGHT (new Angle(0.0)),
-        LEFT (new Angle(0.0)),
-        FRONT (new Angle(90.0)),
-        BACK (new Angle(90.0)),
-        RIGHT_FRONT (new Angle(315.0)),
-        RIGHT_BACK (new Angle(45.0)),
-        LEFT_FRONT (new Angle(45.0)),
-        LEFT_BACK (new Angle(315.0));
+        RIGHT (Angle.degree(0.0)),
+        LEFT (Angle.degree(0.0)),
+        FRONT (Angle.degree(90.0)),
+        BACK (Angle.degree(90.0)),
+        RIGHT_FRONT (Angle.degree(315.0)),
+        RIGHT_BACK (Angle.degree(45.0)),
+        LEFT_FRONT (Angle.degree(45.0)),
+        LEFT_BACK (Angle.degree(315.0));
 
         Angle angle;
 
@@ -113,9 +113,9 @@ public class DriveTrain {
     private float wheelCircumference = 11.2192926146f; // 96mm diameter wheels circumference in inches
     private float gearRatio = 20;
 
-    private Angle target = new Angle(0);
-    private Pose targetPose = new Pose(new Point(0,0), new Angle(0.0));
-    private Pose lastTargetPose = new Pose(new Point(0,0), new Angle(0.0));
+    private Angle target = new Angle();
+    private Pose targetPose = new Pose(new Point(0,0), new Angle());
+    private Pose lastTargetPose = new Pose(new Point(0,0), new Angle());
     private Vector lastMotionVector = new Vector(0, 0);
     private double toleranceMultiplier = 1.0;
 

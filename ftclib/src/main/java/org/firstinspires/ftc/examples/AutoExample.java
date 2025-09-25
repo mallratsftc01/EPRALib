@@ -38,7 +38,7 @@ public class AutoExample extends LinearOpMode {
     private final String FINAL_STEP_FILENAME = "auto/steps/final_step.json";
     private final String PID_SETTINGS_FILENAME = "pid/gains.json";
     //The starting position must also be set
-    private final Pose START_POSE = new Pose(new Point(0, 0), new Angle(0));
+    private final Pose START_POSE = new Pose(new Point(0, 0), new Angle());
 
     private MotorController frontRight;
     private MotorController backRight;

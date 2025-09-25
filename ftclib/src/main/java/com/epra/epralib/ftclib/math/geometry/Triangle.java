@@ -28,7 +28,7 @@ public class Triangle implements Shape2D{
     public Triangle(Point a, Point b, Angle angleA, Angle angleB) {
         this.a = a;
         this.b = b;
-        Angle angleC = new Angle(180.0 - (angleA.getDegree() + angleB.getDegree()));
+        Angle angleC = Angle.degree(180.0 - (angleA.getDegree() + angleB.getDegree()));
         double d = (Math.sin(angleB.getRadian()) * Geometry.pythagorean(a, b)) / Math.sin(angleC.getRadian());
         this.c = new Point(a.x + (Math.cos(angleA.getRadian()) * d), a.y + (Math.sin(angleA.getRadian()) * d));
         this.angleA = angleA;
@@ -47,9 +47,9 @@ public class Triangle implements Shape2D{
         this.a = a;
         this.b = new Point(a.x + side1, a.y);
         this.c = new Point(b.x, b.y + side2);
-        this.angleA = new Angle((float) Math.atan(side2 / side1));
-        this.angleB = new Angle(90.0);
-        this.angleC = new Angle((float) Math.atan(side1 / side2));
+        this.angleA = Angle.radian(Math.atan(side2 / side1));
+        this.angleB = Angle.degree(90);
+        this.angleC = Angle.radian(Math.atan(side1 / side2));
     }
     /**Stores a triangle with points a, b, c.
      *<p>
@@ -63,8 +63,8 @@ public class Triangle implements Shape2D{
         this.b = new Point(a.x + (Math.cos(angleA.getRadian()) * hyp), a.y);
         this.c = new Point(b.x, b.y + (Math.sin(angleA.getRadian()) * hyp));
         this.angleA = angleA;
-        this.angleB = new Angle(90.0);
-        this.angleC = new Angle(180.0 - (this.angleA.getDegree() + this.angleB.getDegree()));
+        this.angleB = Angle.degree(90);
+        this.angleC = Angle.degree(180.0 - (this.angleA.getDegree() + this.angleB.getDegree()));
     }
     /**Stores a triangle with points a, b, c.
      *<p>
@@ -75,9 +75,9 @@ public class Triangle implements Shape2D{
         this.a = new Point(0.0,0.0);
         this.b = new Point(v.toPoint().x, 0.0);
         this.c = v.toPoint();
-        this.angleA = new Angle(v.getDegree());
-        this.angleB = new Angle(90.0);
-        this.angleC = new Angle(180.0 - (this.angleA.getDegree() + this.angleB.getDegree()));
+        this.angleA = Angle.degree(v.getDegree());
+        this.angleB = Angle.degree(90);
+        this.angleC = Angle.degree(180.0 - (this.angleA.getDegree() + this.angleB.getDegree()));
     }
 
     /**@return Point a.*/
