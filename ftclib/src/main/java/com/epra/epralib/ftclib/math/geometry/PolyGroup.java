@@ -35,9 +35,13 @@ public class PolyGroup implements Shape2D {
     }
 
     /**@param point Point to check.
-     * @return True if the point is within the PolyGroup, false if not.*/
-    public boolean checkPoint(Point point) {
-        for (int i = 0; i < components.size(); i++) { if (components.get(i).checkPoint(point)) { return true; } }
+     * @return True if the Vector is within the PolyGroup, false if not.*/
+    public boolean checkPoint(Vector point) {
+        for (Shape2D component : components) {
+            if (component.checkPoint(point)) {
+                return true;
+            }
+        }
         return false;
     }
 }

@@ -1,10 +1,6 @@
 package com.epra.epralib.ftclib.location;
 
-import com.epra.epralib.ftclib.math.geometry.Angle;
-import com.epra.epralib.ftclib.math.geometry.Geometry;
-import com.epra.epralib.ftclib.math.geometry.Point;
-import com.epra.epralib.ftclib.math.geometry.Quadrilateral;
-import com.epra.epralib.ftclib.math.geometry.Vector;
+import com.epra.epralib.ftclib.math.geometry.*;
 import com.epra.epralib.ftclib.math.statistics.RollingAverage;
 import com.epra.epralib.ftclib.movement.MotorController;
 
@@ -45,7 +41,7 @@ public class Odometry {
 
     private Map<Orientation, MotorController> encoder = new HashMap<>();
     private Map<Orientation, Integer> start = new HashMap<>();
-    private Map<Orientation, Point> displacement = new HashMap<>();
+    private Map<Orientation, Vector> displacement = new HashMap<>();
     private Map<Orientation, Integer> pos = new HashMap<>();
     private Map<Orientation, Integer> delta = new HashMap<>();
     private Angle phi = new Angle();
@@ -77,7 +73,7 @@ public class Odometry {
      * @param imu The imu.
      * @param startPose The starting pose of the robot on the field.
      * */
-    public Odometry(MotorController leftEncoder, MotorController rightEncoder, MotorController perpendicularEncoder, Point displacementLeft, Point displacementRight, Point displacementPerpendicular, IMUExpanded imu, Pose startPose) throws IOException {
+    public Odometry(MotorController leftEncoder, MotorController rightEncoder, MotorController perpendicularEncoder, Vector displacementLeft, Vector displacementRight, Vector displacementPerpendicular, IMUExpanded imu, Pose startPose) throws IOException {
         encoder.put(Orientation.LEFT, leftEncoder);
         encoder.put(Orientation.RIGHT, rightEncoder);
         encoder.put(Orientation.PERPENDICULAR, perpendicularEncoder);
@@ -124,7 +120,7 @@ public class Odometry {
     /**Updates the phi (delta theta) value using the encoders.
      * @return The new phi value. */
     public Angle phiEncoder() {
-        double l = Math.abs(Geometry.subtract(displacement.get(Orientation.LEFT), displacement.get(Orientation.RIGHT)).x);
+        double l = Math.abs(Geometry.subtract(displacement.get(Orientation.LEFT), displacement.get(Orientation.RIGHT)).x());
         phi = Angle.degree((((delta.get(Orientation.RIGHT) - delta.get(Orientation.LEFT)) * INCH_PER_TICK) / l) * (180.0 / Math.PI) * -1.0);
         //compensates for previous error
         Angle diff = Geometry.subtract(Geometry.add(Angle.degree((((pos.get(Orientation.RIGHT) - pos.get(Orientation.LEFT)) * INCH_PER_TICK) / l) * (180.0 / Math.PI) * -1.0), startPose.angle), this.pose.angle);
@@ -143,7 +139,7 @@ public class Odometry {
     /**Finds the center displacement of the parallel encoders.*/
     public double centerDisplacement() { return (delta.get(Orientation.LEFT) + delta.get(Orientation.RIGHT)) / 2.0; }
     /**Finds the displacement of the perpendicular encoder.*/
-    public double perpendicularDisplacement() { return delta.get(Orientation.PERPENDICULAR) - (displacement.get(Orientation.PERPENDICULAR).y * phi.getRadian()); }
+    public double perpendicularDisplacement() { return delta.get(Orientation.PERPENDICULAR) - (displacement.get(Orientation.PERPENDICULAR).y()* phi.radian()); }
 
     /**Estimates the new pose value. Store the new pose in a json log file.
      * @return The new pose value.*/
@@ -151,30 +147,30 @@ public class Odometry {
         Pose lastPose = pose;
         updateDeltaPos();
         phiEncoder();
-        Point p0 = new Point(
+        Vector p0 = new Vector(
                 centerDisplacement(),
                 perpendicularDisplacement()
         );
-        Point p1 = new Point(
-                (p0.x * Geometry.cos(pose.angle)) - (p0.y* Geometry.sin(pose.angle)),
-                (p0.x * Geometry.sin(pose.angle)) + (p0.y * Geometry.cos(pose.angle))
+        Vector p1 = new Vector(
+                (p0.x()* Geometry.cos(pose.angle)) - (p0.y() * Geometry.sin(pose.angle)),
+                (p0.x()* Geometry.sin(pose.angle)) + (p0.y() * Geometry.cos(pose.angle))
         );
-        double phiRadians = (phi.getRadian() != 0.0) ? phi.getRadian() : 1.0f;
-        Point p2 = new Point(
-                (((p1.x * (1.0 - Geometry.cos(phi)) / phiRadians)) + (p1.y * (Geometry.sin(phi)) / phiRadians)) * INCH_PER_TICK,
-                (((p1.x * (Geometry.sin(phi)) / phiRadians) + (p1.y * (Geometry.cos(phi) - 1.0) / phiRadians))) * INCH_PER_TICK * -1.0
+        double phiRadians = (phi.radian() != 0.0) ? phi.radian() : 1.0f;
+        Vector p2 = new Vector(
+                (((p1.x()* (1.0 - Geometry.cos(phi)) / phiRadians)) + (p1.y()* (Geometry.sin(phi)) / phiRadians)) * INCH_PER_TICK,
+                (((p1.x()* (Geometry.sin(phi)) / phiRadians) + (p1.y()* (Geometry.cos(phi) - 1.0) / phiRadians))) * INCH_PER_TICK * -1.0
         );
         pose = new Pose(
-                Geometry.add(pose.point, p2),
+                Geometry.add(pose.pos, p2),
                 Geometry.add(pose.angle, phi)
         );
         double time = (System.currentTimeMillis() - saveTime) / 1000.0;
-        velocityBuffer.addValue(Geometry.pythagorean(p2.x, p2.y) / time);
-        phiBuffer.addValue(Geometry.add(phi, new Vector(p2)).getRadian() / time);
+        velocityBuffer.addValue(Geometry.pythagorean(p2.x(), p2.y()) / time);
+        phiBuffer.addValue(Geometry.add(phi, p2.theta()).radian() / time);
         saveTime = System.currentTimeMillis();
 
         if (lastPose != null) {
-            deltaPose = new Vector(lastPose.point, pose.point);
+            deltaPose = new Vector(lastPose.pos, pose.pos);
         }
 
         logWriter.write("\n" + gson.toJson(pose.toPoseData()) + ",");
@@ -199,24 +195,24 @@ public class Odometry {
 
     /**Draws the robot, its velocity, acceleration, and odometer velocity onto the field map.
      * @param robotShape A quadrilateral representing the 2D shape of the robot relative to the center of the robot.
-     * @param drawOdometers Whether or not to draw the odometers and their velocities.
+     * @param drawOdometers Whether to draw the odometers and their velocities.
      * @return A packet modified to contain a drawing of the robot pose onto the field map.*/
     public TelemetryPacket drawPose(Quadrilateral robotShape, boolean drawOdometers) {
         TelemetryPacket p = new TelemetryPacket();
         Quadrilateral shape = new Quadrilateral(
-                Geometry.rotate(robotShape.getA(), pose.angle),
-                Geometry.rotate(robotShape.getB(), pose.angle),
-                Geometry.rotate(robotShape.getC(), pose.angle),
-                Geometry.rotate(robotShape.getD(), pose.angle)
+                Geometry.multiply(Matrix.yaw(pose.angle), robotShape.getA()),
+                Geometry.multiply(Matrix.yaw(pose.angle), robotShape.getB()),
+                Geometry.multiply(Matrix.yaw(pose.angle), robotShape.getC()),
+                Geometry.multiply(Matrix.yaw(pose.angle), robotShape.getD())
         );
-        double[] shapeX = {shape.getA().x, shape.getB().x, shape.getC().x, shape.getD().x};
-        double[] shapeY = {shape.getA().y, shape.getB().y, shape.getC().y, shape.getD().y};
-        Point velocity = Geometry.add(pose.point, getVelocity().toPoint());
-        Point acceleration = Geometry.add(velocity, getAcceleration().toPoint());
+        double[] shapeX = {shape.getA().x(), shape.getB().x(), shape.getC().x(), shape.getD().x()};
+        double[] shapeY = {shape.getA().y(), shape.getB().y(), shape.getC().y(), shape.getD().y()};
+        Vector velocity = Geometry.add(pose.pos, getVelocity());
+        Vector acceleration = Geometry.add(velocity, getAcceleration());
         p.fieldOverlay()
-                //draws center point
+                //draws center Vector
                 .setFill("blue")
-                .fillCircle(pose.point.x, pose.point.y, 1)
+                .fillCircle(pose.pos.x(), pose.pos.y(), 1)
                 //draws robot outline
                 .fillPolygon(Arrays.copyOfRange(shapeX, 0, 1), Arrays.copyOfRange(shapeY, 0, 1))
                 .fillPolygon(Arrays.copyOfRange(shapeX, 1, 2), Arrays.copyOfRange(shapeY, 1, 2))
@@ -224,19 +220,19 @@ public class Odometry {
                 .fillPolygon(new double[] {shapeX[3], shapeX[0]}, new double[] {shapeY[3], shapeY[0]})
                 //draw velocity
                 .setFill("green")
-                .fillPolygon(new double[] {pose.point.x, velocity.x}, new double[] {pose.point.y, velocity.y})
+                .fillPolygon(new double[] {pose.pos.x(), velocity.x()}, new double[] {pose.pos.y(), velocity.y()})
                 //draw acceleration
                 .setFill("red")
-                .fillPolygon(new double[] {acceleration.x, velocity.x}, new double[] {acceleration.y, velocity.y});
+                .fillPolygon(new double[] {acceleration.x(), velocity.x()}, new double[] {acceleration.y(), velocity.y()});
         if (drawOdometers) {
             //draw odometer velocities
             for (Map.Entry<Orientation, MotorController> entry : encoder.entrySet()) {
-                Point start = Geometry.add(pose.point, displacement.get(entry.getKey()));
+                Vector start = Geometry.add(pose.pos, displacement.get(entry.getKey()));
                 Vector velo = new Vector(delta.get(entry.getKey()), Geometry.add(pose.angle, (entry.getKey() == Orientation.PERPENDICULAR) ? Angle.degree(90.0) : new Angle()));
-                Point end = Geometry.add(start, velo.toPoint());
+                Vector end = Geometry.add(start, velo);
                 p.fieldOverlay()
                         .setFill("green")
-                        .fillPolygon(new double[] {start.x, end.x}, new double[] { start.y, end.y});
+                        .fillPolygon(new double[] {start.x(), end.x()}, new double[] { start.y(), end.y()});
             }
         }
         return p;

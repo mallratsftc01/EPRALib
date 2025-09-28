@@ -1,10 +1,8 @@
 package com.epra.epralib.ftclib.movement;
 
-import androidx.annotation.NonNull;
-
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Geometry;
-import com.epra.epralib.ftclib.math.geometry.Point;
+import com.epra.epralib.ftclib.math.geometry.Vector;
 import com.epra.epralib.ftclib.math.geometry.Vector;
 
 import java.util.Set;
@@ -114,8 +112,8 @@ public class DriveTrain {
     private float gearRatio = 20;
 
     private Angle target = new Angle();
-    private Pose targetPose = new Pose(new Point(0,0), new Angle());
-    private Pose lastTargetPose = new Pose(new Point(0,0), new Angle());
+    private Pose targetPose = new Pose(new Vector(0,0), new Angle());
+    private Pose lastTargetPose = new Pose(new Vector(0,0), new Angle());
     private Vector lastMotionVector = new Vector(0, 0);
     private double toleranceMultiplier = 1.0;
 
@@ -258,7 +256,7 @@ public class DriveTrain {
      * @param vectorLeft A vector representing the left joystick.
      */
     public void mecanumDrive(float powerRightX, Vector vectorLeft) {
-        mecanumDrive(powerRightX, (float) vectorLeft.toPoint().y, (float) vectorLeft.toPoint().x);
+        mecanumDrive(powerRightX, (float) vectorLeft.y(), (float) vectorLeft.x());
     }
     /**
      * Field Oriented holonomic drive with mecanum wheels. Left stick moves the robot, right stick X rotates the robot. Created 10/31/2024.
@@ -267,7 +265,7 @@ public class DriveTrain {
      * @param heading The angle of the robot relative to the field.
      *  */
     public void fieldOrientedMecanumDrive(float powerRightX, Vector vectorLeft, Angle heading) {
-        mecanumDrive(powerRightX, new Vector(vectorLeft.getLength(), Geometry.subtract(vectorLeft, heading)));
+        mecanumDrive(powerRightX, new Vector(vectorLeft.length(), Geometry.subtract(vectorLeft.theta(), heading)));
     }
 
     /**
@@ -281,7 +279,7 @@ public class DriveTrain {
     public boolean fieldOrientedMecanumDrive(Vector vectorRight, Vector vectorLeft, double angleTolerance, boolean haltAtTarget) {
         PIDController.activate("DriveTrain_A");
         Angle heading = poseSupplier.get().angle;
-        if (vectorRight.getLength() > 0.25) { target.setRadian(vectorRight.getRadian()); }
+        if (vectorRight.length() > 0.25) { target = vectorRight.theta(); }
         float rightPower = (float) PIDController.get("DriveTrain_A");
         if (Math.abs(rightPower) > angleTolerance) {
             fieldOrientedMecanumDrive(rightPower, vectorLeft, heading);
@@ -296,7 +294,7 @@ public class DriveTrain {
     /**Sets the target Pose of the PID. When running posPIDMecanumDrive the DriveTrain will attempt to move the robot to this position.
      * @param target Pose to test the target to.*/
     public void setTargetPose(Pose target) {
-        if (target.point.x != targetPose.point.x || target.point.y != targetPose.point.y || target.angle.getDegree() != targetPose.angle.getDegree()) {
+        if (target.pos.x()!= targetPose.pos.x()|| target.pos.y()!= targetPose.pos.y()|| target.angle.degree() != targetPose.angle.degree()) {
             lastTargetPose = targetPose;
             targetPose = target;
             PIDController.activate("DriveTrain_P");
@@ -313,10 +311,10 @@ public class DriveTrain {
      *  */
     public boolean posPIDMecanumDrive(double posTolerance, double angleTolerance, double maxPower, boolean haltAtTarget) {
         Pose current = poseSupplier.get();
-        Vector vectorLeft = new Vector(PIDController.get("DriveTrain_P"), Geometry.atan(new Point(-1 * (targetPose.point.y - current.point.y), (targetPose.point.x - current.point.x))));
+        Vector vectorLeft = new Vector(PIDController.get("DriveTrain_P"), new Vector(-1 * (targetPose.pos.y()- current.pos.y()), (targetPose.pos.x()- current.pos.x())).theta());
         Vector vectorRight = new Vector(1.0, targetPose.angle);
-        boolean b = fieldOrientedMecanumDrive(vectorRight, new Vector(Math.min(maxPower, vectorLeft.getLength()), vectorLeft), angleTolerance, haltAtTarget);
-        if (Geometry.pythagorean(current.point, targetPose.point) <= getAbsolutePosTolerance(posTolerance) && b) {
+        boolean b = fieldOrientedMecanumDrive(vectorRight, new Vector(Math.min(maxPower, vectorLeft.length()), vectorLeft.theta()), angleTolerance, haltAtTarget);
+        if (Geometry.subtract(current.pos, targetPose.pos).length() <= getAbsolutePosTolerance(posTolerance) && b) {
             if (haltAtTarget) { mecanumDrive(0, 0, 0); }
             PIDController.idle("DriveTrain_P");
             return true;
@@ -328,7 +326,7 @@ public class DriveTrain {
      * @param posTolerance A tolerance value between 0.0 and 1.0.
      * @return The true pos tolerance value.*/
     public double getAbsolutePosTolerance(double posTolerance) {
-        double dst = Geometry.pythagorean(targetPose.point, lastTargetPose.point);
+        double dst = Geometry.subtract(targetPose.pos, lastTargetPose.pos).length();
         return Math.abs(posTolerance * dst);
     }
 
@@ -336,18 +334,18 @@ public class DriveTrain {
      * @param posTolerance The range in inches around the target pose for which the method will return true as a positive double.
      * @param angleTolerance The tolerance for reaching the target angle as a positive double. If this is set to 0.0 the pid will run indefinitely.
      * @param maxPower The maximum power of the motors.
-     * @return True if the robot has moved withing a radius of posTolerance of the target point, false if not.*/
+     * @return True if the robot has moved withing a radius of posTolerance of the target Vector, false if not.*/
     public boolean posPIDMecanumDrive(double posTolerance, double angleTolerance, double maxPower) {
         Pose current = poseSupplier.get();
         Vector deltaPos = deltaPoseSupplier.get();
-        Vector targetVector = new Vector(current.point, targetPose.point);
-        targetVector.setLength(Math.max(1.0, targetVector.getLength()));
-        Vector delta = new Vector(lastMotionVector.getLength(), deltaPos);
-        lastMotionVector = Geometry.add(new Vector(PIDController.get("DriveTrain_P"), Geometry.atan(new Point(-1 * (delta.toPoint().y - targetVector.toPoint().y), (delta.toPoint().x - targetVector.toPoint().x)))), lastMotionVector);
-        lastMotionVector.setLength(Math.min(maxPower, lastMotionVector.getLength()));
+        Vector targetVector = new Vector(current.pos, targetPose.pos);
+        if (targetVector.length() < 1) { targetVector = new Vector(1, targetVector.theta()); }
+        Vector delta = new Vector(lastMotionVector.length(), deltaPos.theta());
+        lastMotionVector = Geometry.add(new Vector(PIDController.get("DriveTrain_P"), new Vector(-1 * (delta.y() - targetVector.y()), (delta.x() - targetVector.x())).theta()), lastMotionVector);
+        if (lastMotionVector.length() > maxPower) { lastMotionVector = new Vector(maxPower, lastMotionVector.theta()); }
         Vector vectorRight = new Vector(1.0, targetPose.angle);
         fieldOrientedMecanumDrive(vectorRight, lastMotionVector, angleTolerance, false);
-        boolean b = Math.abs(Geometry.pythagorean(targetPose.point, current.point)) <= posTolerance;
+        boolean b = Math.abs(Geometry.subtract(targetPose.pos, current.pos).length()) <= posTolerance;
         if (b) { PIDController.idle("DriveTrain_V"); }
         return b;
     }
@@ -403,22 +401,22 @@ public class DriveTrain {
     /**Returns the error between the target angle and the current angle.
      * @return The error from the target angle.*/
     public double getAngleError() {
-        return Geometry.subtract(target, poseSupplier.get().angle).getRadian();
+        return Geometry.subtract(target, poseSupplier.get().angle).radian();
     }
 
     /**Returns the error between the target angle and the current angle.
      * @return The error from the target angle.*/
     public double getPointError() {
-        return Geometry.pythagorean(targetPose.point, poseSupplier.get().point);
+        return Geometry.subtract(targetPose.pos, poseSupplier.get().pos).length();
     }
 
     public double getVectorError() {
         Pose current = poseSupplier.get();
         Vector deltaPos = deltaPoseSupplier.get();
-        Vector targetVector = new Vector(current.point, targetPose.point);
-        targetVector.setLength(Math.max(1.0, targetVector.getLength()));
-        Vector delta = new Vector(lastMotionVector.getLength(), deltaPos);
-        return Geometry.pythagorean(delta.toPoint(), targetVector.toPoint());
+        Vector targetVector = new Vector(current.pos, targetPose.pos);
+        if (targetVector.length() < 1) { targetVector = new Vector(1, targetVector.theta()); }
+        Vector delta = new Vector(lastMotionVector.length(), deltaPos.theta());
+        return Geometry.subtract(delta, targetVector).length();
     }
 
     /**Uses a drive based on the DriveTrain's drive type.

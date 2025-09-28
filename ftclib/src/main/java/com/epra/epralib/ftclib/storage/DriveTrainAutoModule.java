@@ -2,7 +2,7 @@ package com.epra.epralib.ftclib.storage;
 
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
-import com.epra.epralib.ftclib.math.geometry.Point;
+import com.epra.epralib.ftclib.math.geometry.Vector;
 
 /**A record that stores instructions for the DriveTrain during auto.
  *<p></p>
@@ -16,5 +16,5 @@ import com.epra.epralib.ftclib.math.geometry.Point;
  * @param usePrecision If true, the robot will attempt to reach the target position exactly, withing tolerance. If false, the robot will move in the general direction of the target position.
  * @param weight The weight, as a double between 1.0 and 0.0, that this module will contribute to moving to the next step of auto. A total weight of 1.0 or higher is necessary to move to the next step.*/
 public record DriveTrainAutoModule(double targetX, double targetY, double targetAngle, double posTolerance, double angleTolerance, double maxPower, boolean usePrecision, double weight) {
-    public Pose targetPose() { return new Pose(new Point(targetX, targetY), Angle.degree(targetAngle)); }
+    public Pose targetPose() { return new Pose(new Vector(targetX, targetY), Angle.degree(targetAngle)); }
 }

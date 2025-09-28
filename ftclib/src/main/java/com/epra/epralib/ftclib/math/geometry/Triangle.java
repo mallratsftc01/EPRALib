@@ -1,36 +1,37 @@
 package com.epra.epralib.ftclib.math.geometry;
-/**Stores a triangle with points a, b, c.
+/**Stores a triangle with Vectors a, b, c.
  *<p></p>
  *Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class Triangle implements Shape2D{
 
-    private Point a,b,c;
+    private Vector a,b,c;
     private Angle angleA, angleB, angleC;
 
     /**Stores a triangle with points a, b, c.
      * @param a Point a.
      * @param b Point b.
      * @param c Point c.*/
-    public Triangle(Point a, Point b, Point c) {
+    public Triangle(Vector a, Vector b, Vector c) {
         this.a = a;
         this.b = b;
         this.c = c;
-        this.angleA = new Angle();
-        this.angleB = new Angle();
-        this.angleC = new Angle();
-        updateAngles();
+        double side1 = getAB();
+        double side2 = getBC();
+        this.angleA = Geometry.atan(side2, side1);
+        this.angleB = Angle.degree(90);
+        this.angleC = Geometry.atan(side1, side2);
     }
     /**Stores a triangle with points a, b, c.
      * @param a Point a.
      * @param b Point b.
      * @param angleA The angle of the two sides intersecting at point a.
      * @param angleB The angle of the two sides intersecting at point b.*/
-    public Triangle(Point a, Point b, Angle angleA, Angle angleB) {
+    public Triangle(Vector a, Vector b, Angle angleA, Angle angleB) {
         this.a = a;
         this.b = b;
-        Angle angleC = Angle.degree(180.0 - (angleA.getDegree() + angleB.getDegree()));
-        double d = (Math.sin(angleB.getRadian()) * Geometry.pythagorean(a, b)) / Math.sin(angleC.getRadian());
-        this.c = new Point(a.x + (Math.cos(angleA.getRadian()) * d), a.y + (Math.sin(angleA.getRadian()) * d));
+        Angle angleC = Angle.degree(180.0 - (angleA.degree() + angleB.degree()));
+        double d = (Geometry.sin(angleB) * Geometry.subtract(a, b).length()) / Geometry.sin(angleC);
+        this.c = new Vector(a.x() + (Geometry.cos(angleA) * d), a.y()+ (Geometry.sin(angleA) * d));
         this.angleA = angleA;
         this.angleB = angleB;
         this.angleC = angleC;
@@ -43,13 +44,13 @@ public class Triangle implements Shape2D{
      * @param a Point a.
      * @param side1 The length of the side between point a and point b.
      * @param side2 The length of the side between point b and point c.*/
-    public Triangle(Point a, double side1, double side2) {
+    public Triangle(Vector a, double side1, double side2) {
         this.a = a;
-        this.b = new Point(a.x + side1, a.y);
-        this.c = new Point(b.x, b.y + side2);
-        this.angleA = Angle.radian(Math.atan(side2 / side1));
+        this.b = new Vector(a.x() + side1, a.y());
+        this.c = new Vector(b.x(), b.y() + side2);
+        this.angleA = Geometry.atan(side2, side1);
         this.angleB = Angle.degree(90);
-        this.angleC = Angle.radian(Math.atan(side1 / side2));
+        this.angleC = Geometry.atan(side1, side2);
     }
     /**Stores a triangle with points a, b, c.
      *<p>
@@ -58,13 +59,13 @@ public class Triangle implements Shape2D{
      * @param hyp The length of the hypotenuse between point a and point c.
      * @param angleA The angle of the two sides intersecting at point a.
      * */
-    public Triangle(Point a, double hyp, Angle angleA) {
+    public Triangle(Vector a, double hyp, Angle angleA) {
         this.a = a;
-        this.b = new Point(a.x + (Math.cos(angleA.getRadian()) * hyp), a.y);
-        this.c = new Point(b.x, b.y + (Math.sin(angleA.getRadian()) * hyp));
+        this.b = new Vector(a.x() + (Geometry.cos(angleA) * hyp), a.y());
+        this.c = new Vector(b.x(), b.y() + (Geometry.sin(angleA) * hyp));
         this.angleA = angleA;
         this.angleB = Angle.degree(90);
-        this.angleC = Angle.degree(180.0 - (this.angleA.getDegree() + this.angleB.getDegree()));
+        this.angleC = Angle.degree(180.0 - (this.angleA.degree() + this.angleB.degree()));
     }
     /**Stores a triangle with points a, b, c.
      *<p>
@@ -72,68 +73,42 @@ public class Triangle implements Shape2D{
      * @param v A vector with a length and an angle.
      * */
     public Triangle(Vector v) {
-        this.a = new Point(0.0,0.0);
-        this.b = new Point(v.toPoint().x, 0.0);
-        this.c = v.toPoint();
-        this.angleA = Angle.degree(v.getDegree());
+        this.a = new Vector(0.0,0.0);
+        this.b = new Vector(v.x(), 0.0);
+        this.c = v;
+        this.angleA = v.theta();
         this.angleB = Angle.degree(90);
-        this.angleC = Angle.degree(180.0 - (this.angleA.getDegree() + this.angleB.getDegree()));
+        this.angleC = Angle.degree(180.0 - (this.angleA.degree() + this.angleB.degree()));
     }
 
     /**@return Point a.*/
-    public Point getA() { return a; }
+    public Vector getA() { return a; }
     /**@return Point b.*/
-    public Point getB() { return b; }
+    public Vector getB() { return b; }
     /**@return Point c.*/
-    public Point getC() { return c; }
+    public Vector getC() { return c; }
 
-    /**@param a Point a.*/
-    public void setA(Point a) {
-        this.a = a;
-        updateAngles();
-    }
-    /**@param b Point b.*/
-    public void setB(Point b) {
-        this.b = b;
-        updateAngles();
-    }
-    /**@param c Point c.*/
-    public void setC(Point c) {
-        this.c = c;
-        updateAngles();
-    }
+    /**@return The length of the side between Vector a and Vector b.*/
+    public double getAB() { return Geometry.subtract(a,b).length(); }
+    /**@return The length of the side between Vector b and Vector c.*/
+    public double getBC() { return Geometry.subtract(b,c).length(); }
+    /**@return The length of the side between Vector c and Vector a.*/
+    public double getCA() { return Geometry.subtract(c,a).length(); }
 
-    /**@return The length of the side between point a and point b.*/
-    public double getAB() { return Geometry.pythagorean(a,b); }
-    /**@return The length of the side between point b and point c.*/
-    public double getBC() { return Geometry.pythagorean(b,c); }
-    /**@return The length of the side between point c and point a.*/
-    public double getCA() { return Geometry.pythagorean(c,a); }
-
-    /**@return The angle of the lines intersecting at point a.*/
+    /**@return The angle of the lines intersecting at Vector a.*/
     public Angle getAngleA() { return angleA; }
-    /**@return The angle of the lines intersecting at point b.*/
+    /**@return The angle of the lines intersecting at Vector b.*/
     public Angle getAngleB() { return angleB; }
-    /**@return The angle of the lines intersecting at point c.*/
+    /**@return The angle of the lines intersecting at Vector c.*/
     public Angle getAngleC() { return angleC; }
 
     /**@return The area of the triangle.*/
-    public double getArea() { return (getBC() * getCA() * Math.sin(angleC.getRadian())) / 2; }
+    public double getArea() { return (getBC() * getCA() * Math.sin(angleC.radian())) / 2; }
 
     /**@return The perimeter of the triangle.*/
     public double getPerimeter() { return getAB() + getBC() + getCA(); }
 
-    /**Updates all of the angles to work with the defined points.*/
-    private void updateAngles() {
-        double aLen = getBC();
-        double bLen = getCA();
-        double cLen = getAB();
-        angleA.setRadian(Math.acos((Math.pow(bLen,2) + Math.pow(cLen,2) - Math.pow(cLen,2)) / 2 * bLen * cLen));
-        angleB.setRadian(Math.acos((Math.pow(aLen,2) + Math.pow(cLen,2) - Math.pow(bLen,2)) / 2 * aLen * cLen));
-        angleC.setDegree(180.0 - (this.angleA.getDegree() + this.angleB.getDegree()));
-    }
-
     /**@param point Point to check.
-     * @return True if the point is within the triangle, false if not.*/
-    public boolean checkPoint(Point point) { return (new Triangle(a, b, point).getArea() + new Triangle(b, c, point).getArea() + new Triangle(c, a, point).getArea() == this.getArea()); }
+     * @return True if the Vector is within the triangle, false if not.*/
+    public boolean checkPoint(Vector point) { return (new Triangle(a, b, point).getArea() + new Triangle(b, c, point).getArea() + new Triangle(c, a, point).getArea() == this.getArea()); }
 }

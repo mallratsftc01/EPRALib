@@ -151,7 +151,7 @@ public class IMUExpanded {
     /**Saves IMU data to internal logs. Also saves log data to a json file on the robot for post-match analysis.
      * @return A IMUData record with data from this log.*/
     public IMUData log() throws IOException {
-        IMUData data = new IMUData(getYaw().getDegree(), getPitch().getDegree(), getRoll().getDegree());
+        IMUData data = new IMUData(getYaw().degree(), getPitch().degree(), getRoll().degree());
         logWriter.write("\n" + gson.toJson(data) + ",");
         return data;
     }

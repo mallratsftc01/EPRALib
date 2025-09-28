@@ -25,8 +25,8 @@ public class VectorButton implements ButtonBase {
      * @param y The function of the gamepad object that returns the y value of this element.*/
     public VectorButton(Gamepad g, Function<Gamepad, Float> x, Function<Gamepad, Float> y) {
         this.g = g;
-        this.x = x;
-        this.y = y;
+        this.x= x;
+        this.y= y;
         flag = false;
         toggle = false;
         counter = 0;
@@ -39,13 +39,13 @@ public class VectorButton implements ButtonBase {
      * @return The value of this element as a boolean.*/
     @Override
     public boolean getBoolean() {
-        return getVector().getLength() != 0;
+        return getVector().length() != 0;
     }
     /**Returns the length of this element's Vector.
      * @return The value of this element as a float.*/
     @Override
     public float getFloat() {
-        return (float) getVector().getLength();
+        return (float) getVector().length();
     }
 
     /**Returns a true output only on the first call while this element has a boolean value of true.

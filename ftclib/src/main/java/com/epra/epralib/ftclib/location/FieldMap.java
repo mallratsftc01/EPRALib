@@ -1,6 +1,6 @@
 package com.epra.epralib.ftclib.location;
 
-import com.epra.epralib.ftclib.math.geometry.Point;
+import com.epra.epralib.ftclib.math.geometry.Vector;
 import com.epra.epralib.ftclib.math.geometry.Shape2D;
 
 import java.util.HashMap;
@@ -22,7 +22,7 @@ public interface FieldMap {
 
     /**@param point Point to check.
      * @return Which section of the field the point falls into. Returns DOES_NOT_EXIST if the point doesn't fall into any section of the field.*/
-    default Section checkPoint(Point point) {
+    default Section checkPoint(Vector point) {
         for (Map.Entry<FieldSection, Shape2D> entry : map.entrySet()) {
             if (entry.getValue().checkPoint(point)) { return entry.getKey(); }
         }
@@ -31,7 +31,7 @@ public interface FieldMap {
 
     /**@param point Point to check.
      * @return True if the point is hitting an obstacle, false if not.*/
-    default boolean checkObstacle(Point point) {
+    default boolean checkObstacle(Vector point) {
         return obstacle.checkPoint(point);
     }
 }
