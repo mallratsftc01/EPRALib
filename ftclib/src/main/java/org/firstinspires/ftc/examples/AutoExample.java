@@ -61,19 +61,30 @@ public class AutoExample extends LinearOpMode {
     @Override
     public void runOpMode() {
         try {
+            //Setting up the IMU
+            RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+            RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+            RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+
+            IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
+            tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
+            imu = new IMUExpanded(tempIMU);
+
             //Setting up the MotorControllers for the DriveTrain
             frontRight = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")), "front_right");
             frontLeft = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northwestMotor")), "front_left");
             backRight = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southeastMotor")), "back_right");
             backLeft = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southwestMotor")), "back_left");
+
             //Setting up the Odometry
-            odometry = new Odometry(frontLeft, backLeft, frontRight,
+            odometry = new Odometry(frontLeft::getCurrentPosition, backLeft::getCurrentPosition, frontRight::getCurrentPosition,
                     new Vector(7.92784216, 3.75),
                     new Vector(-8, 3.75),
                     new Vector(0, 2.0),
-                    imu,
+                    imu::getYaw,
                     START_POSE
             );
+
             //Initializing the DriveTrain
             drive = new DriveTrain(new MotorController[] {frontLeft, frontRight, backLeft, backRight},
                     new DriveTrain.Orientation[] {DriveTrain.Orientation.LEFT_FRONT, DriveTrain.Orientation.RIGHT_FRONT, DriveTrain.Orientation.LEFT_BACK, DriveTrain.Orientation.RIGHT_BACK},
@@ -101,15 +112,6 @@ public class AutoExample extends LinearOpMode {
                 nonDriveMotors.get(id).tuneTargetPID(pidGains.get("MotorController_" + id + "_Target"));
                 nonDriveMotors.get(id).tuneVelocityPID(pidGains.get("MotorController_" + id + "_Velocity"));
             }
-
-            //Setting up the IMU
-            RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-            RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
-            RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
-
-            IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
-            tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
-            imu = new IMUExpanded(tempIMU);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
