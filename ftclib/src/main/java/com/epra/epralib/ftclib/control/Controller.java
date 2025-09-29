@@ -72,26 +72,26 @@ public class Controller extends Gamepad {
     public Controller(Gamepad g, float deadbandIn, String id) throws IOException {
         gamepad = g;
         deadband = deadbandIn;
-        map.put(Key.A, new BooleanButton(g, gp -> gp.a));
-        map.put(Key.B, new BooleanButton(g, gp -> gp.b));
-        map.put(Key.X, new BooleanButton(g, gp -> gp.x));
-        map.put(Key.Y, new BooleanButton(g, gp -> gp.y));
-        map.put(Key.UP, new BooleanButton(g, gp -> gp.dpad_up));
-        map.put(Key.DOWN, new BooleanButton(g, gp -> gp.dpad_down));
-        map.put(Key.LEFT, new BooleanButton(g, gp -> gp.dpad_left));
-        map.put(Key.RIGHT, new BooleanButton(g, gp -> gp.dpad_right));
-        map.put(Key.BUMPER_LEFT, new BooleanButton(g, gp -> gp.left_bumper));
-        map.put(Key.BUMPER_RIGHT, new BooleanButton(g, gp -> gp.right_bumper));
-        map.put(Key.STICK_LEFT, new BooleanButton(g, gp -> gp.left_stick_button));
-        map.put(Key.STICK_RIGHT, new BooleanButton(g, gp -> gp.right_stick_button));
-        map.put(Key.LEFT_STICK_X, new FloatButton(g, gp -> gp.left_stick_x));
-        map.put(Key.RIGHT_STICK_X, new FloatButton(g, gp -> gp.right_stick_x));
-        map.put(Key.LEFT_STICK_Y, new FloatButton(g, gp -> gp.left_stick_y));
-        map.put(Key.RIGHT_STICK_Y, new FloatButton(g, gp -> gp.right_stick_y));
-        map.put(Key.LEFT_TRIGGER, new FloatButton(g, gp -> gp.left_trigger));
-        map.put(Key.RIGHT_TRIGGER, new FloatButton(g, gp -> gp.right_trigger));
-        stick.put(Stick.RIGHT_STICK, new VectorButton(g, gp -> gp.right_stick_x, gp -> gp.right_stick_y));
-        stick.put(Stick.LEFT_STICK, new VectorButton(g, gp -> gp.left_stick_x, gp -> gp.left_stick_y));
+        map.put(Key.A, new BooleanButton(() -> gamepad.a));
+        map.put(Key.B, new BooleanButton(() -> gamepad.b));
+        map.put(Key.X, new BooleanButton(() -> gamepad.x));
+        map.put(Key.Y, new BooleanButton(() -> gamepad.y));
+        map.put(Key.UP, new BooleanButton(() -> gamepad.dpad_up));
+        map.put(Key.DOWN, new BooleanButton(() -> gamepad.dpad_down));
+        map.put(Key.LEFT, new BooleanButton(() -> gamepad.dpad_left));
+        map.put(Key.RIGHT, new BooleanButton(() -> gamepad.dpad_right));
+        map.put(Key.BUMPER_LEFT, new BooleanButton(() -> gamepad.left_bumper));
+        map.put(Key.BUMPER_RIGHT, new BooleanButton(() -> gamepad.right_bumper));
+        map.put(Key.STICK_LEFT, new BooleanButton(() -> gamepad.left_stick_button));
+        map.put(Key.STICK_RIGHT, new BooleanButton(() -> gamepad.right_stick_button));
+        map.put(Key.LEFT_STICK_X, new FloatButton(() -> gamepad.left_stick_x));
+        map.put(Key.RIGHT_STICK_X, new FloatButton(() -> gamepad.right_stick_x));
+        map.put(Key.LEFT_STICK_Y, new FloatButton(() -> gamepad.left_stick_y));
+        map.put(Key.RIGHT_STICK_Y, new FloatButton(() -> gamepad.right_stick_y));
+        map.put(Key.LEFT_TRIGGER, new FloatButton(() -> gamepad.left_trigger));
+        map.put(Key.RIGHT_TRIGGER, new FloatButton(() -> gamepad.right_trigger));
+        stick.put(Stick.RIGHT_STICK, new VectorButton(() -> gamepad.right_stick_x, () -> gamepad.right_stick_y));
+        stick.put(Stick.LEFT_STICK, new VectorButton(() -> gamepad.left_stick_x, () -> gamepad.left_stick_y));
 
         gson = new Gson();
 

@@ -2,25 +2,22 @@ package com.epra.epralib.ftclib.control;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**Represents a single element on the gamepad that returns a boolean (ie. dpad, bumpers).
  * <p></p>
  * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class BooleanButton implements ButtonBase {
 
-    Gamepad g;
-    Function<Gamepad, Boolean> f;
+    Supplier<Boolean> f;
 
     private boolean flag;
     private boolean toggle;
     private int counter;
 
     /**Represents a single element on the gamepad that returns a boolean (ie. dpad, bumpers).
-     * @param g The gamepad where this element is located.
-     * @param f The function of the gamepad object that returns the value of this element.*/
-    public BooleanButton(Gamepad g, Function<Gamepad, Boolean> f) {
-        this.g = g;
+     * @param f A supplier that returns the value of this element.*/
+    public BooleanButton(Supplier<Boolean> f) {
         this.f = f;
         flag = false;
         toggle = false;
@@ -30,14 +27,12 @@ public class BooleanButton implements ButtonBase {
     /**Returns the value of this element.
      * @return The value of this element as a boolean.*/
     @Override
-    public boolean getBoolean() {
-        return f.apply(g);
-    }
+    public boolean getBoolean() { return f.get(); }
     /**Returns 1.0 if the value of the element is true, 0.0 if not.
      * @return The value of this element as a float.*/
     @Override
     public float getFloat() {
-        return (f.apply(g)) ? 1.0f : 0.0f;
+        return (f.get()) ? 1.0f : 0.0f;
     }
 
     /**Returns a true output only on the first call while this element has a boolean value of true.

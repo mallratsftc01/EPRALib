@@ -2,7 +2,7 @@ package com.epra.epralib.ftclib.control;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.epra.epralib.ftclib.math.geometry.Vector;
 
@@ -11,20 +11,17 @@ import com.epra.epralib.ftclib.math.geometry.Vector;
  * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class VectorButton implements ButtonBase {
 
-    Gamepad g;
-    Function<Gamepad, Float> x;
-    Function<Gamepad, Float> y;
+    Supplier<Float> x;
+    Supplier<Float> y;
 
     private boolean flag;
     private boolean toggle;
     private int counter;
 
     /**Represents a single element on the gamepad that returns two floats in an (x,y) pair (joysticks).
-     * @param g The gamepad where this element is located.
-     * @param x The function of the gamepad object that returns the x value of this element.
-     * @param y The function of the gamepad object that returns the y value of this element.*/
-    public VectorButton(Gamepad g, Function<Gamepad, Float> x, Function<Gamepad, Float> y) {
-        this.g = g;
+     * @param x A supplier that returns the x value of this element.
+     * @param y A supplier that returns the y value of this element.*/
+    public VectorButton(Supplier<Float> x, Supplier<Float> y) {
         this.x= x;
         this.y= y;
         flag = false;
@@ -34,7 +31,7 @@ public class VectorButton implements ButtonBase {
 
     /**Returns the value of this element.
      * @return The value of this element as a Vector.*/
-    public Vector getVector() { return new Vector(x.apply(g), y.apply(g)); }
+    public Vector getVector() { return new Vector(x.get(), y.get()); }
     /**Returns true if the element's Vector's length is not zero.
      * @return The value of this element as a boolean.*/
     @Override
