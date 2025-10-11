@@ -1,7 +1,16 @@
 package com.epra.epralib.ftclib.storage;
 
 /**A record that stores instructions for a CRServo during auto.
- *<p></p>
+ *<p>
+ *     JSON Format:
+ *     <pre><code>
+ *         {
+ *             id: string,
+ *             power: float,
+ *             time: int
+ *         }
+ *     </code></pre>
+ *</p>
  * Queer Coded by Striker-909.
  * @param id The string id of the CRServo this module contains instructions for.
  * @param power The power the CRServo will run at.
