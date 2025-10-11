@@ -1,7 +1,18 @@
 package com.epra.epralib.ftclib.storage;
 
 /**A record that stores instructions for a MotorController during auto.
- *<p></p>
+ *<p>
+ *     JSON Format:
+ *     <pre><code>
+ *         {
+ *             id: string,
+ *             target: int,
+ *             tolerance: float,
+ *             maxPower: float,
+ *             weight: float
+ *         }
+ *     </code></pre>
+ *</p>
  * Queer Coded by Striker-909.
  * @param id The string id of the MotorController this module contains instructions for.
  * @param target The target in motor ticks of the MotorController.

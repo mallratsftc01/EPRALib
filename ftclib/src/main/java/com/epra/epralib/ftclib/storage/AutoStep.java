@@ -3,7 +3,47 @@ package com.epra.epralib.ftclib.storage;
 import java.util.List;
 
 /**A record that stores instructions one step of auto.
- *<p></p>
+ * <p>
+ * JSON Format:
+ * <pre><code>
+ *     {
+ *       time: int,
+ *       timeWeight: float,
+ *       driveTrainModule: {
+ *           targetX: float,
+ *           targetY: float,
+ *           targetAngle: float,
+ *           posTolerance: float,
+ *           angleTolerance: float,
+ *           maxPower: float,
+ *           usePrecision: boolean,
+ *           weight: float
+ *       }
+ *       motorControllerModules: [
+ *           {
+ *               id: string,
+ *               target: int,
+ *               tolerance: float,
+ *               maxPower: float,
+ *               weight: float
+ *           },
+ *       ],
+ *       crServoModules: [
+ *           {
+ *               id: string,
+ *               power: float,
+ *               time: int
+ *           },
+ *       ],
+ *       servoAutoModules: [
+ *           {
+ *               id: string,
+ *               targetPosition: float
+ *           },
+ *       ]
+ *     }
+ * </code></pre>
+ * </p>
  * Queer Coded by Striker-909.
  * @param time How long this step should take, in milliseconds.
  * @param timeWeight The weight, as a double between 1.0 and 0.0, that hitting the allotted amount of time will contribute to moving to the next step of auto. A total weight of 1.0 or higher is necessary to move to the next step.
