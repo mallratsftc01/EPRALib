@@ -160,8 +160,12 @@ public class AutoExample extends LinearOpMode {
 
             //Updates all the MotorControllers with new instructions
             for (MotorControllerAutoModule m : currentStep.motorControllerModules()) {
-                if (nonDriveMotors.get(m.id()).moveToTarget(m)) {
-                    weight += m.weight();
+                if (m.tolerance() == -1.0) {
+                    nonDriveMotors.get(m.id()).setPower(m.power());
+                } else {
+                    if (nonDriveMotors.get(m.id()).moveToTarget(m)) {
+                        weight += m.weight();
+                    }
                 }
             }
 
