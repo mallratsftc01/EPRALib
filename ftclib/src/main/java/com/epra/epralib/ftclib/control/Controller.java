@@ -1,5 +1,6 @@
 package com.epra.epralib.ftclib.control;
 
+import androidx.annotation.NonNull;
 import com.epra.epralib.ftclib.math.geometry.Vector;
 import com.epra.epralib.ftclib.storage.ControllerData;
 import com.epra.epralib.ftclib.storage.IMUData;
@@ -15,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**Extends the Gamepad Class.
  * <p></p>
@@ -54,6 +56,7 @@ public class Controller extends Gamepad {
 
     /**A map containing all of the buttons and corresponding keys.*/
     public Map<Key, ButtonBase> map = new HashMap<>();
+    public Map<String, ButtonBase> chords = new HashMap<>();
     public Map<Stick, VectorButton> stick = new HashMap<>();
 
     private float deadband;
@@ -168,7 +171,7 @@ public class Controller extends Gamepad {
 
     /**Returns a true output only on the first call while a button is pressed.
      * If the method is called again while the button is still pressed, the return will be false.
-     * If the method is called while the button is released it will clear.
+     * If the method is called while the button is released, it will clear.
      * @param button Corresponding key for button.*/
     public boolean buttonSingle(Key button) {
         return map.get(button).getSingle();
@@ -247,7 +250,102 @@ public class Controller extends Gamepad {
      * @param button Corresponding key for button.*/
     public int getCounter(Key button) { return map.get(button).getCounter(); }
 
-    /**If true will return 1, if false will return 0.
+    /**Creates a new chord of buttons that acts as a single button.
+     * @param id The string id for this chord.
+     * @param keys An array of 2 or more keys that make up this chord.
+     * @return True if the chord was successfully created. */
+    public boolean createChord(String id, Key[] keys) {
+        if (keys.length < 2) { return false; }
+        chords.put(id, new BooleanButton(() -> {
+            boolean b = true;
+            for (Key k : keys) {
+                b = b && map.get(k).getBoolean();
+            }
+            return b;
+        }));
+        return true;
+    }
+
+    /**Returns a true output only on the first call while all buttons in the chord are pressed.
+     * If the method is called again while the buttons are still pressed, the return will be false.
+     * If the method is called while a button in the chord is released, it will clear.
+     * @param chord String id for the chord.*/
+    public boolean buttonSingle(String chord) { return chords.get(chord).getSingle(); }
+    /**Returns the output of buttonSingle as an int.
+     * @param chord String id for the chord.*/
+    public int buttonSingleInt(String chord) {return boolToInt(buttonSingle(chord));}
+    /**Will change the state of the toggle if all the buttons in the chord are pressed.
+     * Returns the new state of the toggle.
+     * @param chord String id for the chord.*/
+    public boolean buttonToggle(String chord) {
+        chords.get(chord).toggle();
+        return chords.get(chord).getToggle();
+    }
+    /**Returns the output of buttonToggle as an int.
+     * @param chord String id for the chord.*/
+    public int buttonToggleInt(String chord) {return boolToInt(buttonToggle(chord));}
+    /**Will change the state of the toggle if all the buttons in the chord are pressed following the rules of buttonSingle.
+     * Returns the new state of the toggle.
+     * @param chord String id for the chord.*/
+    public boolean buttonToggleSingle(String chord) {
+        if (buttonSingle(chord)) {
+            chords.get(chord).toggle();
+        }
+        return chords.get(chord).getToggle();
+    }
+    /**Returns the output of buttonToggleSingle as an int.
+     * @param chord String id for the chord.*/
+    public int buttonToggleSingleInt(String chord) {return boolToInt(buttonToggleSingle(chord));}
+    /**Will change the state of the toggle regardless of the state of the chord.
+     * Returns the new state of the toggle.
+     * @param chord String id for the chord.*/
+    public boolean flipToggle(String chord) {
+        chords.get(chord).setToggle(!(chords.get(chord).getToggle()));
+        return chords.get(chord).getToggle();
+    }
+    /**Returns the state of the toggle without changing the state of the toggle.
+     * @param chord String id for the chord.*/
+    public boolean getToggle(String chord) {
+        return chords.get(chord).getToggle();
+    }
+    /**Returns the output of getToggle as an int.
+     * @param chord String id for the chord.*/
+    public int getToggleInt(String chord) {return boolToInt(buttonToggleSingle(chord));}
+    /**If the counter is more than or equal to max it will be clear and return zero. If not, the counter will increase by one and return the result.
+     * @param chord String id for the chord.
+     * @param max The maximum value of the counter.*/
+    public int buttonCounter(String chord, int max) {
+        if (chords.get(chord).getBoolean()) {
+            chords.get(chord).tickCounter(1, max);
+        }
+        return chords.get(chord).getCounter();
+    }
+    /**Will perform the same action as buttonCounter but follows the rules of buttonSingle.
+     * @param chord String id for the chord.
+     * @param max The maximum value of the counter.*/
+    public int buttonCounterSingle(String chord, int max) {
+        if (buttonSingle(chord)) {
+            chords.get(chord).tickCounter(1, max);
+        }
+        return chords.get(chord).getCounter();
+    }
+    /**Will increase the counter of a certain button by a certain amount. If the counter goes over max, it will clear and overflow. Returns the new value of the counter.
+     * @param chord String id for the chord.
+     * @param max The maximum value of the counter.
+     * @param increase The amount by which the counter will increase.*/
+    public int increaseCounter(String chord, int max, int increase) {
+        chords.get(chord).tickCounter(increase, max);
+        return chords.get(chord).getCounter();
+    }
+    /**Will set the counter to a certain number.
+     * @param chord String id for the chord.
+     * @param set The value to set the counter to.*/
+    public void setCounter(String chord, int set) { chords.get(chord).setCounter(set); }
+    /**Returns the current value of the counter.
+     * @param chord String id for the chord.*/
+    public int getCounter(String chord) { return chords.get(chord).getCounter(); }
+
+    /**If true returns 1, if false will return 0.
      * @param b The input boolean.*/
     public int boolToInt(boolean b) {return (b) ? 1 : 0;}
 
