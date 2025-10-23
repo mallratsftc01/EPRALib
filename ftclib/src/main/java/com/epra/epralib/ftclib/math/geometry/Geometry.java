@@ -140,15 +140,26 @@ public class Geometry {
         return new Vector(x, y, z);
     }
 
+    /**@param vector A vector to rotate.
+     * @param theta The angle to rotate the vector by, around the z axis.
+     * @return The vector rotated by theta around the z axis.*/
+    public static Vector rotate(Vector vector, Angle theta) { return new Vector(vector.length(), add(vector.theta(), theta), vector.phi()); }
+
+    /**@param vector A vector to rotate.
+     * @param theta The angle to rotate the vector by, around the z axis.
+     * @param phi The angle to rotate the vector by around the xy plane.
+     * @return The vector rotated by theta around the z axis and phi around the xy plane.*/
+    public static Vector rotate(Vector vector, Angle theta, Angle phi) { return new Vector(vector.length(), add(vector.theta(), theta), add(vector.phi(), phi)); }
+
     /**@param a Length of leg a.
      * @param b Length of leg b.
-     * @return The distance from the origin to a Vector a, b.*/
+     * @return The distance from the origin to a point a, b.*/
     public static double pythagorean(double a, double b) { return Math.sqrt((a * a) + (b * b));}
 
     /**@param a The x coordinate.
      * @param b The y coordinate.
      * @param c The z coordinate.
-     * @return The distance from the origin to a Vector a, b, c.*/
+     * @return The distance from the origin to a point a, b, c.*/
     public static double pythagorean(double a, double b, double c) { return Math.sqrt((a * a) + (b * b) + (c * c));}
 
     /**@param angle1 First angle.

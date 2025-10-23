@@ -104,7 +104,7 @@ public class AutoExample extends LinearOpMode {
             crServos = new HashMap<>();
             servos = new HashMap<>();
 
-            drive.tuneVectorPID(pidGains.get("DriveTrain_Vector"));
+            drive.tuneVectorPID(pidGains.get("DriveTrain_point"));
             drive.tuneAnglePID(pidGains.get("DriveTrain_angle"));
             drive.tuneVectorPID(pidGains.get("DriveTrain_vector"));
 
@@ -159,28 +159,34 @@ public class AutoExample extends LinearOpMode {
             }
 
             //Updates all the MotorControllers with new instructions
-            for (MotorControllerAutoModule m : currentStep.motorControllerModules()) {
-                if (m.tolerance() == -1.0) {
-                    nonDriveMotors.get(m.id()).setPower(m.power());
-                } else {
-                    if (nonDriveMotors.get(m.id()).moveToTarget(m)) {
-                        weight += m.weight();
+            if (currentStep.motorControllerModules() != null) {
+                for (MotorControllerAutoModule m : currentStep.motorControllerModules()) {
+                    if (m.tolerance() == -1.0) {
+                        nonDriveMotors.get(m.id()).setPower(m.power());
+                    } else {
+                        if (nonDriveMotors.get(m.id()).moveToTarget(m)) {
+                            weight += m.weight();
+                        }
                     }
                 }
             }
 
             //Sets powers and checks times for CRServos
-            for (CRServoAutoModule c : currentStep.crServoModules()) {
-                if (System.currentTimeMillis() - saveTime < c.time()) {
-                    crServos.get(c.id()).setPower(c.power());
-                } else {
-                    crServos.get(c.id()).setPower(0);
+            if (currentStep.crServoModules() != null) {
+                for (CRServoAutoModule c : currentStep.crServoModules()) {
+                    if (System.currentTimeMillis() - saveTime < c.time()) {
+                        crServos.get(c.id()).setPower(c.power());
+                    } else {
+                        crServos.get(c.id()).setPower(0);
+                    }
                 }
             }
 
             //Moves all servos to their target positions
-            for (ServoAutoModule s : currentStep.servoModules()) {
-                servos.get(s.id()).setPosition(s.targetPosition());
+            if (currentStep.servoModules() != null) {
+                for (ServoAutoModule s : currentStep.servoModules()) {
+                    servos.get(s.id()).setPosition(s.targetPosition());
+                }
             }
 
             //Checks if enough time has elapsed

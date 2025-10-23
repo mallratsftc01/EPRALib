@@ -109,7 +109,7 @@ The Math.Geometry group contains a number of geometrical classes that prove esse
 to everything from odometry to drive controls.
 
 Some of the most basic geometrical concepts are represented by classes including `Angle`,
-`Vector`, and `Matrix. These are likely the most commonly used objects throughout the entire
+`Vector`, and `Matrix`. These are likely the most commonly used objects throughout the entire
 library. Each has several different initiators for a variety of uses.
 
 `Triangle`, `Circle`, `Quadrilateral`, and `PolyGroup` all implement the Shape2D 
@@ -165,4 +165,4 @@ that can read these files to tune certain processes such as PID loops.
 ## Credits
 This README was written by Striker-909, the lead programmer of FTC 18387. 
 
-This README was last updated 9/27/2025, for version 1.3.4
+This README was last updated 10/23/2025, for version 1.4.0

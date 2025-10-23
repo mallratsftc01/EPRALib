@@ -239,13 +239,13 @@ public class DriveTrain {
         for (Map.Entry<String, Orientation> entry : orientation.entrySet()) {
             switch (entry.getValue()) {
                 case RIGHT_FRONT ->
-                        power.replace(entry.getKey(), (double) (-1 * powerLeftY + powerRightX + powerLeftX) / denominator);
+                        power.replace(entry.getKey(), (double) (-1 * powerLeftY + powerLeftX + powerRightX) / denominator);
                 case LEFT_FRONT ->
-                        power.replace(entry.getKey(), (double) (-1 * powerLeftY + powerRightX - powerLeftX) / denominator);
+                        power.replace(entry.getKey(), (double) (-1 * powerLeftY + powerLeftX - powerRightX) / denominator);
                 case RIGHT_BACK ->
-                        power.replace(entry.getKey(), (double) (-1 * powerLeftY - powerRightX + powerLeftX) / denominator);
+                        power.replace(entry.getKey(), (double) (-1 * powerLeftY - powerLeftX + powerRightX) / denominator);
                 case LEFT_BACK ->
-                        power.replace(entry.getKey(), (double) (-1 * powerLeftY - powerRightX - powerLeftX) / denominator);
+                        power.replace(entry.getKey(), (double) (-1 * powerLeftY - powerLeftX - powerRightX) / denominator);
             }
         }
         setMotorPowers();
@@ -256,7 +256,7 @@ public class DriveTrain {
      * @param vectorLeft A vector representing the left joystick.
      */
     public void mecanumDrive(float powerRightX, Vector vectorLeft) {
-        mecanumDrive(powerRightX, (float) vectorLeft.y(), (float) vectorLeft.x());
+        mecanumDrive(powerRightX, (float) vectorLeft.x(), (float) vectorLeft.y());
     }
     /**
      * Field Oriented holonomic drive with mecanum wheels. Left stick moves the robot, right stick X rotates the robot. Created 10/31/2024.

@@ -1,7 +1,5 @@
 package com.epra.epralib.ftclib.control;
 
-import com.qualcomm.robotcore.hardware.Gamepad;
-
 import java.util.function.Supplier;
 
 import com.epra.epralib.ftclib.math.geometry.Vector;
@@ -22,8 +20,8 @@ public class VectorButton implements ButtonBase {
      * @param x A supplier that returns the x value of this element.
      * @param y A supplier that returns the y value of this element.*/
     public VectorButton(Supplier<Float> x, Supplier<Float> y) {
-        this.x= x;
-        this.y= y;
+        this.x = x;
+        this.y = y;
         flag = false;
         toggle = false;
         counter = 0;
@@ -81,7 +79,7 @@ public class VectorButton implements ButtonBase {
         return counter;
     }
     /**Sets the counter value of this element to a specified integer.
-     * @param c The new value of the the counter.*/
+     * @param c The new value of the counter.*/
     @Override
     public void setCounter(int c) {
         counter = c;
@@ -89,7 +87,7 @@ public class VectorButton implements ButtonBase {
     /**Increases the counter value of this element by the specified amount.
      * If the new value of the counter is more than or equal to the specified max the counter will roll back to 0.
      * @param i The amount to increase the counter value by.
-     * @param max The maximum value of of the counter.*/
+     * @param max The maximum value of the counter.*/
     @Override
     public void tickCounter(int i, int max) {
         counter += i;
