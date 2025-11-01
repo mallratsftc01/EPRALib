@@ -1,4 +1,4 @@
-package com.epra.epralib.ftclib.camera;
+package com.epra.epralib.ftclib.sensor;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;

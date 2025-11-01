@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.examples;
 
 import com.epra.epralib.ftclib.control.JSONReader;
-import com.epra.epralib.ftclib.location.IMUExpanded;
+import com.epra.epralib.ftclib.location.MultiIMU;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
@@ -10,11 +10,11 @@ import com.epra.epralib.ftclib.movement.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
 import com.epra.epralib.ftclib.movement.PIDController;
-import com.epra.epralib.ftclib.storage.AutoStep;
-import com.epra.epralib.ftclib.storage.CRServoAutoModule;
-import com.epra.epralib.ftclib.storage.MotorControllerAutoModule;
-import com.epra.epralib.ftclib.storage.PIDGains;
-import com.epra.epralib.ftclib.storage.ServoAutoModule;
+import com.epra.epralib.ftclib.storage.autonomous.AutoStep;
+import com.epra.epralib.ftclib.storage.autonomous.CRServoAutoModule;
+import com.epra.epralib.ftclib.storage.autonomous.MotorControllerAutoModule;
+import com.epra.epralib.ftclib.storage.initialization.PIDGains;
+import com.epra.epralib.ftclib.storage.autonomous.ServoAutoModule;
 import com.google.gson.reflect.TypeToken;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -50,7 +50,7 @@ public class AutoExample extends LinearOpMode {
     private HashMap<String, CRServo> crServos;
     private HashMap<String, Servo> servos;
 
-    private IMUExpanded imu;
+    private MultiIMU imu;
 
     private Odometry odometry;
 
@@ -68,7 +68,7 @@ public class AutoExample extends LinearOpMode {
 
             IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
             tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
-            imu = new IMUExpanded(tempIMU);
+            imu = new MultiIMU(tempIMU);
 
             //Setting up the MotorControllers for the DriveTrain
             frontRight = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")), "front_right");

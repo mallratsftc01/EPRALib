@@ -3,7 +3,6 @@ package com.epra.epralib.ftclib.movement;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Geometry;
 import com.epra.epralib.ftclib.math.geometry.Vector;
-import com.epra.epralib.ftclib.math.geometry.Vector;
 
 import java.util.Set;
 
@@ -12,8 +11,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import com.epra.epralib.ftclib.math.geometry.Angle;
-import com.epra.epralib.ftclib.storage.DriveTrainAutoModule;
-import com.epra.epralib.ftclib.storage.PIDGains;
+import com.epra.epralib.ftclib.storage.autonomous.DriveTrainAutoModule;
+import com.epra.epralib.ftclib.storage.initialization.PIDGains;
 
 /**Coordinates motors in order to create cohesive robot motion.
  * This class can be used for a variable number of motors for several drive types.
@@ -239,11 +238,11 @@ public class DriveTrain {
         for (Map.Entry<String, Orientation> entry : orientation.entrySet()) {
             switch (entry.getValue()) {
                 case RIGHT_FRONT ->
-                        power.replace(entry.getKey(), (double) (-1 * powerLeftY + powerLeftX + powerRightX) / denominator);
+                        power.replace(entry.getKey(), (double) (-1 * powerLeftY - powerLeftX + powerRightX) / denominator);
                 case LEFT_FRONT ->
                         power.replace(entry.getKey(), (double) (-1 * powerLeftY + powerLeftX - powerRightX) / denominator);
                 case RIGHT_BACK ->
-                        power.replace(entry.getKey(), (double) (-1 * powerLeftY - powerLeftX + powerRightX) / denominator);
+                        power.replace(entry.getKey(), (double) (-1 * powerLeftY + powerLeftX + powerRightX) / denominator);
                 case LEFT_BACK ->
                         power.replace(entry.getKey(), (double) (-1 * powerLeftY - powerLeftX - powerRightX) / denominator);
             }

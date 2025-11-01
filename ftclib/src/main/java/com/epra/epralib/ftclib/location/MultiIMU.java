@@ -1,6 +1,6 @@
 package com.epra.epralib.ftclib.location;
 
-import com.epra.epralib.ftclib.storage.IMUData;
+import com.epra.epralib.ftclib.storage.logdata.IMUData;
 import com.google.gson.Gson;
 import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -17,10 +17,10 @@ import java.util.Date;
 import com.epra.epralib.ftclib.math.geometry.Angle;
 import com.epra.epralib.ftclib.math.geometry.Geometry;
 /**
- * Increases the functionality of the IMU class.
+ * Increases the functionality of the IMU class and combines data from multiple IMUs.
  * <p></p>
  * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
-public class IMUExpanded {
+public class MultiIMU {
 
     private Angle baseYaw = new Angle();
     private Angle basePitch = new Angle();
@@ -39,12 +39,12 @@ public class IMUExpanded {
     ArrayList<IMU> imus = new ArrayList<IMU>();
 
     /**
-     * Increases the functionality of the IMU class.
+     * Increases the functionality of the IMU class and combines data from multiple IMUs.
      * <p></p>
      * Expands the functionality of one IMU.
      * @param imu An IMU.
      */
-    public IMUExpanded(IMU imu) throws IOException {
+    public MultiIMU(IMU imu) throws IOException {
         imus.add(imu);
 
         gson = new Gson();
@@ -56,13 +56,13 @@ public class IMUExpanded {
     }
 
     /**
-     * Increases the functionality of the IMU class.
+     * Increases the functionality of the IMU class and combines data from multiple IMUs.
      * <p></p>
      * Expands the functionality of two IMUs.
      * @param imu1 First IMU.
      * @param imu2 Second IMU.
      */
-    public IMUExpanded(IMU imu1, IMU imu2) throws IOException {
+    public MultiIMU(IMU imu1, IMU imu2) throws IOException {
         imus.add(imu1);
         imus.add(imu2);
 
@@ -75,12 +75,12 @@ public class IMUExpanded {
     }
 
     /**
-     * Increases the functionality of the IMU class.
+     * Increases the functionality of the IMU class and combines data from multiple IMUs.
      * <p></p>
      * Expands the functionality of multiple IMUs.
      * @param imu Array of IMUs.
      */
-    public IMUExpanded(IMU[] imu) throws IOException {
+    public MultiIMU(IMU[] imu) throws IOException {
         Collections.addAll(imus, imu);
 
         gson = new Gson();

@@ -1,36 +1,37 @@
-package com.epra.epralib.ftclib.control;
+package com.epra.epralib.ftclib.control.buttons;
 
-import com.qualcomm.robotcore.hardware.Gamepad;
 import java.util.function.Supplier;
 
-/**Represents a single element on the gamepad that returns a float (ie. joysticks, triggers).
+/**Represents a single element on the gamepad that returns a boolean (ie. dpad, bumpers).
  * <p></p>
  * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
-public class FloatButton implements ButtonBase {
+public class BooleanButton implements ButtonBase {
 
-    Supplier<Float> f;
+    Supplier<Boolean> f;
 
     private boolean flag;
     private boolean toggle;
     private int counter;
 
-/**Represents a single element on the gamepad that returns a float (ie. joysticks, triggers).
- * @param f A supplier that returns the value of this element.*/
-    public FloatButton(Supplier<Float> f) {
+    /**Represents a single element on the gamepad that returns a boolean (ie. dpad, bumpers).
+     * @param f A supplier that returns the value of this element.*/
+    public BooleanButton(Supplier<Boolean> f) {
         this.f = f;
         flag = false;
         toggle = false;
         counter = 0;
     }
 
-    /**Returns true if the element's value is not zero.
+    /**Returns the value of this element.
      * @return The value of this element as a boolean.*/
     @Override
-    public boolean getBoolean() { return f.get() != 0; }
-    /**Returns the value of this element.
+    public boolean getBoolean() { return f.get(); }
+    /**Returns 1.0 if the value of the element is true, 0.0 if not.
      * @return The value of this element as a float.*/
     @Override
-    public float getFloat() { return f.get(); }
+    public float getFloat() {
+        return (f.get()) ? 1.0f : 0.0f;
+    }
 
     /**Returns a true output only on the first call while this element has a boolean value of true.
      * If the method is called again while this element still has a boolean value of true, the return will be false.

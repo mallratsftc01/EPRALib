@@ -2,9 +2,10 @@ package com.epra.epralib.ftclib.movement;
 
 import androidx.annotation.NonNull;
 
-import com.epra.epralib.ftclib.storage.MotorControllerAutoModule;
-import com.epra.epralib.ftclib.storage.MotorControllerData;
-import com.epra.epralib.ftclib.storage.PIDGains;
+import com.epra.epralib.ftclib.math.geometry.Angle;
+import com.epra.epralib.ftclib.storage.autonomous.MotorControllerAutoModule;
+import com.epra.epralib.ftclib.storage.logdata.MotorControllerData;
+import com.epra.epralib.ftclib.storage.initialization.PIDGains;
 import com.google.gson.Gson;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
@@ -13,7 +14,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 /**Gives increase control over DcMotorExs.
@@ -23,6 +23,7 @@ public class MotorController implements Motor {
 
     private Motor motor;
     private String id;
+    private int ticksPerRevolution;
 
     private double velocity;
     private int savePos;
@@ -44,11 +45,13 @@ public class MotorController implements Motor {
     private Gson gson;
 
     /**Gives increase control over DcMotorExs. Logs data in a json file on the robot for post-match analysis.
-     *@param motor The motor to be used by this MotorController.
-     * @param id A string that identifies the log files of this MotorController*/
+     * Sets the initial position to the motor's current position and the ticks per revolution to 1440.
+     * @param motor The motor to be used by this MotorController.
+     * @param id A string that identifies the log files of this MotorController.*/
     public MotorController(Motor motor, String id) throws IOException {
         this.motor = motor;
         this.id = id;
+        this.ticksPerRevolution = 1440;
 
         velocity = 0;
         startPos = motor.getCurrentPosition();
@@ -71,6 +74,38 @@ public class MotorController implements Motor {
         logJson = AppUtil.getInstance().getSettingsFile("logs/MotorController_" + id + "_log_" + ft.format(new Date()) + ".json");
         logWriter = new FileWriter(logJson, true);
         logWriter.write("[");
+    }
+
+    /**Gives increase control over DcMotorExs. Logs data in a json file on the robot for post-match analysis.
+     * Sets the ticks per revolution to 1440.
+     * @param motor The motor to be used by this MotorController.
+     * @param id A string that identifies the log files of this MotorController.
+     * @param startPos The initial position of the motor in motor ticks.*/
+    public MotorController(Motor motor, String id, int startPos) throws IOException {
+        this(motor, id);
+        this.startPos = startPos;
+    }
+
+    /**Gives increase control over DcMotorExs. Logs data in a json file on the robot for post-match analysis.
+     * @param motor The motor to be used by this MotorController.
+     * @param id A string that identifies the log files of this MotorController.
+     * @param startPos The initial position of the motor in motor ticks.
+     * @param ticksPerRevolution The number of motor ticks per revolution.*/
+    public MotorController(Motor motor, String id, int startPos, int ticksPerRevolution) throws IOException {
+        this(motor, id, startPos);
+        this.ticksPerRevolution = ticksPerRevolution;
+    }
+
+    /**Gives increase control over DcMotorExs. Logs data in a json file on the robot for post-match analysis.
+     * @param motor The motor to be used by this MotorController.
+     * @param id A string that identifies the log files of this MotorController.
+     * @param startAngle The initial angle of the motor.
+     * @param ticksPerRevolution The number of motor ticks per revolution.*/
+    public MotorController(Motor motor, String id, Angle startAngle, int ticksPerRevolution) throws IOException {
+        this(motor, id);
+        int t = motor.getCurrentPosition();
+        this.startPos = (t - (t % ticksPerRevolution)) + (int) (ticksPerRevolution * (startAngle.degree() / 360));
+        this.ticksPerRevolution = ticksPerRevolution;
     }
 
     /**Returns whether the contained Motor is energized.*/
@@ -124,6 +159,10 @@ public class MotorController implements Motor {
      * If the encoder wire for this motor is not connected to the motor (ie. it its instead connected to an odometry pod) this number will not reflect the movement of this encoder.
      * @return The current reading of the motor's encoder. */
     public int getCurrentPosition() { return motor.getCurrentPosition() - startPos; }
+
+    /**Returns the current angle of the motor based on the encoder reading.
+     * @return The current angle of the motor.*/
+    public Angle getCurrentAngle() { return Angle.degree((getCurrentPosition() % ticksPerRevolution) * 360.0 / ticksPerRevolution); }
 
     /**Returns the recent average velocity of the motor's encoder in ticks per second.
      * These ticks are specific to the encoder of a certain motor; google the ticks/revolution for your motor for best results.

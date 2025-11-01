@@ -1,4 +1,4 @@
-package com.epra.epralib.ftclib.camera.pipeline;
+package com.epra.epralib.ftclib.sensor.visionpipelines;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;

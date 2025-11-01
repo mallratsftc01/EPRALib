@@ -83,6 +83,9 @@ public class Vector {
         return "(" + x + ", " + y + ", " + z + ")";
     }
 
+    /**@return The x, y, z coordinates of the vector as an array.*/
+    public double[] toArray() { return new double[] {x, y, z}; }
+
     public boolean equals(Vector v) {
         return (x == v.x() && y == v.y() && z == v.z());
     }

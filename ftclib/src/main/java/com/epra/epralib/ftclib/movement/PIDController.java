@@ -1,7 +1,7 @@
 package com.epra.epralib.ftclib.movement;
 
-import com.epra.epralib.ftclib.storage.PIDData;
-import com.epra.epralib.ftclib.storage.PIDGains;
+import com.epra.epralib.ftclib.storage.logdata.PIDData;
+import com.epra.epralib.ftclib.storage.initialization.PIDGains;
 
 import java.util.ArrayList;
 import java.util.HashMap;

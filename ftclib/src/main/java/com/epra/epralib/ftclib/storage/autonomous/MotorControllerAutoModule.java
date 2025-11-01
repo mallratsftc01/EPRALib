@@ -1,4 +1,4 @@
-package com.epra.epralib.ftclib.storage;
+package com.epra.epralib.ftclib.storage.autonomous;
 
 public class MotorControllerAutoModule {
 

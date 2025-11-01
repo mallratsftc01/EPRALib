@@ -1,30 +1,29 @@
-package com.epra.epralib.ftclib.camera.pipeline;
+package com.epra.epralib.ftclib.sensor.visionpipelines;
 
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Core;
+import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-public class DualCameraElementDeterminationPipeline extends OpenCvPipeline {
+public class ElementDeterminationPipeline extends OpenCvPipeline {
     //contains potential element positions
     public enum ElementPosition {
         LEFT,
-        RIGHT,
-        NONE
+        CENTER,
+        RIGHT
     }
     //contains potential element colors
     public enum ElementColor {
         BLUE,
-        RED,
-        NONE
+        RED
     }
 
     // Volatile since accessed by OpMode thread w/o synchronization
-    private volatile ElementPosition position = ElementPosition.NONE;
-    private volatile ElementColor color = ElementColor.NONE;
+    private volatile ElementPosition position = ElementPosition.LEFT;
+    private volatile ElementColor color = ElementColor.BLUE;
 
     //color constants
     static final Scalar BLUE = new Scalar(0, 0, 255);
@@ -34,6 +33,7 @@ public class DualCameraElementDeterminationPipeline extends OpenCvPipeline {
     //Not finals as they are set in init, but effectively finals after init
     static Point REGION1_TOPLEFT_ANCHOR_POINT;
     static Point REGION2_TOPLEFT_ANCHOR_POINT;
+    static Point REGION3_TOPLEFT_ANCHOR_POINT;
     static int REGION_WIDTH;
     static int REGION_HEIGHT;
 
@@ -58,13 +58,15 @@ public class DualCameraElementDeterminationPipeline extends OpenCvPipeline {
     Point region1_pointB;
     Point region2_pointA;
     Point region2_pointB;
+    Point region3_pointA;
+    Point region3_pointB;
 
     //working variables
-    Mat region1_Cb, region2_Cb, region1_Cr, region2_Cr;
+    Mat region1_Cb, region2_Cb, region3_Cb, region1_Cr, region2_Cr, region3_Cr;
     Mat YCrCb = new Mat();
     Mat Cb = new Mat();
     Mat Cr = new Mat();
-    int avg1Cb, avg2Cb, avg1Cr, avg2Cr;
+    int avg1Cb, avg2Cb, avg3Cb, avg1Cr, avg2Cr, avg3Cr;
 
     /**This class will detect a solidly red or solidly blue team element and return its position and color.
      * <p></p>
@@ -74,9 +76,10 @@ public class DualCameraElementDeterminationPipeline extends OpenCvPipeline {
      * Each x, y pair determines the upper left-hand corner of each analysis area,
      * the width and height determines the size of each analysis area.
      */
-    public DualCameraElementDeterminationPipeline(int x1, int x2, int y1, int y2, int height, int width) {
+    public ElementDeterminationPipeline(int x1, int x2, int x3, int y1, int y2, int y3, int height, int width) {
         REGION1_TOPLEFT_ANCHOR_POINT = new Point(x1,y1);
         REGION2_TOPLEFT_ANCHOR_POINT = new Point(x2,y2);
+        REGION3_TOPLEFT_ANCHOR_POINT = new Point(x3,y3);
         REGION_WIDTH = width;
         REGION_HEIGHT = height;
 
@@ -92,6 +95,12 @@ public class DualCameraElementDeterminationPipeline extends OpenCvPipeline {
         region2_pointB = new Point(
                 REGION2_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
                 REGION2_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
+        region3_pointA = new Point(
+                REGION3_TOPLEFT_ANCHOR_POINT.x,
+                REGION3_TOPLEFT_ANCHOR_POINT.y);
+        region3_pointB = new Point(
+                REGION3_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
+                REGION3_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
     }
 
     /**
@@ -126,8 +135,10 @@ public class DualCameraElementDeterminationPipeline extends OpenCvPipeline {
          */
         region1_Cb = Cb.submat(new Rect(region1_pointA, region1_pointB));
         region2_Cb = Cb.submat(new Rect(region2_pointA, region2_pointB));
+        region3_Cb = Cb.submat(new Rect(region3_pointA, region3_pointB));
         region1_Cr = Cr.submat(new Rect(region1_pointA, region1_pointB));
         region2_Cr = Cr.submat(new Rect(region2_pointA, region2_pointB));
+        region3_Cr = Cr.submat(new Rect(region3_pointA, region3_pointB));
     }
 
     /**Finds the position and color of the element for a frame*/
@@ -181,8 +192,10 @@ public class DualCameraElementDeterminationPipeline extends OpenCvPipeline {
          */
         avg1Cb = (int) Core.mean(region1_Cb).val[0];
         avg2Cb = (int) Core.mean(region2_Cb).val[0];
+        avg3Cb = (int) Core.mean(region3_Cb).val[0];
         avg1Cr = (int) Core.mean(region1_Cr).val[0];
         avg2Cr = (int) Core.mean(region2_Cr).val[0];
+        avg3Cr = (int) Core.mean(region3_Cr).val[0];
 
         /*
          * Draw a rectangle showing sample region 1 on the screen.
@@ -207,54 +220,68 @@ public class DualCameraElementDeterminationPipeline extends OpenCvPipeline {
                 2); // Thickness of the rectangle lines
 
         /*
+         * Draw a rectangle showing sample region 3 on the screen.
+         * Simply a visual aid. Serves no functional purpose.
+         */
+        Imgproc.rectangle(
+                input, // Buffer to draw on
+                region3_pointA, // First point which defines the rectangle
+                region3_pointB, // Second point which defines the rectangle
+                BLUE, // The color the rectangle is drawn in
+                2); // Thickness of the rectangle lines
+
+
+        /*
          * Find the max of the 3 averages
          */
-        int maxCb = Math.max(avg1Cb, avg2Cb);
-        int maxCr = Math.max(avg1Cr, avg2Cr);
+        int maxOneTwoCb = Math.max(avg1Cb, avg2Cb);
+        int maxCb = Math.max(maxOneTwoCb, avg3Cb);
+        int maxOneTwoCr = Math.max(avg1Cr, avg2Cr);
+        int maxCr = Math.max(maxOneTwoCr, avg3Cr);
         int max = Math.max(maxCb, maxCr);
         int avg1;
         int avg2;
+        int avg3;
 
         if (max == maxCr) {
             color = ElementColor.RED;
             avg1 = avg1Cr;
             avg2 = avg2Cr;
+            avg3 = avg3Cr;
         } else {
             color = ElementColor.BLUE;
             avg1 = avg1Cb;
             avg2 = avg2Cb;
+            avg3 = avg3Cb;
         }
 
         /*
          * Now that we found the max, we actually need to go and
          * figure out which sample region that value was from
          */
-        String s = "max: ";
-        s = s + max;
-        Imgproc.putText(input, s, new Point(10, 10), 0, 0.5, GREEN, 2);
-        if (max < 140) {
-            position = ElementPosition.NONE;
-            color = ElementColor.NONE;
-        } else if(max == avg1) { // Was it from region 1?
+        if(max == avg1) // Was it from region 1?
+        {
             position = ElementPosition.LEFT; // Record our analysis
 
-                /*
-                 * Draw a solid rectangle on top of the chosen region.
-                 * Simply a visual aid. Serves no functional purpose.
-                 */
+            /*
+             * Draw a solid rectangle on top of the chosen region.
+             * Simply a visual aid. Serves no functional purpose.
+             */
             Imgproc.rectangle(
                     input, // Buffer to draw on
                     region1_pointA, // First point which defines the rectangle
                     region1_pointB, // Second point which defines the rectangle
                     GREEN, // The color the rectangle is drawn in
                     -1); // Negative thickness means solid fill
-        } else if(max == avg2) { // Was it from region 2?
-            position = ElementPosition.RIGHT; // Record our analysis
+        }
+        else if(max == avg2) // Was it from region 2?
+        {
+            position = ElementPosition.CENTER; // Record our analysis
 
-                /*
-                 * Draw a solid rectangle on top of the chosen region.
-                 * Simply a visual aid. Serves no functional purpose.
-                 */
+            /*
+             * Draw a solid rectangle on top of the chosen region.
+             * Simply a visual aid. Serves no functional purpose.
+             */
             Imgproc.rectangle(
                     input, // Buffer to draw on
                     region2_pointA, // First point which defines the rectangle
@@ -262,6 +289,22 @@ public class DualCameraElementDeterminationPipeline extends OpenCvPipeline {
                     GREEN, // The color the rectangle is drawn in
                     -1); // Negative thickness means solid fill
         }
+        else if(max == avg3) // Was it from region 3?
+        {
+            position = ElementPosition.RIGHT; // Record our analysis
+
+            /*
+             * Draw a solid rectangle on top of the chosen region.
+             * Simply a visual aid. Serves no functional purpose.
+             */
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    region3_pointA, // First point which defines the rectangle
+                    region3_pointB, // Second point which defines the rectangle
+                    GREEN, // The color the rectangle is drawn in
+                    -1); // Negative thickness means solid fill
+        }
+
         /*
          * Render the 'input' buffer to the viewport. But note this is not
          * simply rendering the raw camera feed, because we called functions

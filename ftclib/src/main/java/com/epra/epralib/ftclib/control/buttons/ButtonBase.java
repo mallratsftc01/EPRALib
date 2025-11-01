@@ -1,4 +1,4 @@
-package com.epra.epralib.ftclib.control;
+package com.epra.epralib.ftclib.control.buttons;
 
 public interface ButtonBase {
 

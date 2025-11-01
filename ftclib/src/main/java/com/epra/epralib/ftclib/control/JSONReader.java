@@ -1,6 +1,6 @@
 package com.epra.epralib.ftclib.control;
 
-import com.epra.epralib.ftclib.storage.PIDGains;
+import com.epra.epralib.ftclib.storage.initialization.PIDGains;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 

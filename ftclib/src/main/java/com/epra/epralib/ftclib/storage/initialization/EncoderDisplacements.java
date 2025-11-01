@@ -1,4 +1,4 @@
-package com.epra.epralib.ftclib.storage;
+package com.epra.epralib.ftclib.storage.initialization;
 
 import com.epra.epralib.ftclib.math.geometry.Vector;
 

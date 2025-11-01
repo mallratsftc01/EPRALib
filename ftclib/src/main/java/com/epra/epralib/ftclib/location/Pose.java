@@ -3,7 +3,7 @@ package com.epra.epralib.ftclib.location;
 import com.epra.epralib.ftclib.math.geometry.Vector;
 
 import com.epra.epralib.ftclib.math.geometry.Angle;
-import com.epra.epralib.ftclib.storage.PoseData;
+import com.epra.epralib.ftclib.storage.logdata.PoseData;
 
 /**Store a pose value consisting of a Vector and an angle.
  * <p></p>

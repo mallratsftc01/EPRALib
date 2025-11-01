@@ -1,4 +1,4 @@
-package com.epra.epralib.ftclib.storage;
+package com.epra.epralib.ftclib.storage.logdata;
 
 /**A record that stores data from a Pose.
  *<p></p>

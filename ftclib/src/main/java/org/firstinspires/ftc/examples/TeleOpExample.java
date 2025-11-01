@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.examples;
 
 import com.epra.epralib.ftclib.control.Controller;
-import com.epra.epralib.ftclib.location.IMUExpanded;
+import com.epra.epralib.ftclib.location.MultiIMU;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
@@ -32,7 +32,7 @@ public class TeleOpExample extends LinearOpMode {
 
     private HashMap<String, MotorController> nonDriveMotors;
 
-    private IMUExpanded imu;
+    private MultiIMU imu;
     private Odometry odometry;
 
     private Controller controller1;
@@ -48,7 +48,7 @@ public class TeleOpExample extends LinearOpMode {
 
             IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
             tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
-            imu = new IMUExpanded(tempIMU);
+            imu = new MultiIMU(tempIMU);
 
             //Setting up the MotorControllers for the DriveTrain
             frontRight = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")), "front_right");

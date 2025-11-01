@@ -68,19 +68,13 @@ import com.epra.epralib.ftclib.GROUP_NAME.CLASS_NAME;
 EPRALib has six groups, each with its own classes and functionality, some with subclasses.
 This grouping is for ease of use as related classes or classes that interact are grouped together.
 
-### Camera
-The camera group of EPRALib is unfortunately underdeveloped. We did not use the camera
-in the 2024–2025 season, so most of what this group contains is remnants from previous seasons.
-We hope to further develop this group in the future, but it may remain underdeveloped 
-if we do not determine it necessary in future seasons.
-
 ### Control
-The control group of EPRALib contains classes that deal with robot control systems;
+The `control` group of EPRALib contains classes that deal with robot control systems;
 both external control via gamepads and internal control for auto or automated sequences.
 
-the `Controller` class uses several different variants of button objects that implement
-the `ButtonBase` interface to create a far more versatile rendition of the `Gamepad`
-class that comes with the FTC SDK.
+the `Controller` class uses several different variants of button objects from the 
+`control.buttons` subgroup that implement the `ButtonBase` interface to create a far more 
+versatile rendition of the `Gamepad` class that comes with the FTC SDK.
 
 The `JSONReader` class reads JSONs that contain information on automated sequences.
 We used this control in the 2024–2025 season, but we are currently trying to rework
@@ -88,7 +82,7 @@ it for the upcoming 2025–2026 season. The next major release will likely conta
 rework, along with other related features.
 
 ### Location
-The location group deals with tracking the robot's current position on the field. 
+The `location` group deals with tracking the robot's current position on the field. 
 
 Objects of the `Pose` class will store positional and rotational information. These
 are used by many classes, both for tracking the robot's current location and plotting
@@ -105,7 +99,7 @@ to function; the input motors **cannot** be the same wheels that are driving you
 (We use [odometry pods from GoBilda](https://www.gobilda.com/swingarm-odometry-pod-48mm-wheel/?srsltid=AfmBOopwrWH-dUgehXGA4tMLjG1rMUBG9X-ZUxcD-wNPosKLqxUTrX8I))
 
 ### Math.Geometry
-The Math.Geometry group contains a number of geometrical classes that prove essential
+The `math.geometry` group contains a number of geometrical classes that prove essential
 to everything from odometry to drive controls.
 
 Some of the most basic geometrical concepts are represented by classes including `Angle`,
@@ -122,7 +116,7 @@ but for the geometrical objects found in this group. It holds static functions f
 just about every transformation, and is constantly being expanded and updated.
 
 ### Math.Statistics
-The other Math subgroup, while less developed than Math.Geometry, still holds useful
+The other Math subgroup, while less developed than `math.geometry`, still holds useful
 tools for dealing with array statistics on the fly.
 
 The `RollingAverage` class deals with smoothing out data over time. It has several
@@ -137,7 +131,7 @@ us as it has only limited use cases.
 
 ### Movement
 
-The movement group contains classes key to the actual functioning of a robot: 
+The `movement` group contains classes key to the actual functioning of a robot: 
 the classes responsible for moving motors.
 
 We have built the `Motor` interface as we hope to one-day support more motor types
@@ -155,14 +149,29 @@ across the field. It has several different drive types adapted to different styl
 of drive train and play. It also supports PID loops, controlled by a `PIDController`,
 that can precisely position the robot based on odometry data.
 
+### Sensor
+The `sensor` group of EPRALib is unfortunately underdeveloped. We did not use the camera
+in the 2024–2025 season, so most of what this group contains is remnants from previous seasons.
+We hope to further develop this group in the future, but it may remain underdeveloped
+if we do not determine it necessary in future seasons.
+
 ### Storage
-The storage group holds several records that store data in a way that can be easily
-committed to JSON files. This enables logging for several different classes, including 
+The `storage` group holds several records that store data in a way that can be easily
+committed to JSON files. The `storage.logdata` subgroup enables logging for several different classes, including 
 `MotorController`, `IMUExpanded`, `Controller`, and `Odometry`. These log files allow us 
 to fine-tune troubleshooting. We hope to someday create an external AI agent
 that can read these files to tune certain processes such as PID loops.
 
+The `storage.autonomous` subgroup is responsible for holding all the storage 
+classes necessary to run autonomous. These files would be read off of JSONs in the
+robot controller's hard drive. The `AutoExample` class gives a template for how
+to implement a modular autonomous using these storage classes.
+
+The `storage.initialization` subgroup contains records that used on initialization,
+such as the gain variables for PID loops. These files would be read off of the robot's hard drive,
+similar to autonomous instructions.
+
 ## Credits
 This README was written by Striker-909, the lead programmer of FTC 18387. 
 
-This README was last updated 10/23/2025, for version 1.4.0
+This README was last updated 10/31/2025, for version 1.4.2

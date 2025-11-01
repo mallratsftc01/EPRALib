@@ -1,4 +1,4 @@
-package com.epra.epralib.ftclib.storage;
+package com.epra.epralib.ftclib.storage.autonomous;
 
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
