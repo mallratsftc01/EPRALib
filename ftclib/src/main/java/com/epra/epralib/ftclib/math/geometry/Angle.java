@@ -26,15 +26,15 @@ public class Angle {
      *<p></p>
      * @param radian Radian value to set stored value to.*/
     private Angle(float radian) {
-        this.radian = radian;
-        this.degree = (180.0 / Math.PI) * radian;
+        this.radian = radian % (2 * Math.PI);
+        this.degree = (180.0 / Math.PI) * this.radian;
     }
     /**Stores an Angle value.
      *<p></p>
      * @param degree Degree value to set stored value to.*/
     private Angle(double degree) {
-        this.radian = (Math.PI / 180.0) * degree;
-        this.degree = degree;
+        this.degree = degree % 360;
+        this.radian = (Math.PI / 180.0) * this.degree;
     }
     /**Stores an Angle value.*/
     public Angle() { this.radian = 0.0; }

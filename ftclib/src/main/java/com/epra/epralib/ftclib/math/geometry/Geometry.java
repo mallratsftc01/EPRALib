@@ -151,6 +151,13 @@ public class Geometry {
      * @return The vector rotated by theta around the z axis and phi around the xy plane.*/
     public static Vector rotate(Vector vector, Angle theta, Angle phi) { return new Vector(vector.length(), add(vector.theta(), theta), add(vector.phi(), phi)); }
 
+    /**Normalizes a vector to a vector normal by dividing each coordinate of the vector by that coordinate
+     * of the normal. If the two vectors are equal, the returned vector will be normal.
+     * @param vector A vector to be normalized.
+     * @param normal The vector that will be normal relative to the normalized vector.
+     * @return The vector, normalized to the normal.*/
+    public static Vector normalize(Vector vector, Vector normal) { return new Vector(vector.x() / normal.x(), vector.y() / normal.y(), vector.z() / normal.z()); }
+
     /**@param a Length of leg a.
      * @param b Length of leg b.
      * @return The distance from the origin to a point a, b.*/

@@ -21,6 +21,11 @@ public class Vector {
         this.x = x;
         this.y = y;
         this.z = z;
+        if (length < 0) {
+            this.length = -length;
+            this.theta = Geometry.add(Angle.degree(180), theta);
+            this.phi = Geometry.add(Angle.degree(180), phi);
+        }
     }
 
     /**Stores a vector with z and phi set to 0.

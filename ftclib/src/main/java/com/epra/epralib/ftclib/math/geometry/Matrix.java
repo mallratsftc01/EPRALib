@@ -39,6 +39,17 @@ public class Matrix {
         });
     }
 
+    /**Returns a matrix that will return the vector (1, 1, 1) when multiplied with the provided vector.
+     * @param vector A vector.
+     * @return The inverse matrix of the vector.*/
+    public static Matrix normal(Vector vector) {
+        return new Matrix(new double[][]{
+                {1 / vector.x(), 0, 0},
+                {0, 1 / vector.y(), 0},
+                {0, 0, 1 / vector.z()}
+        });
+    }
+
     private double[][] values;
 
     /**Stores a matrix.
