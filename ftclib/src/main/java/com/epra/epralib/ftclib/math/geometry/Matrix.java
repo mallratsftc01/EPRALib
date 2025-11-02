@@ -39,14 +39,14 @@ public class Matrix {
         });
     }
 
-    /**Returns a matrix that will return the vector (1, 1, 1) when multiplied with the provided vector.
-     * @param vector A vector.
-     * @return The inverse matrix of the vector.*/
-    public static Matrix normal(Vector vector) {
+    /**Returns a matrix that will return the vector (1, 1, 1) when multiplied with the normal1 vector.
+     * @param normal1 A vector that will end at (1, 1, 1) after transformation.
+     * @return The matrix representing the normalization transformation.*/
+    public static Matrix normal(Vector normal1) {
         return new Matrix(new double[][]{
-                {1 / vector.x(), 0, 0},
-                {0, 1 / vector.y(), 0},
-                {0, 0, 1 / vector.z()}
+                {1 / normal1.x(), 0, 0},
+                {0, 1 / normal1.y(), 0},
+                {0, 0, 1 / normal1.z()}
         });
     }
 

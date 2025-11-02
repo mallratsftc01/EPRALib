@@ -152,11 +152,24 @@ public class Geometry {
     public static Vector rotate(Vector vector, Angle theta, Angle phi) { return new Vector(vector.length(), add(vector.theta(), theta), add(vector.phi(), phi)); }
 
     /**Normalizes a vector to a vector normal by dividing each coordinate of the vector by that coordinate
-     * of the normal. If the two vectors are equal, the returned vector will be normal.
+     * of the normal1 vector. If the two vectors are equal, the returned vector will be (1, 1, 1).
      * @param vector A vector to be normalized.
-     * @param normal The vector that will be normal relative to the normalized vector.
-     * @return The vector, normalized to the normal.*/
-    public static Vector normalize(Vector vector, Vector normal) { return new Vector(vector.x() / normal.x(), vector.y() / normal.y(), vector.z() / normal.z()); }
+     * @param normal1 The vector that will be at (1, 1, 1) relative to the normalized vector.
+     * @return The vector, normalized to the normal1 vector.*/
+    public static Vector normalize(Vector vector, Vector normal1) {
+        return new Vector(vector.x() / normal1.x(), vector.y() / normal1.y(), vector.z() / normal1.z()); }
+
+    /**Normalizes a vector using a vector for both normal0 and normal1. If the vector to be normalized is equal to the
+     * normal0 vector, the result will be (0, 0, 0). If the vector to be normalized is equal to the normal1 vector,
+     * the result will be (1, 1, 1)
+     * @param vector A vector to be normalized.
+     * @param normal1 The vector that will be at (1, 1, 1) relative to the normalized vector.
+     * @param normal0 The vector that will be at (0, 0, 0) relative to the normalized vector.
+     * @return The vector, normalized to the normal1 and normal0 vectors.*/
+    public static Vector normalize(Vector vector, Vector normal1, Vector normal0) {
+        return new Vector((vector.x() - normal0.x()) / (normal1.x() - normal0.x()),
+                (vector.y() - normal0.y()) / (normal1.y() - normal0.y()),
+                (vector.z() - normal0.z()) / (normal1.z()) - normal0.x()); }
 
     /**@param a Length of leg a.
      * @param b Length of leg b.
