@@ -174,7 +174,7 @@ public class MotorController implements Motor {
     /**Returns the recent average velocity of the motor in revolutions per second,
      * using the ticks per revolution set for this MotorController.
      * @return The recent average velocity of the motor in revolutions per second.*/
-    public double getRPM() { return velocity / ticksPerRevolution;}
+    public double getRPS() { return velocity / ticksPerRevolution;}
 
     /**Returns the current power being sent to the motor as a double between -1.0 and 1.0.
      * @return The current power being sent to the robot.*/
