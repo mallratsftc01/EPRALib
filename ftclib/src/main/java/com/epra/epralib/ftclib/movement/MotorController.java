@@ -1,5 +1,6 @@
 package com.epra.epralib.ftclib.movement;
 
+import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 
 import com.epra.epralib.ftclib.math.geometry.Angle;
@@ -21,14 +22,14 @@ import java.util.Date;
  * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class MotorController implements Motor {
 
-    private Motor motor;
-    private String id;
+    private final Motor motor;
+    private final String id;
     private int ticksPerRevolution;
 
     private double velocity;
     private int savePos;
     private long saveTime;
-    private long startTime;
+    private final long startTime;
 
     private int startPos;
     private int targetPosition;
@@ -40,11 +41,11 @@ public class MotorController implements Motor {
 
     private double holdPow;
 
-    private File logJson;
-    private FileWriter logWriter;
-    private Gson gson;
+    private final File logJson;
+    private final FileWriter logWriter;
+    private final Gson gson;
 
-    /**Gives increase control over DcMotorExs. Logs data in a json file on the robot for post-match analysis.
+    /**Gives increase control over DcMotorExs. Logs data in a JSON file on the robot for post-match analysis.
      * Sets the initial position to the motor's current position and the ticks per revolution to 1440.
      * @param motor The motor to be used by this MotorController.
      * @param id A string that identifies the log files of this MotorController.*/
@@ -69,14 +70,14 @@ public class MotorController implements Motor {
 
         gson = new Gson();
 
-        SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
 
         logJson = AppUtil.getInstance().getSettingsFile("logs/MotorController_" + id + "_log_" + ft.format(new Date()) + ".json");
         logWriter = new FileWriter(logJson, true);
         logWriter.write("[");
     }
 
-    /**Gives increase control over DcMotorExs. Logs data in a json file on the robot for post-match analysis.
+    /**Gives increase control over DcMotorExs. Logs data in a JSON file on the robot for post-match analysis.
      * Sets the ticks per revolution to 1440.
      * @param motor The motor to be used by this MotorController.
      * @param id A string that identifies the log files of this MotorController.
@@ -86,7 +87,7 @@ public class MotorController implements Motor {
         this.startPos = startPos;
     }
 
-    /**Gives increase control over DcMotorExs. Logs data in a json file on the robot for post-match analysis.
+    /**Gives increase control over DcMotorExs. Logs data in a JSON file on the robot for post-match analysis.
      * @param motor The motor to be used by this MotorController.
      * @param id A string that identifies the log files of this MotorController.
      * @param startPos The initial position of the motor in motor ticks.
@@ -96,7 +97,7 @@ public class MotorController implements Motor {
         this.ticksPerRevolution = ticksPerRevolution;
     }
 
-    /**Gives increase control over DcMotorExs. Logs data in a json file on the robot for post-match analysis.
+    /**Gives increase control over DcMotorExs. Logs data in a JSON file on the robot for post-match analysis.
      * @param motor The motor to be used by this MotorController.
      * @param id A string that identifies the log files of this MotorController.
      * @param startAngle The initial angle of the motor.
@@ -135,20 +136,20 @@ public class MotorController implements Motor {
     /**Stops the motor.*/
     public void stop() { motor.setPower(0.0); }
 
-    /**Saves motor data to internal logs. Also saves log data to a json file on the robot for post-match analysis.
+    /**Saves motor data to internal logs. Also saves log data to a JSON file on the robot for post-match analysis.
      * @return A MotorControllerData record with data from this log.*/
     public MotorControllerData log() throws IOException {
         int posChange = motor.getCurrentPosition() - savePos;
         long timeChange = System.currentTimeMillis() - saveTime;
         savePos += posChange;
         saveTime += timeChange;
-        velocity = (double) posChange / (double) timeChange;
+        velocity = (double) posChange / (double) timeChange * 1000;
         MotorControllerData data = new MotorControllerData(saveTime - startTime, motor.getPower(), savePos, targetPosition, velocity, targetVelocity, lastPIDTOutput, lastPIDVOutput);
         logWriter.write("\n" + gson.toJson(data) + ",");
         return data;
     }
 
-    /**Closes the json file that this MotorController is writing to.*/
+    /**Closes the JSON file that this MotorController is writing to.*/
     public void closeLog() throws IOException {
         logWriter.write("]");
         logWriter.close();
@@ -156,7 +157,7 @@ public class MotorController implements Motor {
 
     /**Returns the current reading of the motor's encoder in ticks relative to the start position.
      * These ticks are specific to the encoder of a certain motor; google the ticks/revolution for your motor for best results.
-     * If the encoder wire for this motor is not connected to the motor (ie. it its instead connected to an odometry pod) this number will not reflect the movement of this encoder.
+     * If the encoder wire for this motor is not connected to the motor (i.e., if it's instead connected to an odometry pod), this number will not reflect the movement of this encoder.
      * @return The current reading of the motor's encoder. */
     public int getCurrentPosition() { return motor.getCurrentPosition() - startPos; }
 
@@ -164,13 +165,19 @@ public class MotorController implements Motor {
      * @return The current angle of the motor.*/
     public Angle getCurrentAngle() { return Angle.degree((getCurrentPosition() % ticksPerRevolution) * 360.0 / ticksPerRevolution); }
 
-    /**Returns the recent average velocity of the motor's encoder in ticks per second.
+    /**Returns the recent average velocity of the motor in ticks per second.
      * These ticks are specific to the encoder of a certain motor; google the ticks/revolution for your motor for best results.
-     * If the encoder wire for this motor is not connected to the motor (ie. it its instead connected to an odometry pod) this number will not reflect the movement of this encoder.
-     * @return The recent average velocity of the motor's encoder. */
+     * If the encoder wire for this motor is not connected to the motor (i.e., if it's instead connected to an odometry pod), this number will not reflect the movement of this encoder.
+     * @return The recent average velocity of the motor. */
     public double getVelocity() { return velocity; }
+
+    /**Returns the recent average velocity of the motor in revolutions per second,
+     * using the ticks per revolution set for this MotorController.
+     * @return The recent average velocity of the motor in revolutions per second.*/
+    public double getRPM() { return velocity / ticksPerRevolution;}
+
     /**Returns the current power being sent to the motor as a double between -1.0 and 1.0.
-     * @returns The current power being sent to the robot.*/
+     * @return The current power being sent to the robot.*/
     public double getPower() { return motor.getPower(); }
 
     /**Sets a target position for the motor to try to move towards.
@@ -198,8 +205,8 @@ public class MotorController implements Motor {
     }
     /**Moves the motor towards the set target.
      * @param maxPower The absolute max power the motor can reach as a double between 0.0 and 1.0.
-     * @param tolerance The tolerance for reaching the target as a double between 0.0 and 1.0. If this is set to 0.0 the pid will run indefinitely.
-     * @param haltAtTarget If true the motor will halt once the target is reached within the set tolerance.
+     * @param tolerance The tolerance for reaching the target as a double between 0.0 and 1.0. If this is set to 0.0, the pid will run indefinitely.
+     * @param haltAtTarget If true, the motor will halt once the target is reached within the set tolerance.
      * @return True once the motor reaches its target, false until then.*/
     public boolean moveToTarget(double maxPower, double tolerance, boolean haltAtTarget) {
         double p = PIDController.get(id + "_T");
@@ -266,11 +273,7 @@ public class MotorController implements Motor {
         double power = PIDController.get(id + "_V");
         lastPIDVOutput = power;
         setPower(power);
-        if (Math.abs(targetVelocity - getVelocity()) > 0.001) {
-            return false;
-        } else {
-            return true;
-        }
+        return !(Math.abs(targetVelocity - getVelocity()) > 0.001);
     }
 
     /**Idles the PID loop used to maintain velocity.
@@ -285,7 +288,7 @@ public class MotorController implements Motor {
         PIDController.tune(id + "_V", pidGains);
     }
 
-    /**Sets the gains of the PID loop used for maintaing velocity.
+    /**Sets the gains of the PID loop used for maintaining velocity.
      * @param kp The p gain for the PID loop.
      * @param ki The i gain for the PID loop.
      * @param kd The d gain for the PID loop.*/
