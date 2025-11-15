@@ -21,7 +21,7 @@ public class CameraPlus {
         startingTarget();
     }
     public void updateDetections () {
-        if (aprilTag.getDetections().size() > 0) {
+        if (!aprilTag.getDetections().isEmpty()) {
             currentDetections = aprilTag.getDetections();
         }
     }
