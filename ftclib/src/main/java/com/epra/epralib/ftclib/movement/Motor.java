@@ -10,6 +10,7 @@ public interface Motor {
         FORWARD,
         REVERSE
     }
+    boolean powerEnabled();
     void setDirection(Direction direction);
     Direction getDirection();
 
@@ -20,7 +21,9 @@ public interface Motor {
     void setEnabled();
     void setDisabled();
 
+    boolean positionEnabled();
     int getCurrentPosition();
+    boolean setPosition(int position);
 
     Object getSelf();
     @NonNull

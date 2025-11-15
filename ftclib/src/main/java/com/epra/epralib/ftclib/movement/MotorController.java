@@ -130,6 +130,10 @@ public class MotorController implements Motor {
         return motor.getDirection();
     }
 
+    /**Returns true if the motor contained by this MotorController can be set to run at a specific power.
+     * @return If power is enabled for the underlying motor.*/
+    @Override
+    public boolean powerEnabled() { return motor.powerEnabled(); }
     /**Sets the motor to a certain power between -1.0 and 1.0.
      * @param power The power to set the motor to.*/
     public void setPower(double power) { motor.setPower(power + (holdPow * getCurrentPosition())); }
@@ -155,10 +159,15 @@ public class MotorController implements Motor {
         logWriter.close();
     }
 
+    /**Returns true if the motor contained by this MotorController can read its current position.
+     * @return If position is enabled for the underlying motor.*/
+    @Override
+    public boolean positionEnabled() { return motor.positionEnabled(); }
     /**Returns the current reading of the motor's encoder in ticks relative to the start position.
      * These ticks are specific to the encoder of a certain motor; google the ticks/revolution for your motor for best results.
      * If the encoder wire for this motor is not connected to the motor (i.e., if it's instead connected to an odometry pod), this number will not reflect the movement of this encoder.
      * @return The current reading of the motor's encoder. */
+    @Override
     public int getCurrentPosition() { return motor.getCurrentPosition() - startPos; }
 
     /**Returns the current angle of the motor based on the encoder reading.
@@ -178,6 +187,7 @@ public class MotorController implements Motor {
 
     /**Returns the current power being sent to the motor as a double between -1.0 and 1.0.
      * @return The current power being sent to the robot.*/
+    @Override
     public double getPower() { return motor.getPower(); }
 
     /**Sets a target position for the motor to try to move towards.
@@ -203,22 +213,33 @@ public class MotorController implements Motor {
         log();
         return (Math.max(getCurrentPosition(), savePos) > targetPosition && Math.min(getCurrentPosition(), savePos) < targetPosition) || Math.abs(getCurrentPosition() - targetPosition) < range;
     }
+
+    /**Moves the motor to the specified position directly if it is capable of doing so. Returns false otherwise.
+     * @return The result of setting the position of the underlying motor.*/
+    @Override
+    public boolean setPosition(int position) { return motor.setPosition(position); }
     /**Moves the motor towards the set target.
      * @param maxPower The absolute max power the motor can reach as a double between 0.0 and 1.0.
      * @param tolerance The tolerance for reaching the target as a double between 0.0 and 1.0. If this is set to 0.0, the pid will run indefinitely.
      * @param haltAtTarget If true, the motor will halt once the target is reached within the set tolerance.
      * @return True once the motor reaches its target, false until then.*/
     public boolean moveToTarget(double maxPower, double tolerance, boolean haltAtTarget) {
-        double p = PIDController.get(id + "_T");
-        lastPIDTOutput = p;
-        double power = Math.min(Math.abs(p), maxPower) * Math.signum(p);
-        if (Math.abs(p) > (tolerance * Math.abs(lastTarget - targetPosition))) {
-            setPower(power + (holdPow * getCurrentPosition()));
-            return false;
+        if (!setPosition(targetPosition) && powerEnabled() && positionEnabled()) {
+            double p = PIDController.get(id + "_T");
+            lastPIDTOutput = p;
+            double power = Math.min(Math.abs(p), maxPower) * Math.signum(p);
+            if (Math.abs(p) > (tolerance * Math.abs(lastTarget - targetPosition))) {
+                setPower(power + (holdPow * getCurrentPosition()));
+                return false;
+            } else {
+                if (haltAtTarget) {
+                    setPower(holdPow * getCurrentPosition());
+                }
+                PIDController.idle(id + "_T");
+                return true;
+            }
         } else {
-            if (haltAtTarget) { setPower(holdPow * getCurrentPosition() ); }
-            PIDController.idle(id + "_T");
-            return true;
+            return tolerance > Math.abs(getCurrentPosition() - targetPosition);
         }
     }
 

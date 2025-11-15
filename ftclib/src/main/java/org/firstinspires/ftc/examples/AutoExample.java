@@ -11,10 +11,8 @@ import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
 import com.epra.epralib.ftclib.movement.PIDController;
 import com.epra.epralib.ftclib.storage.autonomous.AutoStep;
-import com.epra.epralib.ftclib.storage.autonomous.CRServoAutoModule;
 import com.epra.epralib.ftclib.storage.autonomous.MotorControllerAutoModule;
 import com.epra.epralib.ftclib.storage.initialization.PIDGains;
-import com.epra.epralib.ftclib.storage.autonomous.ServoAutoModule;
 import com.google.gson.reflect.TypeToken;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -33,7 +31,7 @@ import java.util.List;
 @Autonomous
 public class AutoExample extends LinearOpMode {
 
-    //These variables lead to the json files that control the vast majority of auto
+    //These variables lead to the JSON files that control the vast majority of auto
     private final String STEP_LIST_FILENAME = "auto/lists/step_list.json";
     private final String FINAL_STEP_FILENAME = "auto/steps/final_step.json";
     private final String PID_SETTINGS_FILENAME = "pid/gains.json";
@@ -171,24 +169,6 @@ public class AutoExample extends LinearOpMode {
                 }
             }
 
-            //Sets powers and checks times for CRServos
-            if (currentStep.crServoModules() != null) {
-                for (CRServoAutoModule c : currentStep.crServoModules()) {
-                    if (System.currentTimeMillis() - saveTime < c.time()) {
-                        crServos.get(c.id()).setPower(c.power());
-                    } else {
-                        crServos.get(c.id()).setPower(0);
-                    }
-                }
-            }
-
-            //Moves all servos to their target positions
-            if (currentStep.servoModules() != null) {
-                for (ServoAutoModule s : currentStep.servoModules()) {
-                    servos.get(s.id()).setPosition(s.targetPosition());
-                }
-            }
-
             //Checks if enough time has elapsed
             if (System.currentTimeMillis() - saveTime >= currentStep.time()) { weight += currentStep.timeWeight(); }
 
@@ -229,18 +209,6 @@ public class AutoExample extends LinearOpMode {
                 if (nonDriveMotors.get(mcam.id()).moveToTarget(mcam)) {
                     weight += mcam.weight();
                 }
-            }
-
-            for (CRServoAutoModule c : currentStep.crServoModules()) {
-                if (System.currentTimeMillis() - saveTime < c.time()) {
-                    crServos.get(c.id()).setPower(c.power());
-                } else {
-                    crServos.get(c.id()).setPower(0);
-                }
-            }
-
-            for (ServoAutoModule s : currentStep.servoModules()) {
-                servos.get(s.id()).setPosition(s.targetPosition());
             }
 
             if (System.currentTimeMillis() - saveTime >= currentStep.time()) { weight += currentStep.timeWeight(); }

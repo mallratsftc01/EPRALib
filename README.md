@@ -1,6 +1,6 @@
 ## NOTICE
 
-This repository contains the public FTC SDK for the INTO THE DEEP (2024-2025) competition season.
+This repository contains the public FTC SDK for the INTO THE DEEP (2024–2025) competition season.
 
 ## Welcome!
 This is the core library for FTC Team 18387, The Mallrats. We have worked hard to 
@@ -17,32 +17,32 @@ Additionally, this library has not been tested for compatibility with FTC Blocks
 This library is hosted through GitHub packages. There are several steps to 
 installation.
 1) You must have a GitHub account to install this library as credentials are required to install GitHub packages. 
-   1) Go to Settings → Developer Settings → Personal access tokens → Tokens (Classic) in GitHub.
-   2) Generate a new token (classic) and make sure to enable read:packages.
-   3) Save the generated token somewhere secure.
+   1a) Go to Settings → Developer Settings → Personal access tokens → Tokens (Classic) in GitHub.
+   1b) Generate a new token (classic) and make sure to enable read:packages.
+   1c) Save the generated token somewhere secure.
 2) Add the following to the `gradle.properties` file in your FTC project. This will store the necessary credentials to download the package. If you are commiting to GitHub, make sure to exclude this file so that you do not leak the token.
-```groovy
-gpr.user=YOUR_GITHUB_USERNAME
-gpr.key=YOUR_PERSONAL_ACCESS_TOKEN
-```
+   ```groovy
+   gpr.user=YOUR_GITHUB_USERNAME
+   gpr.key=YOUR_PERSONAL_ACCESS_TOKEN
+   ```
 3) In the `build.dependecies.gradle` file in your FTC project, add the following to the `repositories` section.
-```groovy
-maven {
-        name = 'epralib'
-        url = uri("https://maven.pkg.github.com/mallratsftc01/EPRALib")
-        credentials {
-            username = project.findProperty("gpr.user") ?: ("")
-            password = project.findProperty("gpr.key") ?: ("")
-        }
-    }
-```
+   ```groovy
+      maven {
+           name = 'epralib'
+           url = uri("https://maven.pkg.github.com/mallratsftc01/EPRALib")
+           credentials {
+               username = project.findProperty("gpr.user") ?: ("")
+               password = project.findProperty("gpr.key") ?: ("")
+           }
+       }
+   ```
 4) In the same file, add the following to the `dependencies` section.
-```groovy
-implementation ('com.epra.epralib:ftclib:VERSION_NUMBER') {
+   ```groovy
+   implementation ('com.epra.epralib:ftclib:VERSION_NUMBER') {
         exclude group: 'org.firstinspires.ftc'
     }
-```
-5) Sync your FTC project with the modifications to the gradle files and the library should download.
+   ```
+5) Sync your FTC project with the modifications to the Gradle files and the library should download.
 
 ## Versions & Documentation
 Our version numbers use a simple x.y.z system. The first number, x, is only changed
@@ -52,11 +52,11 @@ largely the same functionality. The third number, z, is for minor updates and pa
 Versions with a version number other than x.y.0 should be assumed to be untested and 
 potentially unstable, unless otherwise stated in the commit notes.
 
-We try our best to add javadocs to every class and method, but we have definitely 
+We try our best to add Javadocs to every class and method, but we have definitely 
 missed a few. Please be patient with us and our code and report any bugs you may find.
 
 Examples of programs for both TeleOp and Auto can be found in `org.firstinspires.ftc.examples`. These
-examples can either help you learn EPRALib, or be used as templates to build your competition code off of.
+examples can either help you learn EPRALib or be used as templates to build your competition code off of.
 We tried to make them as adaptable as possible. More examples may come in the future as we expand
 the library's capabilities.
 
@@ -89,7 +89,7 @@ are used by many classes, both for tracking the robot's current location and plo
 out future locations such as in auto.
 
 The `IMUExpanded` class can be instantiated with one or two IMUs. If two IMUs are 
-provided (such as one from the control hub, one from the expansion hub) it will 
+provided (such as one from the control hub, one from the expansion hub), it will 
 combine data from both to give a more accurate reading of the robot's bearing.
 
 The `Odometry` class is designed to use several odometry pods to estimate the 
@@ -108,12 +108,12 @@ library. Each has several different initiators for a variety of uses.
 
 `Triangle`, `Circle`, `Quadrilateral`, and `PolyGroup` all implement the Shape2D 
 interface. They represent 2D solids. While they are not used as much as other classes
-in the Math.Geometry group, they all can detect if a point is
+in the `math.geometry` group, they all can detect if a point is
 within their bounds, which can be invaluable for pathing and other applications.
 
 The `Geometry` class is designed to be a counterpart to the java.lang `Math` class,
 but for the geometrical objects found in this group. It holds static functions for
-just about every transformation, and is constantly being expanded and updated.
+just about every transformation and is constantly being expanded and updated.
 
 ### Math.Statistics
 The other Math subgroup, while less developed than `math.geometry`, still holds useful
@@ -122,11 +122,11 @@ tools for dealing with array statistics on the fly.
 The `RollingAverage` class deals with smoothing out data over time. It has several
 different weighting modes that it uses to average out data over a certain period.
 This can stop random spikes in value from causing your robot to malfunction, but
-can also introduce latency, so use with caution.
+can also introduce latency, so use it with caution.
 
 The `Statistics` class is a simple counterpart to `java.lang.Math` and `Geometry`.
 It has several functions for statistically analyzing arrays, but like the subgroup,
-it is largely underdeveloped. Improving this section is currently low-priority for
+it is largely underdeveloped. Improving this section is currently a low priority for
 us as it has only limited use cases.
 
 ### Movement
@@ -134,8 +134,8 @@ us as it has only limited use cases.
 The `movement` group contains classes key to the actual functioning of a robot: 
 the classes responsible for moving motors.
 
-We have built the `Motor` interface as we hope to one-day support more motor types
-beyond DcMotors. For now, it mainly serves as a support for the `MotorController` 
+We have built the `Motor` interface to allow DcMotorExs, Servos, and CRServos to 
+have a common platform. It mainly serves as a support for the `MotorController` 
 class. This class preserves the functions of a normal motor, but also adds in
 other helpful features, such as a `PIDController`.
 
@@ -174,4 +174,4 @@ similar to autonomous instructions.
 ## Credits
 This README was written by Striker-909, the lead programmer of FTC 18387. 
 
-This README was last updated 10/31/2025, for version 1.4.2
+This README was last updated 11/15/2025, for version 1.4.8

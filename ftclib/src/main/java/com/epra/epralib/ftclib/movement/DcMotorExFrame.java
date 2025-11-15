@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
  * <p></p>
  * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class DcMotorExFrame implements Motor {
-    DcMotorEx motor;
+    private final DcMotorEx motor;
 
     /**A motor frame for DcMotorExs.
      * @param motor A DcMotorEx.*/
@@ -31,14 +31,17 @@ public class DcMotorExFrame implements Motor {
             case REVERSE -> Direction.REVERSE;
         };
     }
-
+    /**The power can be set for DCMotorExs.
+     * @return True*/
+    @Override
+    public boolean powerEnabled() { return true; }
     /**Sets the power level of the motor, expressed as a fraction of the maximum possible power / speed supported according to the run mode in which the motor is operating.
-     Setting a power level of zero will brake the motor
-     @param power The new power level of the motor, a value in the interval [-1.0, 1.0].*/
+     Setting a power level of zero will brake the motor.
+     @param power The new power level of the motor, a value between -1 and 1.*/
     @Override
     public void setPower(double power) { motor.setPower(power); }
     /**Returns the current configured power level of the motor.
-     * @return The current level of the motor, a value in the interval [0.0, 1.0].*/
+     * @return The current power level of the motor, a value between -1 and 1.*/
     @Override
     public double getPower() { return motor.getPower(); }
 
@@ -52,10 +55,18 @@ public class DcMotorExFrame implements Motor {
     @Override
     public void setDisabled() { motor.setMotorDisable(); }
 
+    /**DcMotorExs can read their current position.
+     * @return True*/
+    @Override
+    public boolean positionEnabled() { return true; }
     /**Returns the current reading of the encoder for this motor. The units for this reading, that is, the number of ticks per revolution, are specific to the motor/ encoder in question, and thus are not specified here.
      * @return The current reading of the encoder for this motor.*/
     @Override
     public int getCurrentPosition() { return motor.getCurrentPosition(); }
+    /**DcMotorExs cannot directly set their positions.
+     * @return False*/
+    @Override
+    public boolean setPosition(int position) { return false; }
 
     /**Returns the DcMotorEx contained in this frame.
      * @return The DcMotorEx contained in this frame.*/
