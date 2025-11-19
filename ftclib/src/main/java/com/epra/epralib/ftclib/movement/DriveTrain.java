@@ -14,7 +14,7 @@ import com.epra.epralib.ftclib.math.geometry.Angle;
 import com.epra.epralib.ftclib.storage.autonomous.DriveTrainAutoModule;
 import com.epra.epralib.ftclib.storage.initialization.PIDGains;
 
-/**Coordinates motors in order to create cohesive robot motion.
+/**Coordinates motors to create cohesive robot motion.
  * This class can be used for a variable number of motors for several drive types.
  * <p></p>
  * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
@@ -79,7 +79,7 @@ public class DriveTrain {
         }
     }
 
-    /**All of the drive types currently available.*/
+    /**All the drive types currently available.*/
     public static enum DriveType {
         TANK,
         ARCADE,
@@ -92,58 +92,37 @@ public class DriveTrain {
     /**
      * Map of all the motors.
      */
-    private Map<String, MotorController> motor = new HashMap<>();
+    private final Map<String, MotorController> motor = new HashMap<>();
     /**
      * Map of all the motor powers.
      */
-    private Map<String, Double> power = new HashMap<>();
+    private final Map<String, Double> power = new HashMap<>();
     /**
      * Map of all motor positions.
      */
-    private Map<String, Integer> pos = new HashMap<>();
+    private final Map<String, Integer> pos = new HashMap<>();
     /**
      * Map of all orientations of motors.
      */
-    private Map<String, Orientation> orientation = new HashMap<>();
+    private final Map<String, Orientation> orientation = new HashMap<>();
 
-    private DriveType driveType;
-    private float wheelCircumference = 11.2192926146f; // 96mm diameter wheels circumference in inches
-    private float gearRatio = 20;
+    private final DriveType driveType;
 
+    private boolean positionalMovementEnabled;
     private Angle target = new Angle();
     private Pose targetPose = new Pose(new Vector(0,0), new Angle());
     private Pose lastTargetPose = new Pose(new Vector(0,0), new Angle());
     private Vector lastMotionVector = new Vector(0, 0);
-    private double toleranceMultiplier = 1.0;
 
-    private Supplier<Pose> poseSupplier;
-    private Supplier<Vector> deltaPoseSupplier;
+    private final Supplier<Pose> poseSupplier;
+    private final Supplier<Vector> deltaPoseSupplier;
 
-    /**Coordinates motors in order to create cohesive robot motion.
-     * This class can be used for a variable number of motors for several drive types.
-     *
-     * @param motors       DcMotorExs that will be used by the DriveTrain.
-     * @param orientations The orientation of each motor.
-     */
-    public DriveTrain(MotorController[] motors, Orientation[] orientations, Supplier<Pose> poseSupplier, Supplier<Vector> deltaPoseSupplier) {
-        for (int i = 0; i < motors.length; i++) {
-            motor.put(motors[i].toString(), motors[i]);
-            power.put(motors[i].toString(), 0.0);
-            pos.put(motors[i].toString(), 0);
-            orientation.put(motors[i].toString(), orientations[i]);
-        }
-        driveType = DriveType.TANK;
-        this.poseSupplier = poseSupplier;
-        this.deltaPoseSupplier = deltaPoseSupplier;
-        PIDController.addPID("DriveTrain_P", 1, 0, 0, this::getPointError, false);
-        PIDController.addPID("DriveTrain_A", 1, 0, 0, this::getAngleError, false);
-        PIDController.addPID("DriveTrain_V", 1, 0, 0, this::getVectorError, false);
-    }
-
-    /**Coordinates motors in order to create cohesive robot motion.
+    /**Coordinates motors to create cohesive robot motion.
      * This class can be used for a variable number of motors for several drive types.
      * @param motors       DcMotorExs that will be used by the DriveTrain.
      * @param orientations The orientation of each motor.
+     * @param poseSupplier A supplier for the current pose of the robot.
+     * @param deltaPoseSupplier A supplier for the difference between the last two measured poses
      * @param driveTypeIn  The drive type to be used.
      */
     public DriveTrain( MotorController[] motors, Orientation[] orientations, Supplier<Pose> poseSupplier, Supplier<Vector> deltaPoseSupplier, DriveType driveTypeIn) {
@@ -159,6 +138,19 @@ public class DriveTrain {
         PIDController.addPID("DriveTrain_P", 1, 0, 0, this::getPointError, false);
         PIDController.addPID("DriveTrain_A", 1, 0, 0, this::getAngleError, false);
         PIDController.addPID("DriveTrain_V", 1, 0, 0, this::getVectorError, false);
+        this.positionalMovementEnabled = true;
+    }
+
+    /**Coordinates motors to create cohesive robot motion.
+     * This class can be used for a variable number of motors for several drive types.
+     * This configuration disables all pose-based automated movement.
+     * @param motors       DcMotorExs that will be used by the DriveTrain.
+     * @param orientations The orientation of each motor.
+     * @param driveTypeIn  The drive type to be used.
+     */
+    public DriveTrain(MotorController[] motors, Orientation[] orientations, DriveType driveTypeIn) {
+        this(motors, orientations, () -> new Pose(new Vector(0,0), new Angle()), () -> new Vector(0,0), driveTypeIn);
+        this.positionalMovementEnabled = false;
     }
 
     /**
@@ -271,8 +263,8 @@ public class DriveTrain {
      * Field Oriented holonomic drive with mecanum wheels. Left stick moves the robot, right stick X rotates the robot. Created 11/26/2024.
      * @param vectorRight A vector representing the right joystick.
      * @param vectorLeft A vector representing the left joystick.
-     * @param angleTolerance The tolerance for reaching the target angle as a positive double. If this is set to 0.0 the pid will run indefinitely.
-     * @param haltAtTarget If true the motors will halt once the target is reached within the set tolerance.
+     * @param angleTolerance The tolerance for reaching the target angle as a positive double. If this is set to 0, the pid will run indefinitely.
+     * @param haltAtTarget If true, the motors will halt once the target is reached within the set tolerance.
      * @return True if the robot has reached the target angle, false if not.
      *  */
     public boolean fieldOrientedMecanumDrive(Vector vectorRight, Vector vectorLeft, double angleTolerance, boolean haltAtTarget) {
@@ -290,7 +282,7 @@ public class DriveTrain {
         return false;
     }
 
-    /**Sets the target Pose of the PID. When running posPIDMecanumDrive the DriveTrain will attempt to move the robot to this position.
+    /**Sets the target Pose of the PID. When running <code>posPIDMecanumDrive</code> the DriveTrain will attempt to move the robot to this position.
      * @param target Pose to test the target to.*/
     public void setTargetPose(Pose target) {
         if (target.pos.x()!= targetPose.pos.x()|| target.pos.y()!= targetPose.pos.y()|| target.angle.degree() != targetPose.angle.degree()) {
@@ -303,12 +295,14 @@ public class DriveTrain {
     /**
      * Field Oriented holonomic drive with mecanum wheels. Uses PID loops to reach the target position set. Created 11/27/2024.
      * @param posTolerance The tolerance for reaching the target position as a double between 0.0 and 1.0. If this is set to 0.0 the pid will run indefinitely.
-     * @param angleTolerance The tolerance for reaching the target angle as a positive double. If this is set to 0.0 the pid will run indefinitely.
+     * @param angleTolerance The tolerance for reaching the target angle as a positive double. If this is set to 0, the pid will run indefinitely.
      * @param maxPower The maximum power of the motors.
-     * @param haltAtTarget If true the motors will halt once the target is reached within the set tolerance.
+     * @param haltAtTarget If true, the motors will halt once the target is reached within the set tolerance.
      * @return True if the robot has reached the target position, false if not.
+     * Will also return false if positional movement is not enabled.
      *  */
     public boolean posPIDMecanumDrive(double posTolerance, double angleTolerance, double maxPower, boolean haltAtTarget) {
+        if (!positionalMovementEnabled) { return false; }
         Pose current = poseSupplier.get();
         Vector vectorLeft = new Vector(PIDController.get("DriveTrain_P"), new Vector(-1 * (targetPose.pos.y()- current.pos.y()), (targetPose.pos.x()- current.pos.x())).theta());
         Vector vectorRight = new Vector(1.0, targetPose.angle);
@@ -329,12 +323,14 @@ public class DriveTrain {
         return Math.abs(posTolerance * dst);
     }
 
-    /**Field Oriented holonomic drive with mecanum wheels. Uses PID loops to approach target position set. To be used for path following, not precise positioning. Created 6/17/2025.
+    /**Field Oriented holonomic drive with mecanum wheels. Uses PID loops to approach a target position set. To be used for path following, not precise positioning. Created 6/17/2025.
      * @param posTolerance The range in inches around the target pose for which the method will return true as a positive double.
-     * @param angleTolerance The tolerance for reaching the target angle as a positive double. If this is set to 0.0 the pid will run indefinitely.
+     * @param angleTolerance The tolerance for reaching the target angle as a positive double. If this is set to 0, the pid will run indefinitely.
      * @param maxPower The maximum power of the motors.
-     * @return True if the robot has moved withing a radius of posTolerance of the target Vector, false if not.*/
+     * @return True if the robot has moved withing a radius of <code>posTolerance</code> of the target Vector, false if not.
+     * Will also return false if positional movement is not enabled.*/
     public boolean posPIDMecanumDrive(double posTolerance, double angleTolerance, double maxPower) {
+        if (!positionalMovementEnabled) { return false; }
         Pose current = poseSupplier.get();
         Vector deltaPos = deltaPoseSupplier.get();
         Vector targetVector = new Vector(current.pos, targetPose.pos);
@@ -353,8 +349,10 @@ public class DriveTrain {
      * Field Oriented holonomic drive with mecanum wheels. Uses PID loops to reach the target position set. Created 11/27/2024.
      * @param driveTrainAutoModule A DriveTrainAutoModule that stores instructions for this DriveTrain.
      * @return True if the robot has reached the target position, false if not.
+     * Will also return false if positional movement is not enabled.
      *  */
     public boolean posPIDMecanumDrive(DriveTrainAutoModule driveTrainAutoModule) {
+        if (!positionalMovementEnabled) { return false; }
         setTargetPose(driveTrainAutoModule.targetPose());
         if (driveTrainAutoModule.usePrecision()) {
             return posPIDMecanumDrive(driveTrainAutoModule.posTolerance(), driveTrainAutoModule.angleTolerance(), driveTrainAutoModule.maxPower(), true);
@@ -380,7 +378,6 @@ public class DriveTrain {
      * @param k_d the D constant.*/
     public void tunePointPID(double k_p, double k_i, double k_d) {
         PIDController.tune("DriveTrain_P",k_p, k_i, k_d);
-        toleranceMultiplier = 1.0 / k_p;
     }
     /**Tunes the PID loop used to reach the target position.
      * @param pidGains A PIDGains record containing the gains for a PIDController.

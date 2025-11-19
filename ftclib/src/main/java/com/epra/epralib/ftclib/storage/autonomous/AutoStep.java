@@ -3,6 +3,7 @@ package com.epra.epralib.ftclib.storage.autonomous;
 import java.util.List;
 
 public class AutoStep {
+    private String comment = "";
     private final long time;
     private final double timeWeight;
     private final DriveTrainAutoModule driveTrainModule;
@@ -14,6 +15,7 @@ public class AutoStep {
      * JSON Format:
      * <pre><code>
      *     {
+     *       "comment": string,
      *       "time": int,
      *       "timeWeight": float,
      *       "driveTrainModule": {
@@ -25,7 +27,7 @@ public class AutoStep {
      *           "maxPower": float,
      *           "usePrecision": boolean,
      *           "weight": float
-     *       }
+     *       },
      *       "motorControllerModules": [
      *           {
      *               "id": string,
@@ -45,14 +47,19 @@ public class AutoStep {
      * @param driveTrainModule       A module to control the DriveTrain.
      * @param motorControllerModules A List of modules to control MotorControllers that are not part of the DriveTrain.
      */
-    public AutoStep(long time, double timeWeight,
+    public AutoStep(String comment, long time, double timeWeight,
                     DriveTrainAutoModule driveTrainModule,
                     List<MotorControllerAutoModule> motorControllerModules) {
 
+        this.comment = comment;
         this.time = time;
         this.timeWeight = timeWeight;
         this.driveTrainModule = driveTrainModule;
         this.motorControllerModules = motorControllerModules;
+    }
+
+    public String comment() {
+        return comment;
     }
 
     public long time() {
