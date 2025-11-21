@@ -1,6 +1,7 @@
 package com.epra.epralib.ftclib.location;
 
 import com.epra.epralib.ftclib.math.geometry.*;
+import com.epra.epralib.ftclib.math.geometry.Vector;
 import com.epra.epralib.ftclib.math.statistics.RollingAverage;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -13,10 +14,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**Uses odometer encoders to determine robot pose.
@@ -40,28 +38,28 @@ public class Odometry {
 
     public enum Orientation { LEFT, RIGHT, PERPENDICULAR }
 
-    private Map<Orientation, Supplier<Integer>> encoder = new HashMap<>();
-    private Map<Orientation, Vector> displacement = new HashMap<>();
-    private Map<Orientation, Integer> last = new HashMap<>();
-    private Map<Orientation, Integer> delta = new HashMap<>();
+    private final Map<Orientation, Supplier<Integer>> encoder = new HashMap<>();
+    private final Map<Orientation, Vector> displacement = new HashMap<>();
+    private final Map<Orientation, Integer> last = new HashMap<>();
+    private final Map<Orientation, Integer> delta = new HashMap<>();
     private Angle phi = new Angle();
-    private Pose startPose;
+    private final Pose startPose;
 
-    private Supplier<Angle> heading;
+    private final Supplier<Angle> heading;
 
     private Pose pose;
     private Vector deltaPose;
 
     private long saveTime;
 
-    /**A buffer of the velocity (delta position) of the robot.*/
-    private RollingAverage velocityBuffer = new RollingAverage(25, RollingAverage.Bias.LINEAR);
-    /**A buffer of the angle of the velocity (phi) of the robot in radians.*/
-    private RollingAverage phiBuffer = new RollingAverage(25, RollingAverage.Bias.LINEAR);
+    /**A buffer for velocity (delta position) values from the robot.*/
+    private final RollingAverage velocityBuffer = new RollingAverage(25, RollingAverage.Bias.LINEAR);
+    /**A buffer for the angle of the velocity (phi) value from the robot in radians.*/
+    private final RollingAverage phiBuffer = new RollingAverage(25, RollingAverage.Bias.LINEAR);
 
-    private File logJson;
-    private FileWriter logWriter;
-    private Gson gson;
+    private final File logJson;
+    private final FileWriter logWriter;
+    private final Gson gson;
 
     /**Uses odometer encoders to determine robot pose.
      * @param leftEncoder A supplier for the position of the left parallel encoder.
@@ -92,7 +90,7 @@ public class Odometry {
 
         gson = new Gson();
 
-        SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
+        SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm", Locale.US);
         logJson = AppUtil.getInstance().getSettingsFile("logs/Pose_log_" + ft.format(new Date()) + ".json");
         logWriter = new FileWriter(logJson, true);
         logWriter.write("[");
@@ -140,7 +138,7 @@ public class Odometry {
         phi = Geometry.subtract(heading.get(), pose.angle);
         return phi;
     }
-    /**@return The change in angle of the robot.*/
+    /**@return The rotational change of the robot.*/
     public Angle getPhi() { return phi; }
 
     /**Finds the center displacement of the parallel encoders.*/
@@ -148,7 +146,7 @@ public class Odometry {
     /**Finds the displacement of the perpendicular encoder.*/
     public double perpendicularDisplacement() { return delta.get(Orientation.PERPENDICULAR) - (displacement.get(Orientation.PERPENDICULAR).y()* phi.radian()); }
 
-    /**Estimates the new pose value. Store the new pose in a json log file.
+    /**Estimates the new pose value. Store the new pose in a JSON log file.
      * @return The new pose value.*/
     public Pose estimatePose() throws IOException {
         Pose lastPose = pose;
@@ -245,7 +243,7 @@ public class Odometry {
         return p;
     }
 
-    /**Closes the json file that this Odometry is writing to.*/
+    /**Closes the JSON file that this Odometry is writing to.*/
     public void closeLog() throws IOException {
         logWriter.write("]");
         logWriter.close();

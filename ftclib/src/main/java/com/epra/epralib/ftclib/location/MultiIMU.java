@@ -34,7 +34,7 @@ public class MultiIMU {
         ROLL
     }
 
-    ArrayList<IMU> imus = new ArrayList<IMU>();
+    ArrayList<IMU> imus = new ArrayList<>();
 
     /**
      * Increases the functionality of the IMU class and combines data from multiple IMUs.
@@ -87,7 +87,7 @@ public class MultiIMU {
         }
         return Geometry.subtract(Geometry.average(angle), baseRoll);
     }
-    /**@param axis Axis of angle.
+    /**@param axis Axis of the angle.
      * @return The average angle of that axis.*/
     public Angle get(AXIS axis) {
         return switch (axis) {

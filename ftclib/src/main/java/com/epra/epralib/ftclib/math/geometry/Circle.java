@@ -4,10 +4,10 @@ package com.epra.epralib.ftclib.math.geometry;
  *Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class Circle implements Shape2D {
 
-    private Vector center;
-    private double radius;
-    private Angle start;
-    private Angle end;
+    private final Vector center;
+    private final double radius;
+    private final Angle start;
+    private final Angle end;
 
     /**Stores a full circle.
      * @param center The center Vector of the circle.

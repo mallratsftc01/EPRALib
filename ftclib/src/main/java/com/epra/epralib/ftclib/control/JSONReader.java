@@ -13,30 +13,29 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-/**A class to read json files for auto.
+/**A class to read JSON files for auto.
  * <p></p>
  * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class JSONReader {
 
-    private static Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
-    /**Reads objects of type T from a json.
-     * @param filename The filepath of the the json.
-     * @param directions The ArrayList the objects from the json will be added to.
+    /**Reads objects of type T from a JSON.
+     * @param filename The filepath of the JSON.
+     * @param directions The ArrayList the objects from the JSON will be added to.
      * @param listType The Type of the list (use new TypeToken<List<T>>() {}.getType())
-     * @return True if the file was properly read and List written to, false if not.*/
+     * @return True if the file was properly read and the List written to, false if not.*/
     public static boolean read(String filename, List<?> directions, Type listType) {
         File file = AppUtil.getInstance().getSettingsFile(filename);
         try (FileReader reader = new FileReader(file)) {
             directions.addAll(gson.fromJson(reader, listType));
         } catch (Exception e) { return false; }
-        if (directions.isEmpty()) { return false; }
-        return true;
+        return !directions.isEmpty();
     }
 
-    /**Reads a json file containing pid settings.
-     * @param filename The filepath of the json.
-     * @return A HashMap with string ids as keys and PIDGains records as values. Null if the file can not be found. */
+    /**Reads a JSON file containing pid settings.
+     * @param filename The filepath of the JSON.
+     * @return A HashMap with string ids as keys and PIDGains records as values. Null if the file cannot be found. */
     public static HashMap<String, PIDGains> readPIDGains(String filename) {
         ArrayList<PIDGains> list = new ArrayList<>();
         read(filename, list, new TypeToken<List<PIDGains>>() {}.getType());
@@ -47,8 +46,8 @@ public class JSONReader {
         return out;
     }
 
-    /**Reads filepaths from a json.
-     * @param filename The filepath of the json.
+    /**Reads filepaths from a JSON.
+     * @param filename The filepath of the JSON.
      * @return An array of filepaths.*/
     public static String[] readAuto(String filename) {
         Type stringListType = new TypeToken<List<String>>() {}.getType();

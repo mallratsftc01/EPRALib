@@ -50,7 +50,7 @@ public class Matrix {
         });
     }
 
-    private double[][] values;
+    private final double[][] values;
 
     /**Stores a matrix.
      * @param values The values that will fill the matrix. Only the first three rows and first three columns of those rows will be used. Empty values will be set to 0.*/

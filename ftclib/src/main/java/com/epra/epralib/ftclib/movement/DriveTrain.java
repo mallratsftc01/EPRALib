@@ -20,7 +20,7 @@ import com.epra.epralib.ftclib.storage.initialization.PIDGains;
  * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class DriveTrain {
     /**All the orientations a motor can be in relative to the DriveTrain.*/
-    public static enum Orientation {
+    public enum Orientation {
         RIGHT (Angle.degree(0.0)),
         LEFT (Angle.degree(0.0)),
         FRONT (Angle.degree(90.0)),
@@ -30,9 +30,9 @@ public class DriveTrain {
         LEFT_FRONT (Angle.degree(45.0)),
         LEFT_BACK (Angle.degree(315.0));
 
-        Angle angle;
+        final Angle angle;
 
-        Orientation(Angle a) { angle = a;};
+        Orientation(Angle a) { angle = a; }
 
         /**
          * @param o Orientation to be tested.
@@ -80,7 +80,7 @@ public class DriveTrain {
     }
 
     /**All the drive types currently available.*/
-    public static enum DriveType {
+    public enum DriveType {
         TANK,
         ARCADE,
         ZACHARIAN,
@@ -294,7 +294,7 @@ public class DriveTrain {
 
     /**
      * Field Oriented holonomic drive with mecanum wheels. Uses PID loops to reach the target position set. Created 11/27/2024.
-     * @param posTolerance The tolerance for reaching the target position as a double between 0.0 and 1.0. If this is set to 0.0 the pid will run indefinitely.
+     * @param posTolerance The tolerance for reaching the target position as a double between 0 and 1. If this is set to 0, the pid will run indefinitely.
      * @param angleTolerance The tolerance for reaching the target angle as a positive double. If this is set to 0, the pid will run indefinitely.
      * @param maxPower The maximum power of the motors.
      * @param haltAtTarget If true, the motors will halt once the target is reached within the set tolerance.
@@ -481,7 +481,7 @@ public class DriveTrain {
      * @return The vector of motion of the motor.*/
     public Vector motorVector(String motorName) { return new Vector(power.get(motorName), orientation.get(motorName).angle); }
 
-    /**@return The vector of motion of the DriveTrain as a combination of the vectors of motion of all the motors.*/
+    /**@return The vector of motion of the DriveTrain as a combination of the motion vectors from all motors.*/
     public Vector driveTrainVector() {
         Vector v = new Vector(0, 0);
         for (Map.Entry<String, MotorController> entry : motor.entrySet()) {

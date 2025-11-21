@@ -11,9 +11,9 @@ public class Vector {
     public static final Vector K_HAT = new Vector(0, 0, 1);
 
     private double length;
-    private Angle theta = new Angle(); //azimuthal angle (rotation around z)
-    private Angle phi = new Angle(); //polar angle, from the x,y plane
-    private double x, y, z;
+    private Angle theta; //azimuthal angle (rotation around z)
+    private Angle phi; //polar angle, from the x,y plane
+    private final double x, y, z;
     private Vector(double length, Angle theta, Angle phi, double x, double y, double z) {
         this.length = length;
         this.theta = theta;
@@ -38,7 +38,7 @@ public class Vector {
     /**Stores a vector.
      * @param length The length of the vector.
      * @param theta The angle of the vector around the z axis.
-     * @param phi The angle of the vector from the xy plane. (90 degrees is vertical upwards, -90 degrees is vertical downwards).*/
+     * @param phi The angle of the vector from the xy plane. (90 degrees is vertically upwards, -90 degrees is vertically downwards).*/
     public Vector(double length, Angle theta, Angle phi) {
         this(length, theta, phi, length * Geometry.cos(theta) * Geometry.cos(phi), length * Geometry.sin(theta) * Geometry.cos(phi), length * Geometry.sin(phi));
     }
@@ -74,7 +74,7 @@ public class Vector {
     public double length() { return length; }
     /**@return The angle of the vector around the z axis.*/
     public Angle theta() { return theta; }
-    /**@return The angle of the vector from the xy plane. (90 degrees is vertical upwards, -90 degrees is vertical downwards).*/
+    /**@return The angle of the vector from the xy plane. (90 degrees is vertically upwards, -90 degrees is vertically downwards).*/
     public Angle phi() { return phi; }
     /**@return The x coordinate of the vector.*/
     public double x() { return x; }
@@ -84,6 +84,7 @@ public class Vector {
     public double z() { return z; }
 
     /**@return The vector written in (x,y,z) form.*/
+    @Override
     public String toString() {
         return "(" + x + ", " + y + ", " + z + ")";
     }

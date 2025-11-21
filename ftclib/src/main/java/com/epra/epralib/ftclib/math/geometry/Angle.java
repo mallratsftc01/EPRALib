@@ -10,8 +10,8 @@ public class Angle {
     /**Represents an angle of 1.0 radian or ~57.296 degrees.*/
     public static final Angle RAD = Angle.radian(1);
 
-    private double radian;
-    private double degree;
+    private final double radian;
+    private final double degree;
 
     /**Stores an Angle value.
      *<p></p>
@@ -37,7 +37,9 @@ public class Angle {
         this.radian = (Math.PI / 180.0) * this.degree;
     }
     /**Stores an Angle value.*/
-    public Angle() { this.radian = 0.0; }
+    public Angle() {
+        this.degree = 0.0;
+        this.radian = 0.0; }
 
     /**@return The radian stored value;*/
     public double radian() { return this.radian;}

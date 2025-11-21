@@ -128,7 +128,7 @@ public class PIDController {
     }
 
     /**Updates all active PID loops.
-     * @returns True if PID loops were successfully updated, false if no PID loops were active.*/
+     * @return True if PID loops were successfully updated, false if no PID loops were active.*/
     public static boolean update() {
         if (activeIds.isEmpty() || saveTime == 0) {
             saveTime = System.currentTimeMillis();

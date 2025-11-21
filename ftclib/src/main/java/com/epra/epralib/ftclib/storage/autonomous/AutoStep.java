@@ -3,7 +3,7 @@ package com.epra.epralib.ftclib.storage.autonomous;
 import java.util.List;
 
 public class AutoStep {
-    private String comment = "";
+    private final String comment;
     private final long time;
     private final double timeWeight;
     private final DriveTrainAutoModule driveTrainModule;

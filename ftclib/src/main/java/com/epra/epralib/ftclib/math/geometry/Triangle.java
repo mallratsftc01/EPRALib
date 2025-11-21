@@ -4,8 +4,8 @@ package com.epra.epralib.ftclib.math.geometry;
  *Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class Triangle implements Shape2D{
 
-    private Vector a,b,c;
-    private Angle angleA, angleB, angleC;
+    private final Vector a,b,c;
+    private final Angle angleA, angleB, angleC;
 
     /**Stores a triangle with points a, b, c.
      * @param a Point a.

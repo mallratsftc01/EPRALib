@@ -56,7 +56,7 @@ public class Statistics {
      * @return An array of doubles.*/
     public static double[] toSet(ArrayList<Double> set) {
         double[] r = new double[set.size()];
-        for (int i = 0; i < r.length; i++) { r[i] = set.get(i).doubleValue(); }
+        for (int i = 0; i < r.length; i++) { r[i] = set.get(i); }
         return r;
     }
     /**Converts an ArrayList of longs to an Array.
@@ -64,7 +64,7 @@ public class Statistics {
      * @return An array of longs.*/
     public static long[] toTime(ArrayList<Long> set) {
         long[] r = new long[set.size()];
-        for (int i = 0; i < r.length; i++) { r[i] = set.get(i).longValue(); }
+        for (int i = 0; i < r.length; i++) { r[i] = set.get(i); }
         return r;
     }
 }

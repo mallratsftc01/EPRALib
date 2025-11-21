@@ -38,7 +38,7 @@ public class TeleOpExample extends LinearOpMode {
     private Controller controller1;
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
 
         try {
             //Setting up the IMU

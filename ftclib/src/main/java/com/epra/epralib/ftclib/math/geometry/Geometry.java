@@ -1,7 +1,5 @@
 package com.epra.epralib.ftclib.math.geometry;
 
-import org.opencv.core.Mat;
-
 /**A class that adds many geometric functions for many uses.
  *<p></p>
  *Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
@@ -9,11 +7,11 @@ public class Geometry {
 
     /**@param angle1 First angle.
      * @param angle2 Second angle.
-     * @return The resulting angle from adding the first to the second, in a range between 0 and 360 degrees (0 to 2pi).*/
+     * @return The resulting angle from adding the first to the second, in a range between 0 and 360 degrees (0 to 2π).*/
     public static Angle add(Angle angle1, Angle angle2) { return Angle.degree((angle1.degree() + angle2.degree()) % 360); }
     /**@param angle1 First angle.
      * @param angle2 Second angle.
-     * @return The resulting angle from subtracting the second from the first, in a range between 0 and 360 degrees (0 to 2pi).*/
+     * @return The resulting angle from subtracting the second from the first, in a range between 0 and 360 degrees (0 to 2π).*/
     public static Angle subtract(Angle angle1, Angle angle2) { return Angle.degree((angle1.degree() - angle2.degree()) % 360); }
     /**@param angle Array of angles.
      * @return The average angle of the array.*/
@@ -48,13 +46,13 @@ public class Geometry {
      * @return The trigonometric cotangent value of an angle.*/
     public static double cot(Angle angle) { return 1.0 / Math.tan(angle.radian()); }
     /**@param a The value whose arc sine is to be returned.
-     * @return The arc sine of a value; the returned angle is in the range -pi/2 to pi/2.*/
+     * @return The arc sine of a value; the returned angle is in the range -π/2 to π/2.*/
     public static Angle asin(double a) { return Angle.radian(Math.asin(a)); }
     /**@param a The value whose arc cosine is to be returned.
-     * @return The arc cosine of a value; the returned angle is in the range 0.0 to pi.*/
+     * @return The arc cosine of a value; the returned angle is in the range 0 to π.*/
     public static Angle acos(double a) { return Angle.radian(Math.acos(a)); }
     /**@param a The value whose arc tangent is to be returned.
-     * @return The arc tangent of a value; the returned angle is in the range -pi/2 to pi/2.*/
+     * @return The arc tangent of a value; the returned angle is in the range -π/2 to π/2.*/
     public static Angle atan(double a) { return Angle.radian(Math.atan(a)); }
     /**@param x The x coordinate.
      * @param y The y coordinate.

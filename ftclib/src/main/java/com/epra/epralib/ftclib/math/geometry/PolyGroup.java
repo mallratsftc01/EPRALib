@@ -9,7 +9,7 @@ import java.util.Collections;
 public class PolyGroup implements Shape2D {
 
     /**All the geometric components of the PolyGroup.*/
-    ArrayList<Shape2D> components = new ArrayList<Shape2D>();
+    ArrayList<Shape2D> components = new ArrayList<>();
 
     /**Holds a group of geometric components.
      *@param components Geometric components to form the PolyGroup.*/
@@ -30,7 +30,9 @@ public class PolyGroup implements Shape2D {
     /**@return The area of the PolyGroup. Overlapped area between components may be over counted, leading to inaccurate counts. To be fixed.*/
     public double getArea() {
         double area = 0.0;
-        for (int i = 0; i < components.size(); i++) { area += components.get(i).getArea(); }
+        for (Shape2D component : components) {
+            area += component.getArea();
+        }
         return area;
     }
 

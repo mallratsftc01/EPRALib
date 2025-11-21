@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**Extends the Gamepad Class.
@@ -55,16 +56,16 @@ public class Controller extends Gamepad {
         LEFT_STICK
     }
 
-    /**A map containing all of the buttons and corresponding keys.*/
+    /**A map containing all buttons and corresponding keys.*/
     public Map<Key, ButtonBase> map = new HashMap<>();
     public Map<String, ButtonBase> chords = new HashMap<>();
     public Map<Stick, VectorButton> stick = new HashMap<>();
 
     private float deadband;
 
-    private File logJson;
-    private FileWriter logWriter;
-    private Gson gson;
+    private final File logJson;
+    private final FileWriter logWriter;
+    private final Gson gson;
 
     /**Extends the Gamepad Class.
      * <p></p>
@@ -99,7 +100,7 @@ public class Controller extends Gamepad {
 
         gson = new Gson();
 
-        SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
+        SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm", Locale.US);
         logJson = AppUtil.getInstance().getSettingsFile("logs/Controller_" + id + "_log_" + ft.format(new Date()) + ".json");
         logWriter = new FileWriter(logJson, true);
         logWriter.write("[");
@@ -152,10 +153,7 @@ public class Controller extends Gamepad {
     /**@param joystick Corresponding stick for joystick
      * @param power The power to be raised to.
      * @return The vector associated with the stick, length raised to the power.*/
-    public Vector analogPowerDeadband(Stick joystick, float power) {
-        Vector v = new Vector(Math.signum(stick.get(joystick).getVector().length() * (float)Math.pow(Math.abs(stick.get(joystick).getVector().length()), power)), stick.get(joystick).getVector().theta());
-        return (Math.abs(v.length()) > deadband) ? v : new Vector(0,0);
-    }
+    public Vector analogPowerDeadband(Stick joystick, float power) { return analogPowerDeadband(joystick, power, deadband); }
     /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.
      * @param analog Corresponding key for analog.
      * @param power Power to be raised to.
@@ -217,7 +215,7 @@ public class Controller extends Gamepad {
     /**Returns the output of getToggle as an int.
      * @param button Corresponding key for button.*/
     public int getToggleInt(Key button) {return boolToInt(buttonToggleSingle(button));}
-    /**If the counter is more than or equal to max it will be clear and return zero. If not, the counter will increase by one and return the result.
+    /**If the counter is more than or equal to max, it will be clear and return zero. If not, the counter will increase by one and return the result.
      * @param button Corresponding key for button.
      * @param max The maximum value of the counter.*/
     public int buttonCounter(Key button, int max) {
@@ -312,7 +310,7 @@ public class Controller extends Gamepad {
     /**Returns the output of getToggle as an int.
      * @param chord String id for the chord.*/
     public int getToggleInt(String chord) {return boolToInt(buttonToggleSingle(chord));}
-    /**If the counter is more than or equal to max it will be clear and return zero. If not, the counter will increase by one and return the result.
+    /**If the counter is more than or equal to max, it will be clear and return zero. If not, the counter will increase by one and return the result.
      * @param chord String id for the chord.
      * @param max The maximum value of the counter.*/
     public int buttonCounter(String chord, int max) {
@@ -350,7 +348,7 @@ public class Controller extends Gamepad {
      * @param b The input boolean.*/
     public int boolToInt(boolean b) {return (b) ? 1 : 0;}
 
-    /**Saves Controller data to internal logs. Also saves log data to a json file on the robot for post-match analysis.
+    /**Saves Controller data to internal logs. Also saves log data to a JSON file on the robot for post-match analysis.
      * @return A IMUData record with data from this log.*/
     public ControllerData log() throws IOException {
         ControllerData data = new ControllerData(
@@ -377,7 +375,7 @@ public class Controller extends Gamepad {
         return data;
     }
 
-    /**Closes the json file that this Controller is writing to.*/
+    /**Closes the JSON file that this Controller is writing to.*/
     public void closeLog() throws IOException {
         logWriter.write("]");
         logWriter.close();

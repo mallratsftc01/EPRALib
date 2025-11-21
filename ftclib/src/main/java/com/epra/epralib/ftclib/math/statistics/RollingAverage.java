@@ -19,7 +19,7 @@ public class RollingAverage {
         REVERSE_LINEAR(RollingAverage::reverseLinearBias),
         FLAT(RollingAverage::flatBias);
 
-        BiFunction<Integer, Integer, Double> use;
+        final BiFunction<Integer, Integer, Double> use;
 
         Bias(BiFunction<Integer, Integer, Double> f) { this.use = f; }
     }
@@ -31,8 +31,8 @@ public class RollingAverage {
         NONE,
     }
 
-    private ArrayList<Double> buffer;
-    private ArrayList<Double> averageBuffer;
+    private final ArrayList<Double> buffer;
+    private final ArrayList<Double> averageBuffer;
     private int bufferSize;
     private Bias biasType;
     private int autoClearThreshold;
@@ -45,12 +45,7 @@ public class RollingAverage {
      * @param bufferSize Size of the buffer.
      * @param biasType Type of bias to use in averages.*/
     public RollingAverage(int bufferSize, Bias biasType) {
-        buffer = new ArrayList<Double>();
-        averageBuffer = new ArrayList<Double>();
-        this.bufferSize = bufferSize;
-        this.biasType = biasType;
-        this.autoClearThreshold = 0;
-        this.thresholdType = Threshold.NONE;
+        this(bufferSize, biasType, Threshold.NONE, 0);
     }
 
     /**A rolling average of values stored in a buffer.
@@ -62,8 +57,8 @@ public class RollingAverage {
      * @param thresholdType The type of auto clear threshold to use.
      * @param threshold the threshold value.*/
     public RollingAverage(int bufferSize, Bias biasType, Threshold thresholdType, int threshold) {
-        buffer = new ArrayList<Double>();
-        averageBuffer = new ArrayList<Double>();
+        buffer = new ArrayList<>();
+        averageBuffer = new ArrayList<>();
         this.bufferSize = bufferSize;
         this.biasType = biasType;
         this.autoClearThreshold = threshold;
@@ -111,8 +106,7 @@ public class RollingAverage {
      * @return True if the buffer should be cleared.*/
     public static boolean noChangeThreshold(Double[] buffer, int threshold) {
         double save = buffer[buffer.length - 1];
-        for (int i = 2; i < threshold; i++) { if (buffer[buffer.length - i] != save) { return true; } }
-        return false;
+        return noChangeThreshold(buffer, threshold, save);
     }
     /**Determines if recent values have all been the same, suggesting that the buffer should be cleared.
      * @param buffer The buffer of values.
@@ -141,21 +135,7 @@ public class RollingAverage {
     /**@param value A value to add to the buffer.
      * @return The weighted average value of the buffer.*/
     public double addValue(double value) {
-        buffer.add(value);
-        while (buffer.size() > bufferSize) { buffer.remove(0); }
-        averageBuffer.add(getAverage());
-        while (averageBuffer.size() > autoClearThreshold) { averageBuffer.remove(0); }
-        if (buffer.size() > autoClearThreshold) {
-            if (switch (thresholdType) {
-                case NO_CHANGE -> noChangeThreshold((Double[]) buffer.toArray(), autoClearThreshold);
-                case NO_CHANGE_ZERO -> noChangeThreshold((Double[]) buffer.toArray(), autoClearThreshold, 0);
-                case NO_CHANGE_AVERAGE -> averageThreshold((Double[]) averageBuffer.toArray());
-                case NONE -> false;
-            } ) {
-                buffer.clear();
-            }
-        }
-        return getAverage();
+        return addValue(new double[] { value });
     }
     /**@param set Set of values to add to the buffer.
      * @return The weighted average value of the buffer.*/
@@ -166,13 +146,12 @@ public class RollingAverage {
             averageBuffer.add(getAverage());
         }
         if (buffer.size() > autoClearThreshold) {
-            if (switch (thresholdType) {
-                case NO_CHANGE -> noChangeThreshold((Double[]) buffer.toArray(), autoClearThreshold);
-                case NO_CHANGE_ZERO -> noChangeThreshold((Double[]) buffer.toArray(), autoClearThreshold, 0);
-                case NO_CHANGE_AVERAGE -> averageThreshold((Double[]) averageBuffer.toArray());
-                case NONE -> false;
-            } ) {
-                buffer.clear();
+            switch (thresholdType) {
+                case NO_CHANGE -> buffer.toArray();
+                case NO_CHANGE_ZERO -> buffer.toArray();
+                case NO_CHANGE_AVERAGE -> averageBuffer.toArray();
+                case NONE -> {
+                }
             }
         }
         return getAverage();

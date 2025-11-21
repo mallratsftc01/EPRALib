@@ -9,14 +9,14 @@ import java.util.List;
 public class CameraPlus {
     public static final boolean USE_WEBCAM = true;
     private List<AprilTagDetection> currentDetections;
-    private AprilTagProcessor aprilTag;
-    private VisionPortal visionPortal;
+    private final AprilTagProcessor aprilTag;
+    private final VisionPortal visionPortal;
     private int targetID;
 
     public CameraPlus (AprilTagProcessor aprilTag, VisionPortal visionPortal) {
         this.aprilTag = aprilTag;
         this.visionPortal = visionPortal;
-        currentDetections = new ArrayList<AprilTagDetection>();
+        currentDetections = new ArrayList<>();
         updateDetections();
         startingTarget();
     }
@@ -43,7 +43,10 @@ public class CameraPlus {
         boolean r = false;
         updateDetections();
         for (AprilTagDetection detection : currentDetections) {
-            if (detection.metadata != null && detection.id == targetID) {r = true;}
+            if (detection.metadata != null && detection.id == targetID) {
+                r = true;
+                break;
+            }
         }
         return r;
     }

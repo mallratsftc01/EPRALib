@@ -11,7 +11,7 @@ public class AprilTagLocator {
      * @param x X of a detection pose.
      * @param y Y of a detection pose.
      * @param z Z of a detection pose.
-     * @param c Distance from the camera to center of robot.
+     * @param c Distance from the camera to the center of the robot.
      * @param yaw Yaw angle of the robot relative to the AprilTag in radians.
      * @param pitch Pitch angle of the robot relative to the AprilTag in radians.
      * @return A double array of length 2 with [x, y] coordinates of the robot relative to the AprilTag
@@ -45,7 +45,7 @@ public class AprilTagLocator {
      * @return A double array of length 2 with [x, y].
      */
     public double[] toCartesian (double[] polar) {
-        double ret[] = new double[2];
+        double[] ret = new double[2];
         ret[0] = polar[0] * Math.cos(polar[1]);
         ret[1] = polar[0] * Math.sin(polar[1]);
         return ret;

@@ -17,8 +17,8 @@ import java.util.HashMap;
 public class MultiColorSensor {
 
     private final ArrayList<NormalizedColorSensor> colorSensors = new ArrayList<>();
-    private Vector BLACK;
-    private Vector WHITE;
+    private final Vector BLACK;
+    private final Vector WHITE;
     private final HashMap<String, Vector> colorMap = new HashMap<>();
 
     /**Increases the functionality of the color sensor and can combine data from multiple color sensors.
