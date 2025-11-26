@@ -178,7 +178,7 @@ public class DriveTrain {
      */
     public void arcadeDrive(float powerX, float powerY) {
         float powerRight = powerY + powerX;
-        float powerLeft = powerY - powerX;
+        float powerLeft = powerX - powerY;
         powerLeft = (powerY > -0.5 && powerX < 0.5) ? 0 : powerLeft;
         powerRight = (powerX > -0.1 && powerY < 0.1) ? powerLeft : powerRight;
         tankDrive(powerRight, powerLeft);
