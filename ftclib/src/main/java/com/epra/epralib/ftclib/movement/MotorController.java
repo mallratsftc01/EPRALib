@@ -3,6 +3,8 @@ package com.epra.epralib.ftclib.movement;
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 
+import com.qualcomm.robotcore.hardware.Servo;
+
 import com.epra.epralib.ftclib.math.geometry.Angle;
 import com.epra.epralib.ftclib.storage.autonomous.MotorControllerAutoModule;
 import com.epra.epralib.ftclib.storage.logdata.MotorControllerData;
@@ -17,23 +19,43 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**Gives increase control over DcMotorExs.
- *<p></p>
- * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
+/// Wraps a [Motor] for increased control and flexibility.
+///
+/// Queer Coded by Striker-909.
+/// If you use this class or a method from this class in its entirety, please make sure to give credit.
 public class MotorController implements Motor {
 
     private final Motor motor;
+
+    /// A tag that will identify the log files from this motor controller.
+    ///
+    /// Log files can be found in the robot controller's internal file system at
+    /// `sdcard/FIRST/settings/logs/MotorController_ID_log_DATETIME.json`.
+    ///
+    /// **Will not log if [#positionMonitoringEnabled()] is `False`.**
     private final String id;
-    private int ticksPerRevolution;
+    /// The number of ticks per one rotation for this motor controller.
+    ///
+    /// The number of ticks in one revolution varies by motor, but should be listed on the motor's product page.
+    ///
+    /// - A [REV HD Hex Motor](https://www.revrobotics.com/REV-41-1291/) with no gearboxes will have 28 ticks per revolution.
+    /// - A [REV Core Hex Motor](https://www.revrobotics.com/rev-41-1300/) will have 288 ticks per revolution.
+    /// - The ticks per revolution for a [Servo] will depend on where the right and left positions are set.
+    private final double ticksPerRevolution;
 
     private double velocity;
-    private int savePos;
+    private double savePos;
     private long saveTime;
     private final long startTime;
 
-    private int startPos;
-    private int targetPosition;
-    private int lastTarget;
+    /// The start position for the motor controller.
+    ///
+    /// This position is seen as 0 by the motor controller.
+    /// The outputs of [#getCurrentPosition()] will be relative to the start position.
+    /// The units of this position are specific to the motor.
+    private double startPos;
+    private double targetPosition;
+    private double lastTarget;
     private double lastPIDTOutput;
 
     private double targetVelocity;
@@ -45,22 +67,34 @@ public class MotorController implements Motor {
     private final FileWriter logWriter;
     private final Gson gson;
 
-    /**Gives increase control over DcMotorExs. Logs data in a JSON file on the robot for post-match analysis.
-     * Sets the initial position to the motor's current position and the ticks per revolution to 1440.
-     * @param motor The motor to be used by this MotorController.
-     * @param id A string that identifies the log files of this MotorController.*/
-    public MotorController(Motor motor, String id) throws IOException {
+    private final DriveTrain.Orientation driveOrientation;
+
+    /// Wraps a [Motor] for increased control and flexibility.
+    ///
+    /// Logs JSON files on the robot for post-match analysis.
+    ///
+    /// PID loops are not initialized. They can be initialized through the tune functions.
+    /// @param motor The motor to be wrapped
+    /// @param id A tag that will identify the log files from this motor controller
+    /// @param startPosition The start position for the motor controller
+    /// @param ticksPerRevolution The number of ticks in one revolution of the motor's axle
+    /// @param driveOrientation The drive orientation of this motor if it is a drive motor (can be null if this motor is not a drive motor)
+    ///
+    /// @see #id
+    /// @see #startPos
+    /// @see #ticksPerRevolution
+    /// @see com.epra.epralib.ftclib.movement.DriveTrain.Orientation
+    public MotorController(Motor motor, String id, double startPosition, double ticksPerRevolution, DriveTrain.Orientation driveOrientation) throws IOException {
         this.motor = motor;
         this.id = id;
-        this.ticksPerRevolution = 1440;
+        this.ticksPerRevolution = ticksPerRevolution;
+        this.driveOrientation = driveOrientation;
 
         velocity = 0;
-        startPos = motor.getCurrentPosition();
+        startPos = startPosition;
         targetPosition = startPos;
         lastTarget = startPos;
         targetVelocity = 0;
-        PIDController.addPID(id + "_T", 1, 0, 0, this::getTargetError, false);
-        PIDController.addPID(id + "_V", 1, 0, 0, this::getVelocityError, false);
         lastPIDTOutput = 0.0;
         lastPIDVOutput = 0.0;
         savePos = startPos;
@@ -68,167 +102,423 @@ public class MotorController implements Motor {
         startTime = saveTime;
         holdPow = 0.0;
 
-        gson = new Gson();
+        if (motor.positionMonitoringEnabled()) {
+            gson = new Gson();
 
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
 
-        logJson = AppUtil.getInstance().getSettingsFile("logs/MotorController_" + id + "_log_" + ft.format(new Date()) + ".json");
-        logWriter = new FileWriter(logJson, true);
-        logWriter.write("[");
+            logJson = AppUtil.getInstance().getSettingsFile("logs/MotorController_" + id + "_log_" + ft.format(new Date()) + ".json");
+            logWriter = new FileWriter(logJson, true);
+            logWriter.write("[");
+        } else {
+            gson = null;
+            logJson = null;
+            logWriter = null;
+        }
     }
 
-    /**Gives increase control over DcMotorExs. Logs data in a JSON file on the robot for post-match analysis.
-     * Sets the ticks per revolution to 1440.
-     * @param motor The motor to be used by this MotorController.
-     * @param id A string that identifies the log files of this MotorController.
-     * @param startPos The initial position of the motor in motor ticks.*/
-    public MotorController(Motor motor, String id, int startPos) throws IOException {
-        this(motor, id);
-        this.startPos = startPos;
+    /// Wraps a [Motor] for increased control and flexibility.
+    ///
+    /// Logs JSON files on the robot for post-match analysis.
+    ///
+    /// Default parameters:
+    /// - The id is the device name of the motor.
+    /// - The starting position is the current position of the motor, or 0 if [#positionMonitoringEnabled()] is `False` for the motor.
+    /// - The ticks per revolution are 28, default for a [REV HD Hex Motor](https://www.revrobotics.com/REV-41-1291/) with no gearboxes.
+    /// - PID loops not initialized. They can be initialized through the tune functions.
+    /// - No [DriveTrain.Orientation].
+    /// @param motor The motor to be wrapped
+    public MotorController(Motor motor) throws IOException { this(motor, motor.toString(), motor.getCurrentPosition(), 28, null); }
+    /// Wraps a [Motor] for increased control and flexibility.
+    ///
+    /// Logs JSON files on the robot for post-match analysis.
+    ///
+    /// Default parameters:
+    /// - The starting position is the current position of the motor, or 0 if [#positionMonitoringEnabled()] is `False` for the motor.
+    /// - The ticks per revolution are 28, default for a [REV HD Hex Motor](https://www.revrobotics.com/REV-41-1291/) with no gearboxes.
+    /// - PID loops not initialized. They can be initialized through the tune functions.
+    /// - No [DriveTrain.Orientation].
+    /// @param motor The motor to be wrapped
+    /// @param id A tag that will identify the log files from this motor controller
+    ///
+    /// @see #id
+    public MotorController(Motor motor, String id) throws IOException { this(motor, id, motor.getCurrentPosition(), 28, null); }
+
+    /// A builder for a [MotorController].
+    public static class Builder {
+        private final Motor motor;
+        private String id;
+        private double startPosition;
+        private double ticksPerRevolution;
+        private DriveTrain.Orientation driveOrientation;
+        private double kp_t, ki_t, kd_t;
+        private double kp_v, ki_v, kd_v;
+        private boolean tuneT, tuneV;
+        /// A builder for a [MotorController].
+        ///
+        /// Starts with default parameters:
+        /// - The id is the device name of the motor.
+        /// - The starting position is the current position of the motor, or 0 if [#positionMonitoringEnabled()] is `False` for the motor.
+        /// - The ticks per revolution are 28, default for a [REV HD Hex Motor](https://www.revrobotics.com/REV-41-1291/) with no gearboxes.
+        /// - PID loops not initialized.
+        /// - No [DriveTrain.Orientation].
+        /// @param motor The motor to be wrapped
+        ///
+        /// @see #id(String)
+        /// @see #startPosition(double)
+        /// @see #startAngle(Angle)
+        /// @see #ticksPerRevolution(double)
+        /// @see #driveOrientation(DriveTrain.Orientation)
+        /// @see #targetPIDConstants(double, double, double)
+        /// @see #velocityPIDConstants(double, double, double)
+        /// @see #build()
+        public Builder (Motor motor) {
+            this.motor = motor;
+            id = motor.toString();
+            startPosition = (motor.positionMonitoringEnabled()) ? motor.getCurrentPosition() : 0;
+            ticksPerRevolution = 28;
+            tuneT = tuneV = false;
+        }
+        /// Sets the id for the [MotorController].
+        ///
+        /// Log files can be found in the robot controller's internal file system at
+        /// `sdcard/FIRST/settings/logs/MotorController_ID_log_DATETIME.json`.
+        ///
+        /// **Will not log if [#positionMonitoringEnabled()] is `False`.**
+        /// @param id A tag that will identify the log files from this motor controller
+        /// @return This builder
+        public Builder id(String id) { this.id = id; return this; }
+        /// Sets the start position for the [MotorController].
+        ///
+        /// This position is seen as 0 by the motor controller.
+        /// The outputs of [#getCurrentPosition()] will be relative to the start position.
+        /// The units of this position are specific to the motor.
+        /// @param startPosition The start position for the motor controller
+        /// @return This builder
+        ///
+        /// @see #ticksPerRevolution(double)
+        /// @see #startAngle(Angle)
+        /// @see #startPositionOffset(double)
+        /// @see #startAngleOffset(Angle)
+        public Builder startPosition(double startPosition) { this.startPosition = startPosition; return this; }
+        /// Sets the start position for the [MotorController] by offsetting from the current position.
+        ///
+        /// This position is seen as 0 by the motor controller.
+        /// The outputs of [#getCurrentPosition()] will be relative to the start position.
+        /// The units of this position are specific to the motor.
+        /// If [#positionMonitoringEnabled()] is `False`, this will have no effect.
+        /// @param offset The offset to add to the current position
+        /// @return This builder
+        ///
+        /// @see #ticksPerRevolution(double)
+        /// @see #startPosition(double)
+        /// @see #startPositionOffset(double)
+        /// @see #startAngleOffset(Angle)
+        public Builder startPositionOffset(double offset) { if (motor.positionMonitoringEnabled()) this.startPosition = offset + motor.getCurrentPosition(); return this; }
+        /// Sets the start [Angle] for the [MotorController].
+        ///
+        /// Calculates a start position based on the start angle and the ticks per revolution.
+        ///
+        /// This start position is seen as 0 by the motor controller.
+        /// The outputs of [#getCurrentPosition()] will be relative to the start position.
+        ///
+        /// If [#positionMonitoringEnabled()] is `True` for the motor, the start position will be offset to make the start
+        /// angle relative to the 0 degrees clockwise from the current position of the motor axle.
+        /// @param startAngle The angle from which the start position will be calculated
+        /// @return This builder
+        ///
+        /// @see #ticksPerRevolution(double)
+        /// @see #startPosition(double)
+        /// @see #startAngle(Angle)
+        /// @see #startAngleOffset(Angle)
+        public Builder startAngle(Angle startAngle) {
+            this.startPosition = startAngle.radian() * ticksPerRevolution / (2 * Math.PI);
+            if (motor.positionMonitoringEnabled()) { this.startPosition += motor.getCurrentPosition() - (motor.getCurrentPosition() % ticksPerRevolution); }
+            return this;
+        }
+        /// Sets the start position for the [MotorController] by offsetting by an [Angle] from the current position.
+        ///
+        /// This position is seen as 0 by the motor controller.
+        /// The outputs of [#getCurrentPosition()] will be relative to the start position.
+        /// The units of this position are specific to the motor.
+        /// If [#positionMonitoringEnabled()] is `False`, this will have no effect.
+        /// @param offset The angular offset to add to the current position
+        /// @return This builder
+        ///
+        /// @see #ticksPerRevolution(double)
+        /// @see #startPosition(double)
+        /// @see #startAngle(Angle)
+        /// @see #startPositionOffset(double)
+        /// @see #targetPIDConstants(double, double, double)
+        /// @see #velocityPIDConstants(double, double, double)
+        public Builder startAngleOffset(Angle offset) { this.startPositionOffset(offset.radian() * ticksPerRevolution / (2 * Math.PI)); return this;}
+        /// Sets the ticks per rotation for the [MotorController].
+        ///
+        /// The number of ticks in one revolution varies by motor, but should be listed on the motor's product page.
+        ///
+        /// - A [REV HD Hex Motor](https://www.revrobotics.com/REV-41-1291/) with no gearboxes will have 28 ticks per revolution.
+        /// - A [REV Core Hex Motor](https://www.revrobotics.com/rev-41-1300/) will have 288 ticks per revolution.
+        /// - The ticks per revolution for a [Servo] will depend on where the right and left positions are set.
+        ///
+        /// @param ticksPerRevolution The number of ticks in one revolution of the motor's axle
+        /// @return This builder
+        public Builder ticksPerRevolution(double ticksPerRevolution) { this.ticksPerRevolution = ticksPerRevolution; return this; }
+
+        /// Sets an [DriveTrain.Orientation] for this motor controller.
+        ///
+        /// This allows for the [DriveTrain] to automatically recognize this motor controller's orientation without needing
+        /// to set it separately. Only use if this motor is a drive motor.
+        /// @param orientation The orientation of this motor on the robot
+        /// @see DriveTrain.Builder#motor(MotorController)
+        public Builder driveOrientation(DriveTrain.Orientation orientation) { this.driveOrientation = orientation; return this; }
+        /// Tunes and initializes the PID loop used in [#moveToTarget(double, double, boolean)] using
+        /// [PIDController#tune(String, double, double, double)].
+        /// @param kp The `p` constant
+        /// @param ki The `i` constant
+        /// @param kd The `d` constant
+        /// @return This builder
+        ///
+        /// @see PIDController
+        public Builder targetPIDConstants(double kp, double ki, double kd) {
+            kp_t = kp; ki_t = ki; kd_t = kd;
+            tuneT = true;
+            return this;
+        }
+        /// Tunes and initializes the PID loop used in [#moveToTarget(double, double, boolean)] using
+        /// [PIDController#tune(String, PIDGains)].
+        /// @param pidGains A record with instructions to tune the PID loop
+        /// @return This builder
+        ///
+        /// @see PIDController
+        public Builder targetPIDConstants(PIDGains pidGains) {
+            kp_t = pidGains.kp(); ki_t = pidGains.ki(); kd_t = pidGains.kd();
+            tuneT = true;
+            return this;
+        }
+        /// Tunes and initializes the PID loop used in [#maintainVelocity()] using
+        /// [PIDController#tune(String, double, double, double)].
+        /// @param kp The `p` constant
+        /// @param ki The `i` constant
+        /// @param kd The `d` constant
+        /// @return This builder
+        ///
+        /// @see PIDController
+        public Builder velocityPIDConstants(double kp, double ki, double kd) {
+            kp_v = kp; ki_v = ki; kd_v = kd;
+            tuneV = true;
+            return this;
+        }
+        /// Tunes and initializes the PID loop used in [#maintainVelocity()] using
+        /// [PIDController#tune(String, PIDGains)].
+        /// @param pidGains A record with instructions to tune the PID loop
+        /// @return This builder
+        ///
+        /// @see PIDController
+        public Builder velocityPIDConstants(PIDGains pidGains) {
+            kp_v = pidGains.kp(); ki_v = pidGains.ki(); kd_v = pidGains.kd();
+            tuneV = true;
+            return this;
+        }
+
+        /// Builds a [MotorController] from this builder.
+        /// @return The motor controller built by this builder
+        public MotorController build() throws IOException {
+            MotorController mc = new MotorController(motor, id, startPosition, ticksPerRevolution, driveOrientation);
+            if (tuneT) mc.tuneTargetPID(kp_t, ki_t, kd_t);
+            if (tuneV) mc.tuneVelocityPID(kp_v, ki_v, kd_v);
+            return mc;
+        }
     }
 
-    /**Gives increase control over DcMotorExs. Logs data in a JSON file on the robot for post-match analysis.
-     * @param motor The motor to be used by this MotorController.
-     * @param id A string that identifies the log files of this MotorController.
-     * @param startPos The initial position of the motor in motor ticks.
-     * @param ticksPerRevolution The number of motor ticks per revolution.*/
-    public MotorController(Motor motor, String id, int startPos, int ticksPerRevolution) throws IOException {
-        this(motor, id, startPos);
-        this.ticksPerRevolution = ticksPerRevolution;
-    }
-
-    /**Gives increase control over DcMotorExs. Logs data in a JSON file on the robot for post-match analysis.
-     * @param motor The motor to be used by this MotorController.
-     * @param id A string that identifies the log files of this MotorController.
-     * @param startAngle The initial angle of the motor.
-     * @param ticksPerRevolution The number of motor ticks per revolution.*/
-    public MotorController(Motor motor, String id, Angle startAngle, int ticksPerRevolution) throws IOException {
-        this(motor, id);
-        int t = motor.getCurrentPosition();
-        this.startPos = (t - (t % ticksPerRevolution)) + (int) (ticksPerRevolution * (startAngle.degree() / 360));
-        this.ticksPerRevolution = ticksPerRevolution;
-    }
-
-    /**Returns whether the contained Motor is energized.*/
+    /// {@inheritDoc}
     @Override
     public boolean isEnabled() { return motor.isEnabled(); }
-    /**Energizes the Motor contained within this MotorController.*/
+    /// {@inheritDoc}
     @Override
     public void setEnabled() { motor.setEnabled(); }
-    /**De-energizes the Motor contained within this MotorController.*/
+    /// {@inheritDoc}
     @Override
     public void setDisabled() { motor.setDisabled(); }
 
-    /**Sets the logical direction in which this motor operates.
-     * @param direction The direction to set for this motor.*/
+    /// {@inheritDoc}
     @Override
     public void setDirection(Direction direction) { motor.setDirection(direction);}
-    /**Returns the current logical direction in which this motor is set as operating.
-     * @return A direction, forward or reverse.*/
+    /// {@inheritDoc}
     @Override
     public Direction getDirection() {
         return motor.getDirection();
     }
 
-    /**Returns true if the motor contained by this MotorController can be set to run at a specific power.
-     * @return If power is enabled for the underlying motor.*/
+    /// Returns the [DriveTrain.Orientation] of this motor if it is drive motor, or null if it is not.
+    /// @return The orientation of this motor
+    public DriveTrain.Orientation getDriveOrientation() { return this.driveOrientation; }
+
+    /// {@inheritDoc}
+    /// @return If the amount of power sent to the wrapped motor can be controlled or monitored
     @Override
     public boolean powerEnabled() { return motor.powerEnabled(); }
-    /**Sets the motor to a certain power between -1.0 and 1.0.
-     * @param power The power to set the motor to.*/
-    public void setPower(double power) { motor.setPower(power + (holdPow * getCurrentPosition())); }
-    /**Stops the motor.*/
+    /// {@inheritDoc}
+    public void setPower(double power) { motor.setPower(power + ((positionMonitoringEnabled()) ? (holdPow * getCurrentPosition()) : 0)); }
+    /// Stops the wrapped motor by setting its power to 0.
+    /// @see #setPower(double)
     public void stop() { motor.setPower(0.0); }
 
-    /**Saves motor data to internal logs. Also saves log data to a JSON file on the robot for post-match analysis.
-     * @return A MotorControllerData record with data from this log.*/
-    public MotorControllerData log() throws IOException {
-        int posChange = motor.getCurrentPosition() - savePos;
-        long timeChange = System.currentTimeMillis() - saveTime;
-        savePos += posChange;
-        saveTime += timeChange;
-        velocity = (double) posChange / (double) timeChange * 1000;
-        MotorControllerData data = new MotorControllerData(saveTime - startTime, motor.getPower(), savePos, targetPosition, velocity, targetVelocity, lastPIDTOutput, lastPIDVOutput);
-        logWriter.write("\n" + gson.toJson(data) + ",");
-        return data;
-    }
-
-    /**Closes the JSON file that this MotorController is writing to.*/
-    public void closeLog() throws IOException {
-        logWriter.write("]");
-        logWriter.close();
-    }
-
-    /**Returns true if the motor contained by this MotorController can read its current position.
-     * @return If position is enabled for the underlying motor.*/
-    @Override
-    public boolean positionEnabled() { return motor.positionEnabled(); }
-    /**Returns the current reading of the motor's encoder in ticks relative to the start position.
-     * These ticks are specific to the encoder of a certain motor; google the ticks/revolution for your motor for best results.
-     * If the encoder wire for this motor is not connected to the motor (i.e., if it's instead connected to an odometry pod), this number will not reflect the movement of this encoder.
-     * @return The current reading of the motor's encoder. */
-    @Override
-    public int getCurrentPosition() { return motor.getCurrentPosition() - startPos; }
-
-    /**Returns the current angle of the motor based on the encoder reading.
-     * @return The current angle of the motor.*/
-    public Angle getCurrentAngle() { return Angle.degree((getCurrentPosition() % ticksPerRevolution) * 360.0 / ticksPerRevolution); }
-
-    /**Returns the recent average velocity of the motor in ticks per second.
-     * These ticks are specific to the encoder of a certain motor; google the ticks/revolution for your motor for best results.
-     * If the encoder wire for this motor is not connected to the motor (i.e., if it's instead connected to an odometry pod), this number will not reflect the movement of this encoder.
-     * @return The recent average velocity of the motor. */
-    public double getVelocity() { return velocity; }
-
-    /**Returns the recent average velocity of the motor in revolutions per second,
-     * using the ticks per revolution set for this MotorController.
-     * @return The recent average velocity of the motor in revolutions per second.*/
-    public double getRPS() { return velocity / ticksPerRevolution;}
-
-    /**Returns the current power being sent to the motor as a double between -1.0 and 1.0.
-     * @return The current power being sent to the robot.*/
+    /// {@inheritDoc}
     @Override
     public double getPower() { return motor.getPower(); }
 
-    /**Sets a target position for the motor to try to move towards.
-     * @param target The position for the motor to try to move to in motor-specific ticks.*/
-    public void setTarget(int target) {
-        PIDController.activate(id + "_T");
-        if (target != targetPosition) {
-            lastTarget = targetPosition;
-            targetPosition = target;
+    /// {@inheritDoc}
+    /// @return If the position of the wrapped motor's axle can be monitored
+    @Override
+    public boolean positionMonitoringEnabled() { return motor.positionMonitoringEnabled(); }
+
+    /// {@inheritDoc}
+    /// @return If the position of the wrapped motor's axle can be controlled
+    @Override
+    public boolean positionControlEnabled() { return motor.positionControlEnabled(); }
+    /// Returns the current rotational position of the motor's axle relative to the start position.
+    ///
+    /// The units of this position are specific to the motor.
+    /// If [#positionMonitoringEnabled()] is `False`, this will instead return `NaN`.
+    /// @return The current position of this motor
+    ///
+    /// @see #startPos
+    @Override
+    public double getCurrentPosition() { return (positionMonitoringEnabled()) ? motor.getCurrentPosition() - startPos : Double.NaN; }
+
+    /// Returns the current angle of the motor's axle based on the reading from [#getCurrentPosition()].
+    ///
+    /// This calculation is based on the ticks per revolution of this motor.
+    /// If [#positionMonitoringEnabled()] is `False`, this will instead return `NaN`.
+    /// @return The current angle of the motor's axle
+    ///
+    /// @see #ticksPerRevolution
+    public Angle getCurrentAngle() { return (positionMonitoringEnabled()) ? Angle.degree((getCurrentPosition() % ticksPerRevolution) * 360.0 / ticksPerRevolution) : null; }
+
+    /// Returns the recent average rotational velocity of the motor's axle.
+    ///
+    /// The velocity is in units of ticks per second.
+    ///
+    /// The velocity is updated by calling [#log]. If [#log] is not called frequently, the velocity value will be inaccurate.
+    /// If [#positionMonitoringEnabled()] is `False`, this will instead return `NaN`.
+    /// @return The recent average velocity of the motor
+    ///
+    /// @see #ticksPerRevolution
+    /// @see #getRPS()
+    /// @see #getRPM()
+    public double getVelocity() { return (positionMonitoringEnabled()) ? velocity : Double.NaN; }
+
+    /// Returns the recent average rotational velocity of the motor's axle.
+    ///
+    /// The velocity is in units of revolutions per second, found using the ticks per revolution.
+    ///
+    /// The velocity is updated by calling [#log]. If [#log] is not called frequently, the velocity value will be inaccurate.
+    /// If [#positionMonitoringEnabled()] is `False`, this will instead return `NaN`.
+    /// @return The recent average velocity of the motor
+    ///
+    /// @see #ticksPerRevolution
+    /// @see #getVelocity()
+    /// @see #getRPM()
+    public double getRPS() { return (positionMonitoringEnabled()) ? velocity / ticksPerRevolution : Double.NaN;}
+
+    /// Returns the recent average rotational velocity of the motor's axle.
+    ///
+    /// The velocity is in units of revolutions per minute, found using the ticks per revolution.
+    ///
+    /// The velocity is updated by calling [#log]. If [#log] is not called frequently, the velocity value will be inaccurate.
+    /// If [#positionMonitoringEnabled()] is `False`, this will instead return `NaN`.
+    /// @return The recent average velocity of the motor
+    ///
+    /// @see #ticksPerRevolution
+    /// @see #getVelocity()
+    /// @see #getRPS()
+    public double getRPM() { return (positionMonitoringEnabled()) ? velocity * 60 / ticksPerRevolution : Double.NaN;}
+
+    /// Sets a target position for the motor controller in ticks.
+    ///
+    /// If [#positionMonitoringEnabled()] is `False`, this will have no effect.
+    /// @param target A target position for the motor controller
+    ///
+    /// @see #ticksPerRevolution
+    /// @see #setTargetVelocity(double)
+    public void setTarget(double target) {
+        if (positionMonitoringEnabled()) {
+            if (powerEnabled()) {
+                PIDController.activate(id + "_T");
+            }
+            if (target != targetPosition) {
+                lastTarget = targetPosition;
+                targetPosition = target;
+            }
         }
     }
-    /**Returns the current target position of the motor.
-     * @return The target position of the motor.*/
-    public int getTarget() { return targetPosition; }
+    /// Returns the current target position of the motor controller in ticks.
+    ///
+    /// If [#positionMonitoringEnabled()] is `False`, this will return `NaN` instead.
+    /// @return The target position of the motor controller
+    ///
+    /// @see #ticksPerRevolution
+    /// @see #getTargetVelocity()
+    public double getTarget() { return (positionMonitoringEnabled()) ? targetPosition : Double.NaN; }
 
-    /**Returns the error between the target position and the current position.
-     * @return The error to the target position.*/
-    public double getTargetError() { return targetPosition - getCurrentPosition(); }
-    /**Checks if the position has passed through the target since the last time this method was called.
-     * @param range A range around the target where the target will be considered met in motor-specific ticks.
-     * @return If the position has passed through the target.*/
-    public boolean checkTarget(int range) throws IOException {
+    /// Returns the absolute value of the error between the target position and the current position in ticks.
+    ///
+    /// If [#positionMonitoringEnabled()] is `False`, this will return `NaN` instead.
+    /// @return The error from the target
+    ///
+    /// @see #ticksPerRevolution
+    /// @see #setTarget(double)
+    /// @see #getTarget()
+    public double getTargetError() { return (positionMonitoringEnabled()) ? Math.abs(targetPosition - getCurrentPosition()) : Double.NaN; }
+    /// Returns if the motor has rotated through a range around the target position since the last time this function was called.
+    ///
+    /// Calls [#log].
+    /// If [#positionMonitoringEnabled()] is `False`, this will return `False` instead.
+    /// @param range A range around the target position
+    /// @return If the motor has rotated through the target position since the last call
+    ///
+    /// @see #ticksPerRevolution
+    /// @see #setTarget(double)
+    /// @see #getTarget()
+    public boolean checkTarget(double range) throws IOException {
+        if (!positionMonitoringEnabled()) { return false; }
         log();
         return (Math.max(getCurrentPosition(), savePos) > targetPosition && Math.min(getCurrentPosition(), savePos) < targetPosition) || Math.abs(getCurrentPosition() - targetPosition) < range;
     }
 
-    /**Moves the motor to the specified position directly if it is capable of doing so. Returns false otherwise.
-     * @return The result of setting the position of the underlying motor.*/
+    /// {@inheritDoc} [#moveToTarget(double, double, boolean)] may be a good alternative.
+    ///
+    /// @see #ticksPerRevolution
     @Override
-    public boolean setPosition(int position) { return motor.setPosition(position); }
-    /**Moves the motor towards the set target.
-     * @param maxPower The absolute max power the motor can reach as a double between 0.0 and 1.0.
-     * @param tolerance The tolerance for reaching the target as a double between 0.0 and 1.0. If this is set to 0.0, the pid will run indefinitely.
-     * @param haltAtTarget If true, the motor will halt once the target is reached within the set tolerance.
-     * @return True once the motor reaches its target, false until then.*/
+    public boolean setPosition(double position) { return motor.setPosition(position); }
+    /// Rotates the motor to the target position, returns if that target position has been reached.
+    ///
+    /// Will use [#setPosition(double)] if [#positionControlEnabled()] is `True`.
+    /// Uses PID loops from [PIDController] otherwise.
+    /// PID loops must be updated frequently with [PIDController#update()] or this function will be ineffective.
+    ///
+    /// The tolerance controls how precise the motor must be in reaching the target.
+    /// A tolerance of 0 or less will result in the motor never reaching the target.
+    /// A tolerance of 1 or more will result in the motor never moving.
+    ///
+    /// If [#positionControlEnabled()] is `False` and either [#powerEnabled()] or [#positionMonitoringEnabled()]
+    /// is `False`, this will have no effect and return `False`.
+    /// @param maxPower The absolute maximum power that can be used to reach the target position
+    /// @param tolerance The tolerance for positioning as a number between 0 and 1
+    /// @param haltAtTarget If the motor's power is cut once it reaches the target position
+    /// @return If the motor has reached the target
+    ///
+    /// @see #setTarget(double)
+    /// @see #getTarget()
+    /// @see #getCurrentPosition()
     public boolean moveToTarget(double maxPower, double tolerance, boolean haltAtTarget) {
-        if (!setPosition(targetPosition) && powerEnabled() && positionEnabled()) {
+        if (positionControlEnabled()) {
+            return setPosition(targetPosition);
+        } else if (powerEnabled() && positionMonitoringEnabled()) {
             double p = PIDController.get(id + "_T");
             lastPIDTOutput = p;
             double power = Math.min(Math.abs(p), maxPower) * Math.signum(p);
-            if (Math.abs(p) > (tolerance * Math.abs(lastTarget - targetPosition))) {
+            if (Math.abs(p) >= (tolerance * Math.abs(lastTarget - targetPosition))) {
                 setPower(power + (holdPow * getCurrentPosition()));
                 return false;
             } else {
@@ -239,95 +529,224 @@ public class MotorController implements Motor {
                 return true;
             }
         } else {
-            return tolerance > Math.abs(getCurrentPosition() - targetPosition);
+            return false;
         }
     }
 
-    /**Moves the motor towards the set target.
-     * @param motorControllerAutoModule A MotorControllerAutoModule that contains information to run this MotorController.
-     * @return True once the motor reaches its target, false until then.*/
+    /// Rotates the motor to the target position using a [MotorControllerAutoModule],
+    /// returns if that target position has been reached.
+    ///
+    /// Will use [#setPosition(double)] if [#positionControlEnabled()] is `True`.
+    /// Uses PID loops from [PIDController] otherwise.
+    /// PID loops must be updated frequently with [PIDController#update()] or this function will be ineffective.
+    ///
+    /// The tolerance controls how precise the motor must be in reaching the target.
+    /// A tolerance of 0 or less will result in the motor never reaching the target.
+    /// A tolerance of 1 or more will result in the motor never moving.
+    ///
+    /// If [#positionControlEnabled()] is `False` and either [#powerEnabled()] or [#positionMonitoringEnabled()]
+    /// is `False`, this will have no effect and return `False`.
+    /// @param motorControllerAutoModule An auto module with instructions to rotate the motor to a target
+    /// @return If the motor has reached the target
+    ///
+    /// @see #setTarget(double)
+    /// @see #getTarget()
+    /// @see #getCurrentPosition()
     public boolean moveToTarget(MotorControllerAutoModule motorControllerAutoModule) {
         setTarget(motorControllerAutoModule.target());
         return moveToTarget(motorControllerAutoModule.maxPower(), motorControllerAutoModule.tolerance(), true);
     }
 
-    /**Idles the PID loop used to reach a target position.
-     * @return True if the PID loop was active, false if not.*/
+    /// Idles the PID loop used in [#moveToTarget(double, double, boolean)] using [PIDController#idle(String)].
+    /// @return If the PID loop was active before it was idled
+    /// @see PIDController
     public boolean idleTargetPID() {
         return PIDController.idle(id + "_T");
     }
-    /**Sets the gains of the PID loop used for reaching a target position.
-     * @param pidGains The new gains for the PID loop.*/
+    /// Tunes the PID loop used in [#moveToTarget(double, double, boolean)] using
+    /// [PIDController#tune(String, PIDGains)].
+    /// @param pidGains A record with instructions to tune the PID loop
+    ///
+    /// @see PIDController
     public void tuneTargetPID(PIDGains pidGains) {
-        PIDController.tune(id + "_T", pidGains);
+        if (PIDController.hasPID(id + "_T")) {
+            PIDController.tune(id + "_T", pidGains);
+        } else {
+            PIDController.addPID(id + "_T", pidGains, this::getTargetError, false);
+        }
     }
 
-    /**Sets the gains of the PID loop used for reaching a target position.
-     * @param kp The p gain for the PID loop.
-     * @param ki The i gain for the PID loop.
-     * @param kd The d gain for the PID loop.*/
+    /// Tunes the PID loop used in [#moveToTarget(double, double, boolean)] using
+    /// [PIDController#tune(String, double, double, double)].
+    /// @param kp The `p` constant
+    /// @param ki The `i` constant
+    /// @param kd The `d` constant
+    ///
+    /// @see PIDController
     public void tuneTargetPID(double kp, double ki, double kd) {
-        PIDController.tune(id + "_T", kp, ki, kd);
+        if (PIDController.hasPID(id + "_T")) {
+            PIDController.tune(id + "_T", kp, ki, kd);
+        } else {
+            PIDController.addPID(id + "_T", kp, ki, kd, this::getTargetError, false);
+        }
     }
 
-    /**Sets the hold power, a multiple added to the power to counteract gravity and hold the motor at a specific position.
-     * @param holdPow A double between -1.0 and 1.0.*/
+    /// Sets the hold power, a multiple added to the power to counteract gravity and hold the motor at a specific position.
+    ///
+    /// The hold power should be between -1 and 1.
+    /// If either [#powerEnabled()] or [#positionMonitoringEnabled()] is `False`, hold power will have no effect.
+    /// @param holdPow The hold power
+    ///
+    /// @see #setPower(double)
+    /// @see #getHoldPow()
     public void setHoldPow(double holdPow) { this.holdPow = holdPow; }
-    /**Returns the hold power, a multiple added to the power to counteract gravity and hold the motor at a specific position.
-     * @return The hold power.*/
+    /// Returns the hold power, a multiple added to the power to counteract gravity and hold the motor at a specific position.
+    /// @return The hold power
+    ///
+    /// @see #setPower(double)
+    /// @see #setHoldPow(double)
     public double getHoldPow() { return holdPow; }
 
-    /**Sets a target velocity for the motor to try to maintain.
-     * Setting the target velocity higher than the motor's maximum velocity could lead to unwanted side effects.
-     * @param target The velocity for the motor to try to maintain in motor-specific ticks/millisecond.*/
+    /// Sets a target rotational velocity for the motor controller to maintain in ticks per second.
+    ///
+    /// If [#positionMonitoringEnabled()] is `False`, this will have no effect.
+    /// @param target A target position for the motor controller
+    ///
+    /// @see #ticksPerRevolution
+    /// @see #getVelocity()
+    /// @see #setTarget(double)
     public void setTargetVelocity(double target) {
-        PIDController.activate(id + "_V");
-        targetVelocity = target;
+        if (positionMonitoringEnabled()) {
+            PIDController.activate(id + "_V");
+            targetVelocity = target;
+        }
     }
+    /// Returns the current target rotational velocity of the motor controller in ticks per second.
+    ///
+    /// If [#positionMonitoringEnabled()] is `False`, this will return `NaN` instead.
+    /// @return The target position of the motor controller
+    ///
+    /// @see #ticksPerRevolution
+    /// @see #getVelocity()
+    /// @see #getTarget()
+    public double getTargetVelocity() { return (positionMonitoringEnabled()) ? targetVelocity : Double.NaN; }
 
-    /**Return the error between the target velocity and the current velocity.
-     * @return The error of the target velocity.*/
-    public double getVelocityError() { return targetVelocity - getVelocity(); }
-    /**Maintains the targeted velocity.
-     * @return True once the motor reaches its target, false until then.*/
+    /// Returns the absolute value of the error between the target rotational velocity and the current rotational velocity in ticks per second.
+    ///
+    /// If [#positionMonitoringEnabled()] is `False`, this will return `NaN` instead.
+    /// @return The error from the target
+    ///
+    /// @see #ticksPerRevolution
+    /// @see #getVelocity()
+    /// @see #setTargetVelocity(double)
+    /// @see #getTargetVelocity()
+    public double getVelocityError() { return (positionMonitoringEnabled()) ? Math.abs(targetVelocity - getVelocity()) : Double.NaN; }
+    /// Maintains the targeted rotational velocity.
+    ///
+    /// Uses PID loops from [PIDController].
+    /// PID loops must be updated frequently with [PIDController#update()] or this function will be ineffective.
+    ///
+    /// If either [#powerEnabled()] or [#positionMonitoringEnabled()]
+    /// is `False`, this will have no effect and return `False`.
+    /// @return If the motor is at the target velocity
+    ///
+    /// @see #getVelocity()
+    /// @see #setTargetVelocity(double)
+    /// @see #getTargetVelocity()
     public boolean maintainVelocity() {
+        if (!powerEnabled() || !positionMonitoringEnabled()) { return false; }
         double power = PIDController.get(id + "_V");
         lastPIDVOutput = power;
         setPower(power);
         return !(Math.abs(targetVelocity - getVelocity()) > 0.001);
     }
 
-    /**Idles the PID loop used to maintain velocity.
-     * @return True if the PID loop was active, false if not.*/
+    /// Idles the PID loop used in [#maintainVelocity()] using [PIDController#idle(String)].
+    /// @return If the PID loop was active before it was idled
+    /// @see PIDController
     public boolean idleVelocityPID() {
         return PIDController.idle(id + "_V");
     }
 
-    /**Sets the gains of the PID loop used for maintaining velocity.
-     * @param pidGains The new gains for the PID loop.*/
+    /// Tunes the PID loop used in [#maintainVelocity()] using
+    /// [PIDController#tune(String, PIDGains)].
+    /// @param pidGains A record with instructions to tune the PID loop
+    ///
+    /// @see PIDController
     public void tuneVelocityPID(PIDGains pidGains) {
-        PIDController.tune(id + "_V", pidGains);
+        if (PIDController.hasPID(id + "_V")) {
+            PIDController.tune(id + "_V", pidGains);
+        } else {
+            PIDController.addPID(id + "_V", pidGains, this::getVelocityError, false);
+        }
     }
 
-    /**Sets the gains of the PID loop used for maintaining velocity.
-     * @param kp The p gain for the PID loop.
-     * @param ki The i gain for the PID loop.
-     * @param kd The d gain for the PID loop.*/
+    /// Tunes the PID loop used in [#maintainVelocity()] using
+    /// [PIDController#tune(String, double, double, double)].
+    /// @param kp The `p` constant
+    /// @param ki The `i` constant
+    /// @param kd The `d` constant
+    ///
+    /// @see PIDController
     public void tuneVelocityPID(double kp, double ki, double kd) {
-        PIDController.tune(id + "_V", kp, ki, kd);
+        if (PIDController.hasPID(id + "_V")) {
+            PIDController.tune(id + "_V", kp, ki, kd);
+        } else {
+            PIDController.addPID(id + "_V", kp, ki, kd, this::getVelocityError, false);
+        }
     }
 
-    /**Sets the current position of the motor to 0.*/
-    public void zero() { startPos = motor.getCurrentPosition(); }
+    /// Changes the start position to the current position.
+    ///
+    /// If [#positionMonitoringEnabled()] is `False`, this will have no effect.
+    ///
+    /// @see #startPos
+    /// @see #getCurrentPosition()
+    /// @see #ticksPerRevolution
+    public void zero() { if (positionMonitoringEnabled()) startPos = motor.getCurrentPosition(); }
 
-    /**Returns the Motor used by this MotorController.
-     * @return A Motor.*/
+
+    /// Updates internal data and logs to a JSON file.
+    ///
+    /// Log files can be found in the robot controller's internal file system at
+    /// `sdcard/FIRST/settings/logs/MotorController_ID_log_DATETIME.json`.
+    ///
+    /// **Will not log and will return `Null` if [#positionMonitoringEnabled()] is `False`.**
+    /// @return A record with the data that was logged to the JSON file
+    /// @see #id
+    public MotorControllerData log() throws IOException {
+        if (this.positionMonitoringEnabled()) {
+            double posChange = motor.getCurrentPosition() - savePos;
+            long timeChange = System.currentTimeMillis() - saveTime;
+            savePos += posChange;
+            saveTime += timeChange;
+            velocity = posChange / (double) timeChange * 1000;
+            MotorControllerData data = new MotorControllerData(saveTime - startTime, motor.getPower(), savePos, targetPosition, velocity, targetVelocity, lastPIDTOutput, lastPIDVOutput);
+            logWriter.write("\n" + gson.toJson(data) + ",");
+            return data;
+        }
+        return null;
+    }
+
+    /// Closes the JSON file that this motor controller is writing to.
+    ///
+    /// Log files can be found in the robot controller's internal file system at
+    /// `sdcard/FIRST/settings/logs/MotorController_ID_log_DATETIME.json`.
+    /// @see #id
+    public void closeLog() throws IOException {
+        logWriter.write("]");
+        logWriter.close();
+    }
+
+    /// {@inheritDoc}
+    /// @return The wrapped motor
     @Override
     public Object getSelf() {
         return motor;
     }
 
-    /**@return The id of this MotorController*/
+    /// Returns the id of this motor controller
+    /// @return The id of this motor controller
     @NonNull
     @Override
     public String toString() { return id; }

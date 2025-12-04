@@ -137,16 +137,16 @@ the classes responsible for moving motors.
 We have built the `Motor` interface to allow DcMotorExs, Servos, and CRServos to 
 have a common platform. It mainly serves as a support for the `MotorController` 
 class. This class preserves the functions of a normal motor, but also adds in
-other helpful features, such as a `PIDController`.
+other helpful features, such as `PIDController` and logging.
 
-The `PIDController` class support several different types of PID loops to fine-tune
-motor positions, angles, and even movement of the entire robot. We hope to eventually
-connect it to a `PIDTuner` that would automatically adjust the gains for optimal
+The `PIDController` handles and updates several PID loops simultaneously. 
+It can dynamically activate and idle PID loops as they are needed.
+We hope to eventually connect it to a `PIDTuner` that would automatically adjust the gains for optimal
 performance, but for now they do have to be manually tuned.
 
 The `DriveTrain` class is responsible for everything regarding a robot's movement 
 across the field. It has several different drive types adapted to different styles
-of drive train and play. It also supports PID loops, controlled by a `PIDController`,
+of driving and robot configurations. It also supports PID loops, controlled by `PIDController`,
 that can precisely position the robot based on odometry data.
 
 ### Sensor
@@ -174,4 +174,4 @@ similar to autonomous instructions.
 ## Credits
 This README was written by Striker-909, the lead programmer of FTC 18387. 
 
-This README was last updated 11/15/2025, for version 1.4.8
+This README was last updated 12/3/2025, for version 1.5.0

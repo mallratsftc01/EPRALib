@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.examples;
 
 import com.epra.epralib.ftclib.control.Controller;
+import com.epra.epralib.ftclib.control.JSONReader;
 import com.epra.epralib.ftclib.location.MultiIMU;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
@@ -10,6 +11,7 @@ import com.epra.epralib.ftclib.movement.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
 import com.epra.epralib.ftclib.movement.PIDController;
+import com.epra.epralib.ftclib.storage.initialization.PIDGains;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -51,10 +53,18 @@ public class TeleOpExample extends LinearOpMode {
             imu = new MultiIMU(tempIMU);
 
             //Setting up the MotorControllers for the DriveTrain
-            frontRight = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")), "front_right");
-            frontLeft = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northwestMotor")), "front_left");
-            backRight = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southeastMotor")), "back_right");
-            backLeft = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southwestMotor")), "back_left");
+            frontRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")))
+                    .driveOrientation(DriveTrain.Orientation.RIGHT_FRONT)
+                    .build();
+            backRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southeastMotor")))
+                    .driveOrientation(DriveTrain.Orientation.RIGHT_BACK)
+                    .build();
+            frontLeft = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northwestMotor")))
+                    .driveOrientation(DriveTrain.Orientation.LEFT_FRONT)
+                    .build();
+            backLeft = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southwestMotor")))
+                    .driveOrientation(DriveTrain.Orientation.LEFT_BACK)
+                    .build();
 
             //Setting up the Odometry
             odometry = new Odometry(frontLeft::getCurrentPosition, backLeft::getCurrentPosition, frontRight::getCurrentPosition,
@@ -66,16 +76,18 @@ public class TeleOpExample extends LinearOpMode {
             );
 
             //Initializing the DriveTrain
-            drive = new DriveTrain(new MotorController[] {frontLeft, frontRight, backLeft, backRight},
-                    new DriveTrain.Orientation[] {DriveTrain.Orientation.LEFT_FRONT, DriveTrain.Orientation.RIGHT_FRONT, DriveTrain.Orientation.LEFT_BACK, DriveTrain.Orientation.RIGHT_BACK},
-                    odometry::getPose,
-                    odometry::getDeltaPose,
-                    DriveTrain.DriveType.MECANUM);
+            drive = new DriveTrain.Builder()
+                    .motor(frontRight)
+                    .motor(frontLeft)
+                    .motor(backRight)
+                    .motor(frontLeft)
+                    .driveType(DriveTrain.DriveType.MECANUM)
+                    .build();
 
             //Setting up the MotorControllers that are not part of the DriveTrain
             nonDriveMotors = new HashMap<>();
             //Add MotorControllers like so:
-            //nonDriveMotors.put("ID", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "MOTOR_NAME")), "ID"));
+            //nonDriveMotors.put("ID", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "MOTOR_NAME"))));
 
             //Setting up the controller
             controller1 = new Controller(gamepad1, 0.05f, "1");

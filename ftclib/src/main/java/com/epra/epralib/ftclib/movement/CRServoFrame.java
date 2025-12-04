@@ -2,24 +2,20 @@ package com.epra.epralib.ftclib.movement;
 
 import com.qualcomm.robotcore.hardware.CRServo;
 
-/**A motor frame for CRServos.
- * <p></p>
- * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
+/// A [Motor] wrapper for a [CRServo].
+///
+/// Queer Coded by Striker-909.
+/// If you use this class or a method from this class in its entirety, please make sure to give credit.
 public class CRServoFrame implements Motor {
 
     private final CRServo servo;
     private boolean enabled;
-    /**A motor frame for CRServos.
-     * @param servo A CRServo.*/
+    /// A [Motor] wrapper for a [CRServo].
+    /// @param servo The servo to be wrapped
     public CRServoFrame(CRServo servo) {
         this.servo = servo;
         this.enabled = true;
     }
-
-    /**The power can be set for CRServos.
-     * @return True*/
-    @Override
-    public boolean powerEnabled() { return true; }
 
     /**Sets the logical direction in which this servo operates.
      * @param direction The direction to set for this servo.*/
@@ -34,42 +30,57 @@ public class CRServoFrame implements Motor {
         return servo.getDirection() == CRServo.Direction.FORWARD ? Direction.FORWARD : Direction.REVERSE;
     }
 
-    /**Sets the power level of the servo, expressed as a fraction of the maximum possible power / speed supported according to the run mode in which the servo is operating.
-     Setting a power level of zero will brake the servo.
-     @param power The new power level of the servo, a value between -1 and 1.*/
-    @Override
-    public void setPower(double power) { if (enabled) servo.setPower(power); }
-    /**Returns the current configured power level of the servo.
-     * @return The current power level of the servo, a value between -1 and 1.*/
-    @Override
-    public double getPower() { return servo.getPower(); }
-
-    /**Returns whether this servo is energized.*/
+    /// {@inheritDoc}
     @Override
     public boolean isEnabled() { return enabled; }
-    /**Individually energizes this particular servo.*/
+    /// {@inheritDoc}
     @Override
     public void setEnabled() { enabled = true; }
-    /**Individually de-energizes this particular servo.*/
+    /// {@inheritDoc}
     @Override
     public void setDisabled() { enabled = false; }
 
-    /**CRServos cannot read their current position.
-     * @return False*/
+    /// A [CRServo] can control and monitor its power.
+    /// @return `True`
     @Override
-    public boolean positionEnabled() { return false; }
+    public boolean powerEnabled() { return true; }
+    /// Sets the amount of power to send the motor as a float between 1 (full power forward) and -1 (full power backwards).
+    ///
+    /// Power is typically proportional to the rotational velocity of the motor. A power of 0 will brake the motor.
+    /// @param power Power, as a double between -1 and 1
+    @Override
+    public void setPower(double power) { if (enabled) servo.setPower(power); }
+    /// Returns the amount of power being sent to the motor as a float between 1 (full power forward) and -1 (full power backwards).
+    ///
+    /// Power is typically proportional to the rotational velocity of the motor. A power of 0 will brake the motor.
+    /// @return The current power of this motor
+    @Override
+    public double getPower() { return servo.getPower(); }
 
-    /**Returns 0 as CRServos cannot read their current positions.
-     * @return 0*/
+    /// A [CRServo] cannot monitor its axle position.
+    /// @return `False`
     @Override
-    public int getCurrentPosition() { return 0; }
-    /**CRServos cannot directly set their positions.
-     * @return False*/
+    public boolean positionMonitoringEnabled() { return false; }
+    /// A [CRServo] cannot control its axle position.
+    /// @return `False`
     @Override
-    public boolean setPosition(int position) { return false; }
+    public boolean positionControlEnabled() { return false; }
 
-    /**Returns the CRServo contained in this frame.
-     * @return The CRServo contained in this frame.*/
+    /// Returns `NaN` as a [CRServo] cannot monitor its axle position.
+    /// @return `NaN`
+    @Override
+    public double getCurrentPosition() { return Double.NaN; }
+    /// Has no effect as a [CRServo] cannot directly control its axle position.
+    /// @return `False`
+    @Override
+    public boolean setPosition(double position) { return false; }
+
+    /// Returns the [CRServo] object contained within this wrapper.
+    /// @return The wrapped servo
     @Override
     public Object getSelf() { return servo; }
+    /// Returns the device name of the wrapped [CRServo].
+    /// @return The motor's device name
+    @Override
+    public String toString() { return servo.getDeviceName(); }
 }

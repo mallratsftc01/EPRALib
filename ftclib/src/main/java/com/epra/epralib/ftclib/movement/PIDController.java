@@ -7,9 +7,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
-/**Handles the processes of multiple PID loops.
- *<p></p>
- * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
+/// Processes multiple PID loops simultaneously.
+///
+/// A PID loop uses Proportional, Integral, and Derivative elements of feedback to correct error smoothly.
+/// [Wikipedia PID](https://en.wikipedia.org/wiki/Proportional%E2%80%93integral%E2%80%93derivative_controller).
+/// 
+/// Queer Coded by Striker-909.
+/// If you use this class or a method from this class in its entirety, please make sure to give credit.
 public class PIDController {
 
     private static final ArrayList<String> activeIds = new ArrayList<>();
@@ -17,19 +21,19 @@ public class PIDController {
 
     private static long saveTime = 0;
 
-    /**Adds a new PID loop and automatically activates it.
-     * @param id The string id for the PID loop.
-     * @param pidGains The gains for the PID loop.
-     * @param errorSupplier A supplier that returns the error in position.*/
+    /// Adds a new PID loop and activates it.
+    /// @param id A tag that will identify this PID loop
+    /// @param pidGains A record with instructions to tune the PID loop
+    /// @param errorSupplier A function that supplies the current error of the system that this PID loop will monitor
     public static void addPID(String id, PIDGains pidGains, Supplier<Double> errorSupplier) {
         addPID(id, pidGains.kp(), pidGains.ki(), pidGains.kd(), errorSupplier);
     }
 
-    /**Adds a new PID loop.
-     * @param id The string id for the PID loop.
-     * @param pidGains The gains for the PID loop.
-     * @param errorSupplier A supplier that returns the error in position.
-     * @param active Will activate the PID if true, will idle otherwise.*/
+    /// Adds a new PID loop.
+    /// @param id A tag that will identify this PID loop
+    /// @param pidGains A record with instructions to tune the PID loop
+    /// @param errorSupplier A function that supplies the current error of the system that this PID loop will monitor
+    /// @param active If this PID loop should start active
     public static void addPID(String id, PIDGains pidGains, Supplier<Double> errorSupplier, boolean active) {
         addPID(id, pidGains, errorSupplier);
         if (!active) {
@@ -37,12 +41,12 @@ public class PIDController {
         }
     }
 
-    /**Adds a new PID loop and automatically activates it.
-     * @param id The string id for the PID loop.
-     * @param kp The p gain for the PID loop.
-     * @param ki The i gain for the PID loop.
-     * @param kd the d gain for the PID loop.
-     * @param errorSupplier A supplier that returns the error in position.*/
+    /// Adds a new PID loop and activates it.
+    /// @param id A tag that will identify this PID loop
+    /// @param kp The `p` constant
+    /// @param ki The `i` constant
+    /// @param kd The `d` constant
+    /// @param errorSupplier A function that supplies the current error of the system that this PID loop will monitor
     public static void addPID(String id, double kp, double ki, double kd, Supplier<Double> errorSupplier) {
         if (saveTime == 0) {
             saveTime = System.currentTimeMillis();
@@ -51,13 +55,13 @@ public class PIDController {
         pidData.put(id, new PIDData(kp, ki, kd, errorSupplier));
     }
 
-    /**Adds a new PID loop.
-     * @param id The string id for the PID loop.
-     * @param kp The p gain for the PID loop.
-     * @param ki The i gain for the PID loop.
-     * @param kd the d gain for the PID loop.
-     * @param errorSupplier A supplier that returns the error in position.
-     * @param active Will activate the PID if true, will idle otherwise.*/
+    /// Adds a new PID loop and activates it.
+    /// @param id A tag that will identify this PID loop
+    /// @param kp The `p` constant
+    /// @param ki The `i` constant
+    /// @param kd The `d` constant
+    /// @param errorSupplier A function that supplies the current error of the system that this PID loop will monitor
+    /// @param active If this PID loop should start active
     public static void addPID(String id, double kp, double ki, double kd, Supplier<Double> errorSupplier, boolean active) {
         addPID(id, kp, ki, kd, errorSupplier);
         if (!active) {
@@ -65,11 +69,18 @@ public class PIDController {
         }
     }
 
-    /**Resets the non-gain values for a specific PID loop.
-     * @param id The string id of the PID loop to reset.
-     * @return True if the specified PID loop exists, false if not.*/
+    /// Returns if a PID loop with the provided `id` has been created.
+    /// @param id The `id` of the PID loop to check for
+    /// @return If a PID loop with the provided `id` exists
+    public static boolean hasPID(String id) {
+        return pidData.containsKey(id) && pidData.get(id) != null;
+    }
+
+    /// Resets the variable values of the PID loop with the provided `id`.
+    /// @param id The `id` of the PID loop to reset
+    /// @return If a PID loop with the provided `id` exists
     public static boolean reset(String id) {
-        if (!pidData.containsKey(id) || pidData.get(id) == null) {
+        if (!hasPID(id)) {
             return false;
         }
         pidData.get(id).saveError = 0.0;
@@ -77,48 +88,55 @@ public class PIDController {
         return true;
     }
 
-    /**Idles a specific PID loop so that computation power will not be spent to run it. Also resets that PID loop.
-     * @param id The string id of the PID loop to idle.
-     * @return True if the PID loop was active, false if not.*/
+    /// Deactivates the PID loop with the provided `id`.
+    /// 
+    /// Idle PID loops will not be updated every time [#update()] is called.
+    /// @param id The `id` of the PID loop to idle
+    /// @return If a PID loop with the provided `id` was active before it was idled
     public static boolean idle(String id) {
         reset(id);
         return activeIds.remove(id);
     }
 
-    /**Activates a specific PID loop.
-     * @param id The string id of the PID loop to activate.
-     * @return True if the PID loop was idle, false if not.*/
+    /// Activates the PID loop with the provided `id`.
+    /// 
+    /// Active PID loops will be updated everytime [#update()] is called.
+    /// @param id The `id` of the PID loop to activate
+    /// @return If a PID loop with the provided `id` was idle before it was activated
     public static boolean activate(String id) {
-        if (activeIds.contains(id)) {
+        if (activeIds.contains(id) || !hasPID(id)) {
             return false;
         }
         activeIds.add(id);
         return true;
     }
 
-    /**Returns if a specific PID loop is active.
-     * @return True if the PID loop is active, false if not.*/
+    /// Checks if the PID loop with the provided `id` exists and is active.
+    /// 
+    /// Active PID loops will be updated everytime [#update()] is called.
+    /// @param id The `id` of the PID loop to be checked
+    /// @return If the PID loop with the provided `id` exists and is active
     public static boolean isActive(String id) {
-        return activeIds.contains(id);
+        return hasPID(id) && activeIds.contains(id);
     }
 
-    /**Sets the PID gains of the specified PID loop to the specified values.
-     * @param id The string id of the PID loop to tune.
-     * @param pidGains The gains for the PID loop.
-     * @return True if the specified PID loop exists, false if not.*/
+    /// Modifies the gain constants for the PID loop with the provided `id`.
+    /// @param id The `id` of the PID loop to be modified
+    /// @param pidGains A record with instructions to tune the PID loop
+    /// @return If the PID loop with the provided `id` exists
     public static boolean tune(String id, PIDGains pidGains) {
-        if (!pidData.containsKey(id)) {
+        if (!hasPID(id)) {
             return false;
         }
         pidData.get(id).tune(pidGains);
         return true;
     }
-    /**Sets the PID gains of the specified PID loop to the specified values.
-     * @param id The string id of the PID loop to tune.
-     * @param kp The p gain for the PID loop.
-     * @param ki The i gain for the PID loop.
-     * @param kd The d gain for the PID loop.
-     * @return True if the specified PID loop exists, false if not.*/
+    /// Modifies the gain constants for the PID loop with the provided `id`.
+    /// @param id The `id` of the PID loop to be modified
+    /// @param kp The `p` constant
+    /// @param ki The `i` constant
+    /// @param kd The `d` constant
+    /// @return If the PID loop with the provided `id` exists
     public static boolean tune(String id, double kp, double ki, double kd) {
         if (!pidData.containsKey(id) || pidData.get(id) == null) {
             return false;
@@ -127,8 +145,8 @@ public class PIDController {
         return true;
     }
 
-    /**Updates all active PID loops.
-     * @return True if PID loops were successfully updated, false if no PID loops were active.*/
+    /// Updates all active PID loops.
+    /// @return If there were any active PID loops to update
     public static boolean update() {
         if (activeIds.isEmpty() || saveTime == 0) {
             saveTime = System.currentTimeMillis();
@@ -155,10 +173,12 @@ public class PIDController {
         return true;
     }
 
-    /**Returns the most recent output of a specific PID loop.
-     * @param id The string id of the PID output to return.
-     * @return The most recent output of a specific PID loop.*/
+    /// Retrieve the most recent output of the PID loop with the provided `id`.
+    /// 
+    /// Will return `NaN` if no PID loop with the provided `id` exists.
+    /// @param id The `id` of the PID loop to be retrieved
+    /// @return The most recent output of the PID loop with the provided `id`
     public static double get(String id) {
-        return  pidData.get(id).output;
+        return (hasPID(id)) ? pidData.get(id).output : Double.NaN;
     }
 }

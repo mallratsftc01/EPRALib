@@ -85,10 +85,18 @@ public class CameraConditionalAutoExample extends LinearOpMode {
             imu = new MultiIMU(tempIMU);
 
             //Setting up the MotorControllers for the DriveTrain
-            frontRight = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")), "front_right");
-            frontLeft = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northwestMotor")), "front_left");
-            backRight = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southeastMotor")), "back_right");
-            backLeft = new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southwestMotor")), "back_left");
+            frontRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")))
+                    .driveOrientation(DriveTrain.Orientation.RIGHT_FRONT)
+                    .build();
+            backRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southeastMotor")))
+                    .driveOrientation(DriveTrain.Orientation.RIGHT_BACK)
+                    .build();
+            frontLeft = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northwestMotor")))
+                    .driveOrientation(DriveTrain.Orientation.LEFT_FRONT)
+                    .build();
+            backLeft = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southwestMotor")))
+                    .driveOrientation(DriveTrain.Orientation.LEFT_BACK)
+                    .build();
 
             //Setting up the Odometry
             odometry = new Odometry(frontLeft::getCurrentPosition, backLeft::getCurrentPosition, frontRight::getCurrentPosition,
@@ -99,28 +107,25 @@ public class CameraConditionalAutoExample extends LinearOpMode {
                     START_POSE
             );
 
+            //Setting up the PID gains for the DriveTrain and MotorControllers
+            HashMap<String, PIDGains> pidGains = JSONReader.readPIDGains(PID_SETTINGS_FILENAME);
+
             //Initializing the DriveTrain
-            drive = new DriveTrain(new MotorController[] {frontLeft, frontRight, backLeft, backRight},
-                    new DriveTrain.Orientation[] {DriveTrain.Orientation.LEFT_FRONT, DriveTrain.Orientation.RIGHT_FRONT, DriveTrain.Orientation.LEFT_BACK, DriveTrain.Orientation.RIGHT_BACK},
-                    odometry::getPose,
-                    odometry::getDeltaPose,
-                    DriveTrain.DriveType.MECANUM);
+            drive = new DriveTrain.Builder()
+                    .motor(frontRight)
+                    .motor(frontLeft)
+                    .motor(backRight)
+                    .motor(frontLeft)
+                    .driveType(DriveTrain.DriveType.MECANUM)
+                    .anglePIDConstants(pidGains.get("DriveTrain_angle"))
+                    .pointPIDConstants(pidGains.get("DriveTrain_point"))
+                    .motionPIDConstants(pidGains.get("DriveTrain_motion"))
+                    .build();
 
             //Setting up the MotorControllers that are not part of the DriveTrain
             nonDriveMotors = new HashMap<>();
             //Add MotorControllers like so:
-            //nonDriveMotors.put("ID", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "MOTOR_NAME")), "ID"));
-
-            //Setting up the PID gains for the DriveTrain and MotorControllers
-            HashMap<String, PIDGains> pidGains = JSONReader.readPIDGains(PID_SETTINGS_FILENAME);
-
-            //Setting up CRServos and Servos is similar to setting up MotorControllers
-            crServos = new HashMap<>();
-            servos = new HashMap<>();
-
-            drive.tuneVectorPID(pidGains.get("DriveTrain_point"));
-            drive.tuneAnglePID(pidGains.get("DriveTrain_angle"));
-            drive.tuneVectorPID(pidGains.get("DriveTrain_vector"));
+            //nonDriveMotors.put("ID", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "MOTOR_NAME"))));
 
             for (String id : nonDriveMotors.keySet()) {
                 nonDriveMotors.get(id).tuneTargetPID(pidGains.get("MotorController_" + id + "_Target"));
