@@ -1,34 +1,25 @@
 package com.epra.epralib.ftclib.location;
 
-import android.annotation.SuppressLint;
 import com.epra.epralib.ftclib.math.geometry.Angle;
 import com.epra.epralib.ftclib.math.geometry.Geometry;
-import com.epra.epralib.ftclib.storage.logdata.IMUData;
-import com.google.gson.Gson;
+import com.epra.epralib.ftclib.storage.logdata.DataLogger;
 import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-/**
- * Increases the functionality of the IMU class and combines data from multiple IMUs.
- * <p></p>
- * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
-public class MultiIMU {
+import java.util.Arrays;
+import java.util.HashMap;
+
+/// An object that can combine data from any number of [IMU]s.
+///
+/// Queer Coded by Striker-909.
+/// If you use this class or a method from this class in its entirety, please make sure to give credit.
+public class MultiIMU implements DataLogger {
 
     private Angle baseYaw = new Angle();
     private Angle basePitch = new Angle();
     private Angle baseRoll = new Angle();
 
-    private final FileWriter logWriter;
-    private final Gson gson;
-
-    public enum AXIS {
+    public enum Axis {
         YAW,
         PITCH,
         ROLL
@@ -36,28 +27,72 @@ public class MultiIMU {
 
     ArrayList<IMU> imus = new ArrayList<>();
 
-    /**
-     * Increases the functionality of the IMU class and combines data from multiple IMUs.
-     * <p></p>
-     * Expands the functionality of one IMU.
-     * @param imu An IMU.
-     * @param imus Any number of additional IMUs.
-     */
-    public MultiIMU(IMU imu, IMU... imus) throws IOException {
+    private final String logPath;
+    private final HashMap<String, Double> logData;
+    private final Axis[] loggingTargets;
+
+    /// An object that can combine data from any number of [IMU]s.
+    ///
+    /// @param imu An IMU
+    /// @param imus Any number of additional IMUs
+    /// @param loggingTargets An array of the axes that this multiIMU should log rotational data on
+    public MultiIMU(IMU imu, IMU[] imus, Axis[] loggingTargets) {
         this.imus.add(imu);
         this.imus.addAll(java.util.Arrays.asList(imus));
 
-        gson = new Gson();
-
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm");
-        File logJson = AppUtil.getInstance().getSettingsFile("logs/IMU_log_" + ft.format(new Date()) + ".json");
-        logWriter = new FileWriter(logJson, true);
-        logWriter.write("[");
+        this.logPath = "IMU.json";
+        this.loggingTargets = loggingTargets;
+        this.logData = new HashMap<>();
     }
 
-    /**
-     * @return The average yaw angle.
-     */
+    public MultiIMU(IMU[] imus, Axis[] loggingTargets) {
+        this(imus[0], Arrays.copyOfRange(imus, 1, imus.length - 1), loggingTargets);
+    }
+
+    /// A builder for a [MultiIMU].
+    public static class Builder {
+        private ArrayList<IMU> imus;
+        private ArrayList<Axis> loggingTargets;
+
+        /// A builder for a [MultiIMU].
+        ///
+        /// Starts with default parameters:
+        /// - Only one [IMU].
+        /// - No logging targets.
+        /// @param imu An IMU
+        ///
+        /// @see #imu(IMU...)
+        /// @see #loggingTarget(Axis...)
+        /// @see #build()
+        public Builder(IMU imu) {
+            imus = new ArrayList<>();
+            imus.add(imu);
+            loggingTargets = new ArrayList<>();
+        }
+
+        /// Adds any number of [IMU]s to the builder.
+        /// @param imus Any number of IMUs
+        /// @return This builder
+        public Builder imu(IMU... imus) {
+            this.imus.addAll(java.util.Arrays.asList(imus));
+            return this;
+        }
+        /// Adds any number of [Axes][Axis] for the [MultiIMU] to log data from.
+        /// @param axes Any number of logging targets
+        /// @return This builder
+        public Builder loggingTarget(Axis... axes) {
+            this.loggingTargets.addAll(Arrays.asList(axes));
+            return this;
+        }
+        /// Builds a [MultiIMU] from this builder.
+        /// @return The multiIMU built from this builder
+        public  MultiIMU build() {
+            return new MultiIMU(imus.toArray(imus.toArray(new IMU[0])), loggingTargets.toArray(new Axis[0]));
+        }
+    }
+
+    /// Averages the [Axis#YAW] [Angle] from all [IMU]s.
+    /// @return The average yaw angle
     public Angle getYaw() {
         Angle[] angle = new Angle[imus.size()];
         for (int i = 0; i < imus.size(); i++) {
@@ -66,9 +101,8 @@ public class MultiIMU {
         return Geometry.subtract(Geometry.average(angle), baseYaw);
     }
 
-    /**
-     * @return The average pitch angle.
-     */
+    /// Averages the [Axis#PITCH] [Angle] from all [IMU]s.
+    /// @return The average pitch angle
     public Angle getPitch() {
         Angle[] angle = new Angle[imus.size()];
         for (int i = 0; i < imus.size(); i++) {
@@ -77,9 +111,8 @@ public class MultiIMU {
         return Geometry.subtract(Geometry.average(angle), basePitch);
     }
 
-    /**
-     * @return The average roll angle.
-     */
+    /// Averages the [Axis#Roll] [Angle] from all [IMU]s.
+    /// @return The average roll angle
     public Angle getRoll() {
         Angle[] angle = new Angle[imus.size()];
         for (int i = 0; i < imus.size(); i++) {
@@ -87,9 +120,11 @@ public class MultiIMU {
         }
         return Geometry.subtract(Geometry.average(angle), baseRoll);
     }
-    /**@param axis Axis of the angle.
-     * @return The average angle of that axis.*/
-    public Angle get(AXIS axis) {
+
+    /// Averages the [Angle] around the specified [Axis] from all [IMU]s.
+    /// @param axis An axis
+    /// @return The average angle around the axis
+    public Angle getAngle(Axis axis) {
         return switch (axis) {
             case YAW -> getYaw();
             case PITCH -> getPitch();
@@ -97,7 +132,7 @@ public class MultiIMU {
         };
     }
 
-    /**Sets all the angles to 0 at the current orientation.*/
+    /// Sets the current [Axis#YAW], [Axis#PITCH], and [Axis#ROLL] of all [IMU]s to be the new zero.
     public void recenter() {
         Angle[] yaw = new Angle[imus.size()];
         Angle[] pitch = new Angle[imus.size()];
@@ -112,17 +147,25 @@ public class MultiIMU {
         baseRoll = Geometry.average(roll);
     }
 
-    /**Saves IMU data to internal logs. Also saves log data to a JSON file on the robot for post-match analysis.
-     * @return A IMUData record with data from this log.*/
-    public IMUData log() throws IOException {
-        IMUData data = new IMUData(getYaw().degree(), getPitch().degree(), getRoll().degree());
-        logWriter.write("\n" + gson.toJson(data) + ",");
-        return data;
+    /// {@inheritDoc}
+    /// @return The relative file path for the logs from this logger
+    @Override
+    public String getLogPath() { return logPath; }
+    /// Updates the values for all [Axes][Axis] that are logging targets.
+    /// @return `True`
+    @Override
+    public boolean updateLog() {
+        for (Axis axis : loggingTargets) {
+            logData.put(axis.toString().toLowerCase(), getAngle(axis).degree());
+        }
+        return true;
     }
-
-    /**Closes the JSON file that this IMUExpanded is writing to.*/
-    public void closeLog() throws IOException {
-        logWriter.write("]");
-        logWriter.close();
-    }
+    /// {@inheritDoc}
+    /// @return A hash map with a data snapshot of this logger
+    @Override
+    public HashMap<String, Double> logData() { return logData; }
+    /// {@inheritDoc}
+    /// @return The unix time in milliseconds when the ping was received
+    @Override
+    public long ping() { return System.currentTimeMillis(); }
 }

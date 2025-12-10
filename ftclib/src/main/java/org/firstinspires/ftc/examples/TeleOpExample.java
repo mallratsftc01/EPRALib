@@ -12,6 +12,7 @@ import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
 import com.epra.epralib.ftclib.movement.PIDController;
 import com.epra.epralib.ftclib.storage.initialization.PIDGains;
+import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -42,76 +43,75 @@ public class TeleOpExample extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        try {
-            //Setting up the IMU
-            RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-            RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
-            RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+        //Initializes the LogController
+        LogController.init();
 
-            IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
-            tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
-            imu = new MultiIMU(tempIMU);
+        //Setting up the IMU
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
-            //Setting up the MotorControllers for the DriveTrain
-            frontRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")))
-                    .driveOrientation(DriveTrain.Orientation.RIGHT_FRONT)
-                    .build();
-            backRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southeastMotor")))
-                    .driveOrientation(DriveTrain.Orientation.RIGHT_BACK)
-                    .build();
-            frontLeft = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northwestMotor")))
-                    .driveOrientation(DriveTrain.Orientation.LEFT_FRONT)
-                    .build();
-            backLeft = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southwestMotor")))
-                    .driveOrientation(DriveTrain.Orientation.LEFT_BACK)
-                    .build();
+        IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
+        tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
+        imu = new MultiIMU.Builder(tempIMU)
+                .loggingTarget(MultiIMU.Axis.YAW)
+                .build();
 
-            //Setting up the Odometry
-            odometry = new Odometry(frontLeft::getCurrentPosition, backLeft::getCurrentPosition, frontRight::getCurrentPosition,
-                    new Vector(7.92784216, 3.75),
-                    new Vector(-8, 3.75),
-                    new Vector(0, 2.0),
-                    imu::getYaw,
-                    START_POSE
-            );
+        //Setting up the MotorControllers for the DriveTrain
+        frontRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")))
+                .driveOrientation(DriveTrain.Orientation.RIGHT_FRONT)
+                .build();
+        backRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southeastMotor")))
+                .driveOrientation(DriveTrain.Orientation.RIGHT_BACK)
+                .build();
+        frontLeft = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northwestMotor")))
+                .driveOrientation(DriveTrain.Orientation.LEFT_FRONT)
+                .build();
+        backLeft = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southwestMotor")))
+                .driveOrientation(DriveTrain.Orientation.LEFT_BACK)
+                .build();
 
-            //Initializing the DriveTrain
-            drive = new DriveTrain.Builder()
-                    .motor(frontRight)
-                    .motor(frontLeft)
-                    .motor(backRight)
-                    .motor(frontLeft)
-                    .driveType(DriveTrain.DriveType.MECANUM)
-                    .build();
+        //Setting up the Odometry
+        odometry = new Odometry.Builder()
+                .leftEncoder(frontLeft::getCurrentPosition, 0.01, new Vector(8, 4))
+                .rightEncoder(backLeft::getCurrentPosition, 0.01, new Vector(-8, 4))
+                .perpendicularEncoder(frontRight::getCurrentPosition, 0.01, new Vector(0, 2))
+                .heading(imu::getYaw)
+                .startPose(new Pose(new Vector(0, 0), Angle.degree(0)))
+                .loggingTargets(Odometry.LoggingTarget.X, Odometry.LoggingTarget.Y)
+                .build();
 
-            //Setting up the MotorControllers that are not part of the DriveTrain
-            nonDriveMotors = new HashMap<>();
-            //Add MotorControllers like so:
-            //nonDriveMotors.put("ID", new MotorController(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "MOTOR_NAME"))));
+        //Initializing the DriveTrain
+        drive = new DriveTrain.Builder()
+                .motor(frontRight)
+                .motor(frontLeft)
+                .motor(backRight)
+                .motor(frontLeft)
+                .driveType(DriveTrain.DriveType.MECANUM)
+                .build();
 
-            //Setting up the controller
-            controller1 = new Controller(gamepad1, 0.05f, "1");
+        //Setting up the MotorControllers that are not part of the DriveTrain
+        nonDriveMotors = new HashMap<>();
+        //Add MotorControllers like so:
+        /* nonDriveMotors.put("ID",
+        new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "motorController1")))
+                .id("ID")
+                .addLogTarget(MotorController.LogTarget.POSITION)
+                .build());*/
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        controller1 = new Controller(gamepad1, 0.0f, "1",
+                new Controller.Key[] {
+                        Controller.Key.LEFT_STICK_X,
+                        Controller.Key.LEFT_STICK_Y,
+                        Controller.Key.RIGHT_STICK_X,
+                        Controller.Key.RIGHT_STICK_Y
+        });
 
+        LogController.logInfo("Waiting for start...");
         waitForStart();
+        LogController.logInfo("Starting TeleOp.");
         while (opModeIsActive()) {
-            //Logs data from all MotorControllers, the imu, and odometry
-            try {
-                frontRight.log();
-                frontLeft.log();
-                backRight.log();
-                backLeft.log();
-                for (MotorController m : nonDriveMotors.values()) {
-                    m.log();
-                }
-                imu.log();
-                controller1.log();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            LogController.logData();
             //Updates all active PID loops
             PIDController.update();
 
@@ -121,18 +121,7 @@ public class TeleOpExample extends LinearOpMode {
         }
 
         //Closes all logs
-        try {
-            frontRight.closeLog();
-            frontLeft.closeLog();
-            backRight.closeLog();
-            backLeft.closeLog();
-            for (MotorController m : nonDriveMotors.values()) {
-                m.closeLog();
-            }
-            imu.closeLog();
-            controller1.closeLog();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        LogController.logInfo("TeleOp complete.");
+        LogController.closeLogs();
     }
 }

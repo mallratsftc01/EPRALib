@@ -157,8 +157,8 @@ if we do not determine it necessary in future seasons.
 
 ### Storage
 The `storage` group holds several records that store data in a way that can be easily
-committed to JSON files. The `storage.logdata` subgroup enables logging for several different classes, including 
-`MotorController`, `IMUExpanded`, `Controller`, and `Odometry`. These log files allow us 
+committed to JSON files. The `storage.logdata` subgroup enables logging for several different `Logger`s, including 
+`MotorController`, `IMUExpanded`, `Controller`, and `Odometry` through the `LogController`. These log files allow us 
 to fine-tune troubleshooting. We hope to someday create an external AI agent
 that can read these files to tune certain processes such as PID loops.
 
@@ -174,4 +174,4 @@ similar to autonomous instructions.
 ## Credits
 This README was written by Striker-909, the lead programmer of FTC 18387. 
 
-This README was last updated 12/3/2025, for version 1.5.0
+This README was last updated 12/9/2025, for version 1.5.0

@@ -1,33 +1,25 @@
 package com.epra.epralib.ftclib.control;
 
-import com.epra.epralib.ftclib.control.buttons.BooleanButton;
-import com.epra.epralib.ftclib.control.buttons.ButtonBase;
-import com.epra.epralib.ftclib.control.buttons.FloatButton;
-import com.epra.epralib.ftclib.control.buttons.VectorButton;
+import com.epra.epralib.ftclib.control.gamepad_elements.Button;
+import com.epra.epralib.ftclib.control.gamepad_elements.GamepadElement;
+import com.epra.epralib.ftclib.control.gamepad_elements.Analog;
+import com.epra.epralib.ftclib.control.gamepad_elements.Joystick;
 import com.epra.epralib.ftclib.math.geometry.Vector;
-import com.epra.epralib.ftclib.storage.logdata.ControllerData;
-import com.google.gson.Gson;
+import com.epra.epralib.ftclib.storage.logdata.DataLogger;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
-/**Extends the Gamepad Class.
- * <p></p>
- * Introduces new functionality to joysticks, triggers, and buttons.
- * <p></p>
- * Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
-public class Controller extends Gamepad {
+/// Extends and gives new functionality to the [Gamepad] class.
+/// 
+/// Includes several new ways to use buttons, joysticks, and triggers.
+///
+/// Queer Coded by Striker-909.
+/// If you use this class or a method from this class in its entirety, please make sure to give credit.
+public class Controller extends Gamepad implements DataLogger {
     Gamepad gamepad;
-    /**An enum to store all the buttons and analogs.*/
+    /// All the data types that can be taken directly from the [Gamepad]'s keys.
     public enum Key {
         A,
         B,
@@ -50,334 +42,367 @@ public class Controller extends Gamepad {
 
         Key() {}
     }
-    /**An enum to store both joysticks.*/
+    /// Joysticks as one object, as opposed to seperated X and Y.
     public enum Stick {
         RIGHT_STICK,
         LEFT_STICK
     }
 
-    /**A map containing all buttons and corresponding keys.*/
-    public Map<Key, ButtonBase> map = new HashMap<>();
-    public Map<String, ButtonBase> chords = new HashMap<>();
-    public Map<Stick, VectorButton> stick = new HashMap<>();
+    private final Map<Key, GamepadElement> keys = new HashMap<>();
+    private final Map<String, GamepadElement> chords = new HashMap<>();
+    private final Map<Stick, Joystick> sticks = new HashMap<>();
 
-    private float deadband;
+    private final float deadband;
 
-    private final File logJson;
-    private final FileWriter logWriter;
-    private final Gson gson;
+    private final String logPath;
+    private final Key[] loggingTargets;
+    private final HashMap<String, Double> logData;
 
-    /**Extends the Gamepad Class.
-     * <p></p>
-     * Introduces new functionality to joysticks, triggers, and buttons.
-     * @param deadbandIn The starting deadband range.
-     * @param g The gamepad this controller instance will extend.
-     * @param id A string that identifies the log files of this Controller.
-     * */
-    public Controller(Gamepad g, float deadbandIn, String id) throws IOException {
-        gamepad = g;
+    /// Extends and gives new functionality to the [Gamepad] class.
+    ///
+    /// Includes several new ways to use buttons, joysticks, and triggers.
+    /// @param deadbandIn The starting deadband range
+    /// @param gamepad The gamepad this controller instance will extend
+    /// @param id A string that identifies the log files of this Controller
+    /// @param loggingTargets An array of all [Key]s whose outputs should be logged
+    public Controller(Gamepad gamepad, float deadbandIn, String id, Key[] loggingTargets) {
+        this.gamepad = gamepad;
         deadband = deadbandIn;
-        map.put(Key.A, new BooleanButton(() -> gamepad.a));
-        map.put(Key.B, new BooleanButton(() -> gamepad.b));
-        map.put(Key.X, new BooleanButton(() -> gamepad.x));
-        map.put(Key.Y, new BooleanButton(() -> gamepad.y));
-        map.put(Key.UP, new BooleanButton(() -> gamepad.dpad_up));
-        map.put(Key.DOWN, new BooleanButton(() -> gamepad.dpad_down));
-        map.put(Key.LEFT, new BooleanButton(() -> gamepad.dpad_left));
-        map.put(Key.RIGHT, new BooleanButton(() -> gamepad.dpad_right));
-        map.put(Key.BUMPER_LEFT, new BooleanButton(() -> gamepad.left_bumper));
-        map.put(Key.BUMPER_RIGHT, new BooleanButton(() -> gamepad.right_bumper));
-        map.put(Key.STICK_LEFT, new BooleanButton(() -> gamepad.left_stick_button));
-        map.put(Key.STICK_RIGHT, new BooleanButton(() -> gamepad.right_stick_button));
-        map.put(Key.LEFT_STICK_X, new FloatButton(() -> gamepad.left_stick_x));
-        map.put(Key.RIGHT_STICK_X, new FloatButton(() -> gamepad.right_stick_x));
-        map.put(Key.LEFT_STICK_Y, new FloatButton(() -> gamepad.left_stick_y));
-        map.put(Key.RIGHT_STICK_Y, new FloatButton(() -> gamepad.right_stick_y));
-        map.put(Key.LEFT_TRIGGER, new FloatButton(() -> gamepad.left_trigger));
-        map.put(Key.RIGHT_TRIGGER, new FloatButton(() -> gamepad.right_trigger));
-        stick.put(Stick.RIGHT_STICK, new VectorButton(() -> gamepad.right_stick_x, () -> gamepad.right_stick_y));
-        stick.put(Stick.LEFT_STICK, new VectorButton(() -> gamepad.left_stick_x, () -> gamepad.left_stick_y));
+        keys.put(Key.A, new Button(() -> gamepad.a));
+        keys.put(Key.B, new Button(() -> gamepad.b));
+        keys.put(Key.X, new Button(() -> gamepad.x));
+        keys.put(Key.Y, new Button(() -> gamepad.y));
+        keys.put(Key.UP, new Button(() -> gamepad.dpad_up));
+        keys.put(Key.DOWN, new Button(() -> gamepad.dpad_down));
+        keys.put(Key.LEFT, new Button(() -> gamepad.dpad_left));
+        keys.put(Key.RIGHT, new Button(() -> gamepad.dpad_right));
+        keys.put(Key.BUMPER_LEFT, new Button(() -> gamepad.left_bumper));
+        keys.put(Key.BUMPER_RIGHT, new Button(() -> gamepad.right_bumper));
+        keys.put(Key.STICK_LEFT, new Button(() -> gamepad.left_stick_button));
+        keys.put(Key.STICK_RIGHT, new Button(() -> gamepad.right_stick_button));
+        keys.put(Key.LEFT_STICK_X, new Analog(() -> gamepad.left_stick_x));
+        keys.put(Key.RIGHT_STICK_X, new Analog(() -> gamepad.right_stick_x));
+        keys.put(Key.LEFT_STICK_Y, new Analog(() -> gamepad.left_stick_y));
+        keys.put(Key.RIGHT_STICK_Y, new Analog(() -> gamepad.right_stick_y));
+        keys.put(Key.LEFT_TRIGGER, new Analog(() -> gamepad.left_trigger));
+        keys.put(Key.RIGHT_TRIGGER, new Analog(() -> gamepad.right_trigger));
+        sticks.put(Stick.RIGHT_STICK, new Joystick(() -> gamepad.right_stick_x, () -> gamepad.right_stick_y));
+        sticks.put(Stick.LEFT_STICK, new Joystick(() -> gamepad.left_stick_x, () -> gamepad.left_stick_y));
 
-        gson = new Gson();
-
-        SimpleDateFormat ft = new SimpleDateFormat("ddMMyyyy:HH:mm", Locale.US);
-        logJson = AppUtil.getInstance().getSettingsFile("logs/Controller_" + id + "_log_" + ft.format(new Date()) + ".json");
-        logWriter = new FileWriter(logJson, true);
-        logWriter.write("[");
+        this.logPath = "Controller_" + id;
+        this.loggingTargets = loggingTargets;
+        logData = new HashMap<>();
+    }
+    /// Extends and gives new functionality to the [Gamepad] class.
+    ///
+    /// Includes several new ways to use buttons, joysticks, and triggers.
+    /// 
+    /// Will log the outputs of no [Key]s.
+    /// @param deadbandIn The starting deadband range
+    /// @param gamepad The gamepad this controller instance will extend
+    /// @param id A string that identifies the log files of this Controller
+    public Controller(Gamepad gamepad, float deadbandIn, String id) {
+        this(gamepad, deadbandIn, id, new Key[0]);
     }
 
-    /**Returns the float value of an analog.
-     * @param analog Corresponding key for analog.*/
-    public float getAnalog(Key analog) { return map.get(analog).getFloat(); }
-    /**@param joystick Corresponding stick for joystick.
-     * @return The vector associated with the stick.*/
-    public Vector getAnalog(Stick joystick) { return stick.get(joystick).getVector(); }
-    /**Returns the boolean value of a button.
-     * @param button Corresponding key for button.*/
-    public boolean getButton(Key button) { return map.get(button).getBoolean(); }
-    /**Returns the value of a button and an int.
-     * @param button Corresponding key for button.*/
-    public int getButtonInt(Key button) { return boolToInt(getButton(button)); }
+    /// Returns the float value of an [Analog].
+    /// @param analog Corresponding key for analog
+    /// @return The float value of the analog
+    public float getAnalog(Key analog) { return keys.get(analog).getFloat(); }
+    /// Returns the [Vector] value of a [Joystick].
+    /// @param joystick Corresponding stick for joystick
+    /// @return The vector associated with the stick
+    public Vector getAnalog(Stick joystick) { return sticks.get(joystick).getVector(); }
 
-    /**Sets deadband limit for joysticks and triggers.
-     * @param d Deadband range.*/
-    public void setDeadband(float d) { deadband = d; }
-    /**Returns deadband limit for joysticks and triggers.*/
+    /// Returns deadband limit for [Analog]s.
+    /// @return The deadband range
     public float getDeadband() { return deadband; }
-    /**Returns 0 if in the deadband range, if not returns as normal.
-     * @param analog Corresponding key for analog.*/
-    public float analogDeadband(Key analog) { return (Math.abs(map.get(analog).getFloat()) > deadband) ? map.get(analog).getFloat() : 0.0F; }
-    /**@param joystick Corresponding stick for joystick.
-     * @return The vector associated with the stick, length is set to 0 if it was within the deadband range.*/
-    public Vector analogDeadband(Stick joystick) { return (Math.abs(stick.get(joystick).getVector().length()) > deadband) ? stick.get(joystick).getVector() : new Vector(0.0,0.0); }
-    /**Returns 0 if in the deadband range, if not returns as normal.
-     * @param analog Corresponding key for analog.
-     * @param deadbandIn Deadband range.*/
-    public float analogDeadband(Key analog, float deadbandIn) { return (Math.abs(map.get(analog).getFloat()) > deadbandIn) ? map.get(analog).getFloat() : 0.0F; }
-    /**@param joystick Corresponding stick for joystick.
-     * @param deadbandIn Deadband range.
-     * @return The vector associated with the stick, length is set to 0 if it was within the deadband range.*/
-    public Vector analogDeadband(Stick joystick, float deadbandIn) { return (Math.abs(stick.get(joystick).getVector().length()) > deadbandIn) ? stick.get(joystick).getVector() : new Vector(0.0,0.0); }
-    /**Returns the value raised to the power of the input.
-     * @param analog Corresponding key for analog.
-     * @param power Power to be raised to.*/
-    public float analogPower(Key analog, float power) { return Math.signum(map.get(analog).getFloat() * (float)Math.pow(Math.abs(map.get(analog).getFloat()), power)); }
-    /**@param joystick Corresponding stick for joystick
-     * @param power The power to be raised to.
-     * @return The vector associated with the stick, length raised to the power.*/
-    public Vector analogPower(Stick joystick, float power) { return new Vector(Math.signum(stick.get(joystick).getVector().length() * (float)Math.pow(Math.abs(stick.get(joystick).getVector().length()), power)), stick.get(joystick).getVector().theta()); }
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.
-     * @param analog Corresponding key for analog.
-     * @param power to be raised to.*/
+    /// Returns 0 if in the deadband range, otherwise returns the same as [#getAnalog(Key)].
+    /// @param analog Corresponding key for analog
+    /// @return The deadbanded float value of the analog
+    public float analogDeadband(Key analog) { return (Math.abs(keys.get(analog).getFloat()) > deadband) ? keys.get(analog).getFloat() : 0.0F; }
+    /// Returns (0,0) if in the deadband range, otherwise returns the same as [#getAnalog(Stick)].
+    /// @param joystick Corresponding stick for joystick
+    /// @return The vector associated with the stick, length is set to 0 if it was within the deadband range
+    public Vector analogDeadband(Stick joystick) { return (Math.abs(sticks.get(joystick).getVector().length()) > deadband) ? sticks.get(joystick).getVector() : new Vector(0.0,0.0); }
+    /// Returns 0 if in the deadband range, otherwise returns the same as [#getAnalog(Key)].
+    /// @param analog Corresponding key for analog
+    /// @param deadbandIn Deadband range
+    /// @return The deadbanded float value of the analog
+    public float analogDeadband(Key analog, float deadbandIn) { return (Math.abs(keys.get(analog).getFloat()) > deadbandIn) ? keys.get(analog).getFloat() : 0.0F; }
+    /// Returns (0,0) if in the deadband range, otherwise returns the same as [#getAnalog(Stick)].
+    /// @param joystick Corresponding stick for joystick
+    /// @param deadbandIn Deadband range
+    /// @return The vector associated with the stick, length is set to 0 if it was within the deadband range
+    public Vector analogDeadband(Stick joystick, float deadbandIn) { return (Math.abs(sticks.get(joystick).getVector().length()) > deadbandIn) ? sticks.get(joystick).getVector() : new Vector(0.0,0.0); }
+    /// Returns the value of [#getAnalog(Key)] raised to a certain power.
+    /// @param analog Corresponding key for analog
+    /// @param power Power to be raised to
+    /// @return The float value of the analog, raised to the power
+    public float analogPower(Key analog, float power) { return Math.signum(keys.get(analog).getFloat() * (float)Math.pow(Math.abs(keys.get(analog).getFloat()), power)); }
+    /// Returns the value of [#getAnalog(Stick)], with the length raised to a certain power.
+    /// @param joystick Corresponding stick for joystick
+    /// @param power Power to be raised to
+    /// @return The float value of the analog, raised to the power
+    public Vector analogPower(Stick joystick, float power) { return new Vector(Math.pow(sticks.get(joystick).getVector().length(), power), sticks.get(joystick).getVector().theta()); }
+    /// Returns the value of [#getAnalog(Key)] raised to a certain power, with a deadband applied.
+    /// @param analog Corresponding key for analog
+    /// @param power Power to be raised to
+    /// @return The float value of the analog, raised to the power
+    ///
+    /// @see #analogDeadband(Key)
     public float analogPowerDeadband(Key analog, float power) { return (Math.abs(analogPower(analog, power)) > deadband) ? analogPower(analog, power) : 0.0F; }
-    /**@param joystick Corresponding stick for joystick
-     * @param power The power to be raised to.
-     * @return The vector associated with the stick, length raised to the power.*/
+    /// Returns the value of [#getAnalog(Stick)], with the length raised to a certain power, with a deadband applied.
+    /// @param joystick Corresponding stick for joystick
+    /// @param power Power to be raised to
+    /// @return The float value of the analog, raised to the power
+    ///
+    /// @see #analogDeadband(Stick)
     public Vector analogPowerDeadband(Stick joystick, float power) { return analogPowerDeadband(joystick, power, deadband); }
-    /**If the value is within the deadband range, it is set to 0. If not, it is raised to the power of the input.
-     * @param analog Corresponding key for analog.
-     * @param power Power to be raised to.
-     * @param deadbandIn Deadband range.*/
+    /// Returns the value of [#getAnalog(Key)] raised to a certain power, with a deadband applied.
+    /// @param analog Corresponding key for analog
+    /// @param power Power to be raised to
+    /// @param deadbandIn Deadband range
+    /// @return The float value of the analog, raised to the power
+    ///
+    /// @see #analogDeadband(Key, float)
     public float analogPowerDeadband(Key analog, float power, float deadbandIn) { return (Math.abs(analogPower(analog, power)) > deadbandIn) ? analogPower(analog, power) : 0.0F; }
-    /**@param joystick Corresponding stick for joystick
-     * @param power The power to be raised to.
-     * @param deadbandIn Deadband range.
-     * @return The vector associated with the stick, length raised to the power.*/
+    /// Returns the value of [#getAnalog(Stick)], with the length raised to a certain power, with a deadband applied.
+    /// @param joystick Corresponding stick for joystick
+    /// @param power Power to be raised to
+    /// @param deadbandIn Deadband range
+    /// @return The float value of the analog, raised to the power
+    ///
+    /// @see #analogDeadband(Stick)
     public Vector analogPowerDeadband(Stick joystick, float power, float deadbandIn) {
-        Vector v = new Vector(Math.signum(stick.get(joystick).getVector().length() * (float)Math.pow(Math.abs(stick.get(joystick).getVector().length()), power)), stick.get(joystick).getVector().theta());
-        return (Math.abs(v.length()) > deadbandIn) ? v : new Vector(0,0);
+        Vector v = analogPower(joystick, power);
+        return (v.length() > deadbandIn) ? v : new Vector(0,0);
     }
 
-    /**Returns a true output only on the first call while a button is pressed.
-     * If the method is called again while the button is still pressed, the return will be false.
-     * If the method is called while the button is released, it will clear.
-     * @param button Corresponding key for button.*/
+    /// Returns the boolean value of a [Button].
+    /// @param button Corresponding key for the button
+    /// @return If the button is currently pressed
+    public boolean getButton(Key button) { return keys.get(button).getBoolean(); }
+
+    /// Returns the boolean value of a chord.
+    /// @param chord Corresponding id for the chord
+    /// @return If the chord is currently pressed
+    public boolean getButton(String chord) { return chords.get(chord).getBoolean(); }
+
+    /// Returns `True` only the first time this method is called while the [Button] is pressed.
+    /// @param button Corresponding key for the button
+    /// @return The single press value of the button
     public boolean buttonSingle(Key button) {
-        return map.get(button).getSingle();
+        return keys.get(button).getSingle();
     }
-    /**Returns the output of buttonSingle as an int.
-     * @param button Corresponding key for button.*/
-    public int buttonSingleInt(Key button) {return boolToInt(buttonSingle(button));}
-    /**Will change the state of the toggle if the button is pressed.
-     * Returns the new state of the toggle.
-     * @param button Corresponding key for button.*/
+
+    /// Returns `True` only the first time this method is called while the chord is pressed.
+    /// @param chord Corresponding id for the chord
+    /// @return The single press value of the chord
+    public boolean buttonSingle(String chord) {
+        return chords.get(chord).getSingle();
+    }
+
+    /// Will change the state of the toggle from `True` to `False` or vice versa when the [Button] is pressed.
+    /// @param button Corresponding key for the button
+    /// @return The current value of the toggle
     public boolean buttonToggle(Key button) {
-        map.get(button).toggle();
-        return map.get(button).getToggle();
+        keys.get(button).toggle();
+        return keys.get(button).getToggle();
     }
-    /**Returns the output of buttonToggle as an int.
-     * @param button Corresponding key for button.*/
-    public int buttonToggleInt(Key button) {return boolToInt(buttonToggle(button));}
-    /**Will change the state of the toggle if the button is pressed following the rules of buttonSingle.
-     * Returns the new state of the toggle.
-     * @param button Corresponding key for button.*/
-    public boolean buttonToggleSingle(Key button) {
-        if (buttonSingle(button)) {
-            map.get(button).toggle();
-        }
-        return map.get(button).getToggle();
-    }
-    /**Returns the output of buttonToggleSingle as an int.
-     * @param button Corresponding key for button.*/
-    public int buttonToggleSingleInt(Key button) {return boolToInt(buttonToggleSingle(button));}
-    /**Will change the state of the toggle regardless of the state of the button.
-     * Returns the new state of the toggle.
-     * @param button Corresponding key for button.*/
-    public boolean flipToggle(Key button) {
-        map.get(button).setToggle(!(map.get(button).getToggle()));
-        return map.get(button).getToggle();
-    }
-    /**Returns the state of the toggle without changing the state of the toggle.
-     * @param button Corresponding key for button.*/
-    public boolean getToggle(Key button) {
-        return map.get(button).getToggle();
-    }
-    /**Returns the output of getToggle as an int.
-     * @param button Corresponding key for button.*/
-    public int getToggleInt(Key button) {return boolToInt(buttonToggleSingle(button));}
-    /**If the counter is more than or equal to max, it will be clear and return zero. If not, the counter will increase by one and return the result.
-     * @param button Corresponding key for button.
-     * @param max The maximum value of the counter.*/
-    public int buttonCounter(Key button, int max) {
-        if (map.get(button).getBoolean()) {
-            map.get(button).tickCounter(1, max);
-        }
-        return map.get(button).getCounter();
-    }
-    /**Will perform the same action as buttonCounter but follows the rules of buttonSingle.
-     * @param button Corresponding key for button.
-     * @param max The maximum value of the counter.*/
-    public int buttonCounterSingle(Key button, int max) {
-        if (buttonSingle(button)) {
-            map.get(button).tickCounter(1, max);
-        }
-        return map.get(button).getCounter();
-    }
-    /**Will increase the counter of a certain button by a certain amount. If the counter goes over max, it will clear and overflow. Returns the new value of the counter.
-     * @param button Corresponding key for button.
-     * @param max The maximum value of the counter.
-     * @param increase The amount by which the counter will increase.*/
-    public int increaseCounter(Key button, int max, int increase) {
-        map.get(button).tickCounter(increase, max);
-        return map.get(button).getCounter();
-    }
-    /**Will set the counter to a certain number.
-     * @param button Corresponding key for button.
-     * @param set The value to set the counter to.*/
-    public void setCounter(Key button, int set) { map.get(button).setCounter(set); }
-    /**Returns the current value of the counter.
-     * @param button Corresponding key for button.*/
-    public int getCounter(Key button) { return map.get(button).getCounter(); }
-
-    /**Creates a new chord of buttons that acts as a single button.
-     * @param id The string id for this chord.
-     * @param keys An array of 2 or more keys that make up this chord.
-     * @return True if the chord was successfully created. */
-    public boolean createChord(String id, Key[] keys) {
-        if (keys.length < 2) { return false; }
-        chords.put(id, new BooleanButton(() -> {
-            boolean b = true;
-            for (Key k : keys) {
-                b = b && map.get(k).getBoolean();
-            }
-            return b;
-        }));
-        return true;
-    }
-
-    /**Returns a true output only on the first call while all buttons in the chord are pressed.
-     * If the method is called again while the buttons are still pressed, the return will be false.
-     * If the method is called while a button in the chord is released, it will clear.
-     * @param chord String id for the chord.*/
-    public boolean buttonSingle(String chord) { return chords.get(chord).getSingle(); }
-    /**Returns the output of buttonSingle as an int.
-     * @param chord String id for the chord.*/
-    public int buttonSingleInt(String chord) {return boolToInt(buttonSingle(chord));}
-    /**Will change the state of the toggle if all the buttons in the chord are pressed.
-     * Returns the new state of the toggle.
-     * @param chord String id for the chord.*/
+    /// Will change the state of the toggle from `True` to `False` or vice versa when the chord is pressed.
+    /// @param chord Corresponding id for the chord
+    /// @return The current value of the chord
     public boolean buttonToggle(String chord) {
         chords.get(chord).toggle();
         return chords.get(chord).getToggle();
     }
-    /**Returns the output of buttonToggle as an int.
-     * @param chord String id for the chord.*/
-    public int buttonToggleInt(String chord) {return boolToInt(buttonToggle(chord));}
-    /**Will change the state of the toggle if all the buttons in the chord are pressed following the rules of buttonSingle.
-     * Returns the new state of the toggle.
-     * @param chord String id for the chord.*/
+    /// Will change the state of the toggle from `True` to `False` or vice versa when the [Button] is pressed
+    /// following the rules of [#buttonSingle(Key)].
+    /// @param button Corresponding key for the button
+    /// @return The current value of the toggle
+    public boolean buttonToggleSingle(Key button) {
+        if (buttonSingle(button)) {
+            keys.get(button).toggle();
+        }
+        return keys.get(button).getToggle();
+    }
+    /// Will change the state of the toggle from `True` to `False` or vice versa when the chord is pressed
+    /// following the rules of [#buttonSingle(String)].
+    /// @param chord Corresponding id for the chord
+    /// @return The current value of the toggle
     public boolean buttonToggleSingle(String chord) {
         if (buttonSingle(chord)) {
             chords.get(chord).toggle();
         }
         return chords.get(chord).getToggle();
     }
-    /**Returns the output of buttonToggleSingle as an int.
-     * @param chord String id for the chord.*/
-    public int buttonToggleSingleInt(String chord) {return boolToInt(buttonToggleSingle(chord));}
-    /**Will change the state of the toggle regardless of the state of the chord.
-     * Returns the new state of the toggle.
-     * @param chord String id for the chord.*/
+    /// Will change the state of the toggle from `True` to `False` or vice versa.
+    /// @param button Corresponding key for the button
+    /// @return The current value of the toggle
+    public boolean flipToggle(Key button) {
+        keys.get(button).setToggle(!(keys.get(button).getToggle()));
+        return keys.get(button).getToggle();
+    }
+    /// Will change the state of the toggle from `True` to `False` or vice versa.
+    /// @param chord Corresponding id for the chord
+    /// @return The current value of the toggle
     public boolean flipToggle(String chord) {
         chords.get(chord).setToggle(!(chords.get(chord).getToggle()));
         return chords.get(chord).getToggle();
     }
-    /**Returns the state of the toggle without changing the state of the toggle.
-     * @param chord String id for the chord.*/
+    /// Returns the state of the toggle without changing it.
+    /// @param button Corresponding key for the button
+    /// @return The current value of the toggle
+    public boolean getToggle(Key button) {
+        return keys.get(button).getToggle();
+    }
+    /// Returns the state of the toggle without changing it.
+    /// @param chord Corresponding id for the chord
+    /// @return The current value of the toggle
     public boolean getToggle(String chord) {
         return chords.get(chord).getToggle();
     }
-    /**Returns the output of getToggle as an int.
-     * @param chord String id for the chord.*/
-    public int getToggleInt(String chord) {return boolToInt(buttonToggleSingle(chord));}
-    /**If the counter is more than or equal to max, it will be clear and return zero. If not, the counter will increase by one and return the result.
-     * @param chord String id for the chord.
-     * @param max The maximum value of the counter.*/
+    /// Modifies an integer counter attached to the [Button].
+    ///
+    /// If the button is pressed when this is called, the counter will be increased by 1.
+    /// If after incrementation, the counter is more than or equal to the maximum value, it will be reset back to 0.
+    /// @param button Corresponding key for the button
+    /// @param max The maximum value of the counter
+    /// @return The current value of the counter
+    public int buttonCounter(Key button, int max) {
+        if (keys.get(button).getBoolean()) {
+            keys.get(button).tickCounter(1, max);
+        }
+        return keys.get(button).getCounter();
+    }
+    /// Modifies an integer counter attached to the chord.
+    ///
+    /// If the chord is pressed when this is called, the counter will be increased by 1.
+    /// If after incrementation, the counter is more than or equal to the maximum value, it will be reset back to 0.
+    /// @param chord Corresponding id for the chord
+    /// @param max The maximum value of the counter
+    /// @return The current value of the counter
     public int buttonCounter(String chord, int max) {
         if (chords.get(chord).getBoolean()) {
             chords.get(chord).tickCounter(1, max);
         }
         return chords.get(chord).getCounter();
     }
-    /**Will perform the same action as buttonCounter but follows the rules of buttonSingle.
-     * @param chord String id for the chord.
-     * @param max The maximum value of the counter.*/
+    /// Modifies an integer counter attached to the [Button].
+    ///
+    /// If [#buttonSingle(Key)] is `True` for this button when this is called, the counter will be increased by 1.
+    /// If after incrementation, the counter is more than or equal to the maximum value, it will be reset back to 0.
+    /// @param button Corresponding key for the button
+    /// @param max The maximum value of the counter
+    /// @return The current value of the counter
+    public int buttonCounterSingle(Key button, int max) {
+        if (buttonSingle(button)) {
+            keys.get(button).tickCounter(1, max);
+        }
+        return keys.get(button).getCounter();
+    }
+    /// Modifies an integer counter attached to the chord.
+    ///
+    /// If [#buttonSingle(String)] is `True` for this chord when this is called, the counter will be increased by 1.
+    /// If after incrementation, the counter is more than or equal to the maximum value, it will be reset back to 0.
+    /// @param chord Corresponding id for the chord
+    /// @param max The maximum value of the counter
+    /// @return The current value of the counter
     public int buttonCounterSingle(String chord, int max) {
         if (buttonSingle(chord)) {
             chords.get(chord).tickCounter(1, max);
         }
         return chords.get(chord).getCounter();
     }
-    /**Will increase the counter of a certain button by a certain amount. If the counter goes over max, it will clear and overflow. Returns the new value of the counter.
-     * @param chord String id for the chord.
-     * @param max The maximum value of the counter.
-     * @param increase The amount by which the counter will increase.*/
+    /// Modifies an integer counter attached to the [Button].
+    ///
+    /// Increases the counter by the specified amount.
+    /// If after incrementation, the counter is more than or equal to the maximum value, it will be reset back to 0.
+    /// @param button Corresponding key for the button
+    /// @param max The maximum value of the counter
+    /// @param increase The amount by which the counter will increase
+    /// @return The current value of the counter
+    public int increaseCounter(Key button, int max, int increase) {
+        keys.get(button).tickCounter(increase, max);
+        return keys.get(button).getCounter();
+    }
+    /// Modifies an integer counter attached to the chord.
+    ///
+    /// Increases the counter by the specified amount.
+    /// If after incrementation, the counter is more than or equal to the maximum value, it will be reset back to 0.
+    /// @param chord Corresponding id for the chord
+    /// @param max The maximum value of the counter
+    /// @param increase The amount by which the counter will increase
+    /// @return The current value of the counter
     public int increaseCounter(String chord, int max, int increase) {
         chords.get(chord).tickCounter(increase, max);
         return chords.get(chord).getCounter();
     }
-    /**Will set the counter to a certain number.
-     * @param chord String id for the chord.
-     * @param set The value to set the counter to.*/
+    /// Modifies an integer counter attached to the [Button].
+    ///
+    /// Sets the counter to a specified value.
+    /// @param button Corresponding key for the button
+    /// @param set The number to set the counter to
+    public void setCounter(Key button, int set) { keys.get(button).setCounter(set); }
+    /// Modifies an integer counter attached to the chord.
+    ///
+    /// Sets the counter to a specified value.
+    /// @param chord Corresponding id for the chord
+    /// @param set The number to set the counter to
     public void setCounter(String chord, int set) { chords.get(chord).setCounter(set); }
-    /**Returns the current value of the counter.
-     * @param chord String id for the chord.*/
+    ///Returns the current value of the counter attached to the [Button].
+    /// @param button Corresponding key for the button
+    /// @return The current value of the counter
+    public int getCounter(Key button) { return keys.get(button).getCounter(); }
+    ///Returns the current value of the counter attached to the chord.
+    /// @param chord Corresponding id for the chord
+    /// @return The current value of the counter
     public int getCounter(String chord) { return chords.get(chord).getCounter(); }
 
-    /**If true returns 1, if false will return 0.
-     * @param b The input boolean.*/
-    public int boolToInt(boolean b) {return (b) ? 1 : 0;}
-
-    /**Saves Controller data to internal logs. Also saves log data to a JSON file on the robot for post-match analysis.
-     * @return A IMUData record with data from this log.*/
-    public ControllerData log() throws IOException {
-        ControllerData data = new ControllerData(
-                map.get(Key.A).getBoolean(),
-                map.get(Key.B).getBoolean(),
-                map.get(Key.X).getBoolean(),
-                map.get(Key.Y).getBoolean(),
-                map.get(Key.UP).getBoolean(),
-                map.get(Key.DOWN).getBoolean(),
-                map.get(Key.LEFT).getBoolean(),
-                map.get(Key.RIGHT).getBoolean(),
-                map.get(Key.BUMPER_LEFT).getBoolean(),
-                map.get(Key.BUMPER_RIGHT).getBoolean(),
-                map.get(Key.STICK_LEFT).getBoolean(),
-                map.get(Key.STICK_RIGHT).getBoolean(),
-                map.get(Key.LEFT_STICK_X).getFloat(),
-                map.get(Key.RIGHT_STICK_X).getFloat(),
-                map.get(Key.LEFT_STICK_Y).getFloat(),
-                map.get(Key.RIGHT_STICK_Y).getFloat(),
-                map.get(Key.LEFT_TRIGGER).getFloat(),
-                map.get(Key.RIGHT_TRIGGER).getFloat()
-                );
-        logWriter.write("\n" + gson.toJson(data) + ",");
-        return data;
+    /// Creates a new chord of buttons that acts as a single [Button].
+    ///
+    /// A chord acts as a button only considered pressed if all buttons
+    /// that compose it are pressed at the same time.
+    ///
+    /// Will fail if less than two keys are provided or the given `id` is already used by a different chord.
+    /// @param id A tag that will identify this chord
+    /// @param keys Two or more keys to make up this chord
+    /// @return True if the chord was successfully created
+    public boolean createChord(String id, Key... keys) {
+        if (keys.length < 2 || chords.containsKey(id)) { return false; }
+        chords.put(id, new Button(() -> {
+            boolean b = true;
+            for (Key k : keys) {
+                b = b && this.keys.get(k).getBoolean();
+            }
+            return b;
+        }));
+        return true;
     }
 
-    /**Closes the JSON file that this Controller is writing to.*/
-    public void closeLog() throws IOException {
-        logWriter.write("]");
-        logWriter.close();
+    /// {@inheritDoc}
+    /// @return The relative file path for the logs from this logger
+    @Override
+    public String getLogPath() { return logPath; }
+    /// {@inheritDoc}
+    /// @return `True`
+    @Override
+    public boolean updateLog() {
+        for (Key key : loggingTargets) {
+            logData.put(key.toString().toLowerCase(), (double) keys.get(key).getFloat());
+        }
+        return true;
     }
+    /// {@inheritDoc}
+    /// @return A hash map with a data snapshot of this logger
+    @Override
+    public HashMap<String, Double> logData(){
+        return logData;
+    }
+
+    /// {@inheritDoc}
+    /// @return The unix time in milliseconds when the ping was received
+    @Override
+    public long ping() { return System.currentTimeMillis(); }
 }
