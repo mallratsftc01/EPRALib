@@ -44,9 +44,16 @@ public class MultiIMU implements DataLogger {
         this.loggingTargets = loggingTargets;
         this.logData = new HashMap<>();
     }
-
+    /// An object that can combine data from any number of [IMU]s.
+    ///
+    /// @param imus Any number of additional IMUs
+    /// @param loggingTargets An array of the axes that this multiIMU should log rotational data on
     public MultiIMU(IMU[] imus, Axis[] loggingTargets) {
-        this(imus[0], Arrays.copyOfRange(imus, 1, imus.length - 1), loggingTargets);
+        this.imus.addAll(java.util.Arrays.asList(imus));
+
+        this.logPath = "IMU.json";
+        this.loggingTargets = loggingTargets;
+        this.logData = new HashMap<>();
     }
 
     /// A builder for a [MultiIMU].

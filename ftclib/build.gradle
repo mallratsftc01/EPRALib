@@ -48,7 +48,7 @@ dependencies {
 }
 
 group = 'com.epra.epralib'
-version = '1.5.2'
+version = '1.5.3'
 
 publishing {
     publications {
