@@ -79,6 +79,7 @@ public class MotorController implements Motor, DataLogger {
     /// @param id A tag that will identify the log files from this motor controller
     /// @param startPosition The start position for the motor controller
     /// @param ticksPerRevolution The number of ticks in one revolution of the motor's axle
+    /// @param direction The direction for this motor to operate in
     /// @param driveOrientation The drive orientation of this motor if it is a drive motor (can be null if this motor is not a drive motor)
     /// @param logTargets An array of the data types that this motor controller should log
     ///
@@ -86,10 +87,11 @@ public class MotorController implements Motor, DataLogger {
     /// @see #startPos
     /// @see #ticksPerRevolution
     /// @see com.epra.epralib.ftclib.movement.DriveTrain.Orientation
-    public MotorController(Motor motor, String id, double startPosition, double ticksPerRevolution, DriveTrain.Orientation driveOrientation, LogTarget[] logTargets) {
+    public MotorController(Motor motor, String id, double startPosition, double ticksPerRevolution, Direction direction, DriveTrain.Orientation driveOrientation, LogTarget[] logTargets) {
         this.motor = motor;
         this.id = id;
         this.ticksPerRevolution = ticksPerRevolution;
+        this.motor.setDirection(direction);
         this.driveOrientation = driveOrientation;
         this.loggingTargets = logTargets;
 
@@ -118,10 +120,11 @@ public class MotorController implements Motor, DataLogger {
     /// - The starting position is the current position of the motor, or 0 if [#positionMonitoringEnabled] is `False` for the motor.
     /// - The ticks per revolution are 28, default for a [REV HD Hex Motor](https://www.revrobotics.com/REV-41-1291/) with no gearboxes.
     /// - PID loops not initialized. They can be initialized through the tune functions.
+    /// - [Direction#FORWARD].
     /// - No [DriveTrain.Orientation].
     /// - No [LogTarget]s.
     /// @param motor The motor to be wrapped
-    public MotorController(Motor motor) { this(motor, motor.toString(), motor.getCurrentPosition(), 28, null, new LogTarget[] {}); }
+    public MotorController(Motor motor) { this(motor, motor.toString(), motor.getCurrentPosition(), 28, Direction.FORWARD, null, new LogTarget[] {}); }
     /// Wraps a [Motor] for increased control and flexibility.
     ///
     /// Logs JSON files on the robot for post-match analysis.
@@ -130,13 +133,14 @@ public class MotorController implements Motor, DataLogger {
     /// - The starting position is the current position of the motor, or 0 if [#positionMonitoringEnabled] is `False` for the motor.
     /// - The ticks per revolution are 28, default for a [REV HD Hex Motor](https://www.revrobotics.com/REV-41-1291/) with no gearboxes.
     /// - PID loops not initialized. They can be initialized through the tune functions.
+    /// - [Direction#FORWARD].
     /// - No [DriveTrain.Orientation].
     /// - No [LogTarget]s.
     /// @param motor The motor to be wrapped
     /// @param id A tag that will identify the log files from this motor controller
     ///
     /// @see #id
-    public MotorController(Motor motor, String id) { this(motor, id, motor.getCurrentPosition(), 28, null, new LogTarget[] {}); }
+    public MotorController(Motor motor, String id) { this(motor, id, motor.getCurrentPosition(), 28, Direction.FORWARD, null, new LogTarget[] {}); }
 
     /// A builder for a [MotorController].
     public static class Builder {
@@ -145,6 +149,7 @@ public class MotorController implements Motor, DataLogger {
         private double startPosition;
         private double ticksPerRevolution;
         private DriveTrain.Orientation driveOrientation;
+        private Direction direction;
         private double kp_t, ki_t, kd_t;
         private double kp_v, ki_v, kd_v;
         private boolean tuneT, tuneV;
@@ -156,6 +161,7 @@ public class MotorController implements Motor, DataLogger {
         /// - The starting position is the current position of the motor, or 0 if [#positionMonitoringEnabled] is `False` for the motor.
         /// - The ticks per revolution are 28, default for a [REV HD Hex Motor](https://www.revrobotics.com/REV-41-1291/) with no gearboxes.
         /// - PID loops not initialized.
+        /// - [.Direction#FORWARD].
         /// - No [DriveTrain.Orientation].
         /// - No [LogTarget]s.
         /// @param motor The motor to be wrapped
@@ -174,6 +180,7 @@ public class MotorController implements Motor, DataLogger {
             id = motor.toString();
             startPosition = (motor.positionMonitoringEnabled()) ? motor.getCurrentPosition() : 0;
             ticksPerRevolution = 28;
+            direction = Direction.FORWARD;
             tuneT = tuneV = false;
             loggingTargets = new ArrayList<>();
         }
@@ -261,7 +268,10 @@ public class MotorController implements Motor, DataLogger {
         /// @param ticksPerRevolution The number of ticks in one revolution of the motor's axle
         /// @return This builder
         public Builder ticksPerRevolution(double ticksPerRevolution) { this.ticksPerRevolution = ticksPerRevolution; return this; }
-
+        /// Sets the [Direction] for the motor to operate in.
+        /// @param direction The direction for the motor to operate in
+        /// @return This builder
+        public Builder direction(Direction direction) { this.direction = direction; return this; }
         /// Sets an [DriveTrain.Orientation] for this motor controller.
         ///
         /// This allows for the [DriveTrain] to automatically recognize this motor controller's orientation without needing
@@ -329,7 +339,7 @@ public class MotorController implements Motor, DataLogger {
         /// Builds a [MotorController] from this builder.
         /// @return The motor controller built by this builder
         public MotorController build() {
-            MotorController mc = new MotorController(motor, id, startPosition, ticksPerRevolution, driveOrientation, loggingTargets.toArray(new LogTarget[0]));
+            MotorController mc = new MotorController(motor, id, startPosition, ticksPerRevolution, direction, driveOrientation, loggingTargets.toArray(new LogTarget[0]));
             if (tuneT) mc.tuneTargetPID(kp_t, ki_t, kd_t);
             if (tuneV) mc.tuneVelocityPID(kp_v, ki_v, kd_v);
             return mc;
@@ -337,6 +347,7 @@ public class MotorController implements Motor, DataLogger {
     }
 
     /// {@inheritDoc}
+    /// @return {@inheritDoc}
     @Override
     public boolean isEnabled() { return motor.isEnabled(); }
     /// {@inheritDoc}
@@ -347,9 +358,11 @@ public class MotorController implements Motor, DataLogger {
     public void setDisabled() { motor.setDisabled(); }
 
     /// {@inheritDoc}
+    /// @param direction {@inheritDoc}
     @Override
     public void setDirection(Direction direction) { motor.setDirection(direction);}
     /// {@inheritDoc}
+    /// @return {@inheritDoc}
     @Override
     public Direction getDirection() {
         return motor.getDirection();
@@ -364,12 +377,14 @@ public class MotorController implements Motor, DataLogger {
     @Override
     public boolean powerEnabled() { return motor.powerEnabled(); }
     /// {@inheritDoc}
+    /// @param power {@inheritDoc}
     public void setPower(double power) { motor.setPower(power + ((positionMonitoringEnabled()) ? (holdPow * getCurrentPosition()) : 0)); }
     /// Stops the wrapped motor by setting its power to 0.
     /// @see #setPower(double)
     public void stop() { motor.setPower(0.0); }
 
     /// {@inheritDoc}
+    /// @return {@inheritDoc}
     @Override
     public double getPower() { return motor.getPower(); }
 
