@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import com.epra.epralib.ftclib.math.geometry.Angle;
+import com.epra.epralib.ftclib.movement.pid.PIDController;
+import com.epra.epralib.ftclib.movement.pid.PIDGains;
 import com.epra.epralib.ftclib.storage.autonomous.DriveTrainAutoModule;
 
 /// Coordinates multiple drive [Motor]s for cohesive motion.

@@ -1,5 +1,6 @@
-package com.epra.epralib.ftclib.movement;
+package com.epra.epralib.ftclib.movement.frames;
 
+import com.epra.epralib.ftclib.movement.Motor;
 import com.qualcomm.robotcore.hardware.CRServo;
 
 /// A [Motor] wrapper for a [CRServo].

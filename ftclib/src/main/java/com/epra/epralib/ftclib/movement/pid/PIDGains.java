@@ -1,4 +1,4 @@
-package com.epra.epralib.ftclib.movement;
+package com.epra.epralib.ftclib.movement.pid;
 
 /// A record that stores gains for a [PIDController].
 ///

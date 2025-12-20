@@ -5,16 +5,14 @@ import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
 import com.epra.epralib.ftclib.math.geometry.Vector;
-import com.epra.epralib.ftclib.movement.DcMotorExFrame;
+import com.epra.epralib.ftclib.movement.frames.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
-import com.epra.epralib.ftclib.movement.PIDController;
+import com.epra.epralib.ftclib.movement.pid.PIDController;
 import com.epra.epralib.ftclib.storage.autonomous.AutoProgram;
 import com.epra.epralib.ftclib.storage.autonomous.AutoStep;
 import com.epra.epralib.ftclib.storage.autonomous.MotorControllerAutoModule;
-import com.epra.epralib.ftclib.movement.PIDGains;
 import com.epra.epralib.ftclib.storage.logdata.LogController;
-import com.google.gson.reflect.TypeToken;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -23,10 +21,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.function.Supplier;
 
 @Autonomous

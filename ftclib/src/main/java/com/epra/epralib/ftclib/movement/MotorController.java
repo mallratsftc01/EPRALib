@@ -2,6 +2,8 @@ package com.epra.epralib.ftclib.movement;
 
 import androidx.annotation.NonNull;
 
+import com.epra.epralib.ftclib.movement.pid.PIDController;
+import com.epra.epralib.ftclib.movement.pid.PIDGains;
 import com.epra.epralib.ftclib.storage.logdata.DataLogger;
 import com.qualcomm.robotcore.hardware.Servo;
 

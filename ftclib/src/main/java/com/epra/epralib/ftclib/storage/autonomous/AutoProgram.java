@@ -8,6 +8,7 @@ import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -165,12 +166,12 @@ public class AutoProgram {
     ///     "CONDITIONAL_1_NAME": "\[OBJECT.DATA\] == 0",
     ///     "CONDITIONAL_2_NAME": "\[OBJECT_1.DATA\] >= \[OBJECT_2.DATA\]",
     ///     "CONDITIONAL_3_NAME": "\[OBJECT_1.DATA_1\] < \[OBJECT_2.DATA_1\] && \[OBJECT_1.DATA_2\] != \[OBJECT_2.DATA_2\]",
-    ///     "CONDITIONAL_4_NAME": "\[Conditional.CONDITIONAL_1_NAME\] || \[Conditional.CONDITIONAL_2_NAME\],
+    ///     "CONDITIONAL_4_NAME": "\[Conditional.CONDITIONAL_1_NAME\] || \[Conditional.CONDITIONAL_2_NAME\]",
     ///     ...
     /// }
     /// </pre></code>
     /// Conditionals should always return a boolean. Conditionals `TRUE` and `FALSE` are initialized by default,
-    /// which each return their respective values.
+    /// which each returns their respective values.
     ///
     /// Conditionals can use comparison (`==`, `>`, `<`, `>=`, `<=`, `!=`), basic logic
     /// (`&&`, `||`), and basic arithmatic (`+`, `-`, `*`, `/`, `//`, `%`, `^`).
@@ -190,7 +191,7 @@ public class AutoProgram {
     private boolean parseConditionals() {
         // Reads all conditionals from the conditional.json file
         try (FileReader file = new FileReader(AppUtil.getInstance().getSettingsFile(directoryPath + "/conditionals.json"))) {
-            HashMap<String, String> tempConditionals = gson.fromJson(file, new TypeToken<HashMap<String, String>>() {}.getType());
+            LinkedHashMap<String, String> tempConditionals = gson.fromJson(file, new TypeToken<LinkedHashMap<String, String>>() {}.getType());
 
             // Adds default TRUE and FALSE
             this.conditionals.put("TRUE", () -> true);
@@ -645,8 +646,8 @@ public class AutoProgram {
     private boolean parseProgram() {
         // Reads all items from the program.json file
         try (FileReader file = new FileReader(AppUtil.getInstance().getSettingsFile(directoryPath + "/program.json"))) {
-            HashMap<String, HashMap<String, String>> tempProgram =
-                    gson.fromJson(file, new TypeToken<HashMap<String, HashMap<String, String>>>() {}.getType());
+            HashMap<String, LinkedHashMap<String, String>> tempProgram =
+                    gson.fromJson(file, new TypeToken<HashMap<String, LinkedHashMap<String, String>>>() {}.getType());
 
             if (!tempProgram.containsKey("init.json")) {
                 LogController.logError("No init.json file found in program.json.");
