@@ -7,9 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import com.epra.epralib.ftclib.math.geometry.Angle;
 import com.epra.epralib.ftclib.storage.autonomous.MotorControllerAutoModule;
-import com.epra.epralib.ftclib.storage.initialization.PIDGains;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

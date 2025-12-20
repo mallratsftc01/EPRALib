@@ -163,15 +163,12 @@ to fine-tune troubleshooting. We hope to someday create an external AI agent
 that can read these files to tune certain processes such as PID loops.
 
 The `storage.autonomous` subgroup is responsible for holding all the storage 
-classes necessary to run autonomous. These files would be read off of JSONs in the
-robot controller's hard drive. The `AutoExample` class gives a template for how
+classes necessary to run autonomous, along with `AutoProgram`, 
+which manages an entire autonomous program using instructions from `JSON` files 
+in the robot's hard drive. The `AutoExample` class gives a template for how
 to implement a modular autonomous using these storage classes.
-
-The `storage.initialization` subgroup contains records that used on initialization,
-such as the gain variables for PID loops. These files would be read off of the robot's hard drive,
-similar to autonomous instructions.
 
 ## Credits
 This README was written by Striker-909, the lead programmer of FTC 18387. 
 
-This README was last updated 12/9/2025, for version 1.5.0
+This README was last updated 12/20/2025, for version 1.6.0

@@ -8,10 +8,8 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
 import com.epra.epralib.ftclib.storage.logdata.DataLogger;
-import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.qualcomm.robotcore.hardware.IMU;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -99,6 +97,26 @@ public class Odometry implements DataLogger {
     ///
     /// All measurements should be in consistent units, but the calculations are independent of the units used.
     ///
+    /// An [EncoderSettings] record is used to set encoder displacements and units per tick.
+    /// @param leftEncoder A supplier for the position of the left parallel encoder
+    /// @param rightEncoder A supplier for the position of the right parallel encoder
+    /// @param perpendicularEncoder A supplier for the position of the perpendicular encoder
+    /// @param encoderSettings A record containing settings to initialize the odometry
+    /// @param heading A supplier for the current heading of the robot from an IMU or multiIMU
+    /// @param startPose The starting pose of the robot on the field
+    public Odometry(Supplier<Double> leftEncoder, Supplier<Double> rightEncoder, Supplier<Double> perpendicularEncoder,
+                    EncoderSettings encoderSettings,
+                    Supplier<Angle> heading, Pose startPose, LoggingTarget[] loggingTargets) {
+        this(leftEncoder, rightEncoder, perpendicularEncoder,
+                encoderSettings.leftUnitsPerTick(), encoderSettings.rightUnitsPerTick(), encoderSettings.perpendicularUnitsPerTick(),
+                encoderSettings.left(), encoderSettings.right(), encoderSettings.perpendicular(),
+                heading, startPose, loggingTargets);
+    }
+
+    /// Uses [MotorController] encoders as odometry pods to determine the robot's [Pose].
+    ///
+    /// All measurements should be in consistent units, but the calculations are independent of the units used.
+    ///
     /// This version of odometry doesn't use a perpendicular encoder, so it is only intended to be used in conjunction
     /// with a non-holonomic [DriveTrain#DriveType].
     /// @param leftEncoder A supplier for the position of the left parallel encoder
@@ -133,6 +151,27 @@ public class Odometry implements DataLogger {
         this.logPath = "Odometry";
         this.logData = new HashMap<>();
         this.loggingTargets = loggingTargets;
+    }
+
+    /// Uses [MotorController] encoders as odometry pods to determine the robot's [Pose].
+    ///
+    /// All measurements should be in consistent units, but the calculations are independent of the units used.
+    ///
+    /// This version of odometry doesn't use a perpendicular encoder, so it is only intended to be used in conjunction
+    ///
+    /// An [EncoderSettings] record is used to set encoder displacements and units per tick.
+    /// @param leftEncoder A supplier for the position of the left parallel encoder
+    /// @param rightEncoder A supplier for the position of the right parallel encoder
+    /// @param encoderSettings A record containing settings to initialize the odometry
+    /// @param heading A supplier for the current heading of the robot from an IMU or multiIMU
+    /// @param startPose The starting pose of the robot on the field
+    public Odometry(Supplier<Double> leftEncoder, Supplier<Double> rightEncoder,
+                    EncoderSettings encoderSettings,
+                    Supplier<Angle> heading, Pose startPose, LoggingTarget[] loggingTargets) {
+        this(leftEncoder, rightEncoder,
+                encoderSettings.leftUnitsPerTick(), encoderSettings.rightUnitsPerTick(),
+                encoderSettings.left(), encoderSettings.right(),
+                heading, startPose, loggingTargets);
     }
 
     /// A builder for [Odometry].
@@ -195,6 +234,35 @@ public class Odometry implements DataLogger {
             this.displacement.put(Orientation.PERPENDICULAR, displacement);
             return this;
         }
+        /// Uses a [EncoderSettings] record to initialize displacements and units per tick for the encoders.
+        ///
+        /// This should be used **after** adding the encoders as adding encoders will override these settings.
+        /// @param encoderSettings The encoder settings to be used
+        /// @return This builder
+        public Builder useEncoderSettings(EncoderSettings encoderSettings) {
+            displacement.put(Orientation.LEFT, encoderSettings.left());
+            displacement.put(Orientation.RIGHT, encoderSettings.right());
+            displacement.put(Orientation.PERPENDICULAR, encoderSettings.perpendicular());
+
+            unitPerTick.put(Orientation.LEFT, encoderSettings.leftUnitsPerTick());
+            unitPerTick.put(Orientation.RIGHT, encoderSettings.rightUnitsPerTick());
+            unitPerTick.put(Orientation.PERPENDICULAR, encoderSettings.perpendicularUnitsPerTick());
+            return this;
+        }
+        /// Loads a [EncoderSettings] record the given `filename` and uses that record to initialize
+        /// the displacements and units per tick for the encoders.
+        ///
+        /// This should be used **after** adding the encoders as adding encoders will override these settings.
+        ///
+        /// Will return `null` and log an error if the `filename` cannot be found.
+        /// @param filename The filename of the `JSON` file with the encoder displacements
+        /// @return This builder
+        public Builder useEncoderSettingsFile(String filename) {
+            EncoderSettings encoderSettings = EncoderSettings.fromFile(filename);
+            if (encoderSettings == null) { return null; }
+            return useEncoderSettings(encoderSettings);
+        }
+
         /// Sets a heading [Angle] supplier for the [Odometry].
         ///
         /// Should in most cases come from an [IMU] or [MultiIMU].

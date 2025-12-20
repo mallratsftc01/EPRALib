@@ -1,7 +1,5 @@
 package com.epra.epralib.ftclib.movement;
 
-import com.epra.epralib.ftclib.storage.initialization.PIDGains;
-
 import java.util.function.Supplier;
 
 /// A storage class for the data necessary for [PIDController] run a PID loop.

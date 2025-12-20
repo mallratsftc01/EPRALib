@@ -7,7 +7,6 @@ import com.epra.epralib.ftclib.math.geometry.Geometry;
 import com.epra.epralib.ftclib.math.geometry.Vector;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +14,6 @@ import java.util.function.Supplier;
 
 import com.epra.epralib.ftclib.math.geometry.Angle;
 import com.epra.epralib.ftclib.storage.autonomous.DriveTrainAutoModule;
-import com.epra.epralib.ftclib.storage.initialization.PIDGains;
 
 /// Coordinates multiple drive [Motor]s for cohesive motion.
 ///

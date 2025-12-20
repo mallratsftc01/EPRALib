@@ -1,9 +1,14 @@
 package com.epra.epralib.ftclib.movement;
 
-import com.epra.epralib.ftclib.storage.initialization.PIDGains;
+import com.epra.epralib.ftclib.storage.logdata.LogController;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.function.Supplier;
 
 /// Processes multiple PID loops simultaneously.
@@ -17,6 +22,7 @@ public class PIDController {
 
     private static final ArrayList<String> activeIds = new ArrayList<>();
     private static final HashMap<String, PIDData> pidData = new HashMap<>();
+    private static final Gson gson = new Gson();
 
     private static long saveTime = 0;
 
@@ -66,6 +72,53 @@ public class PIDController {
         if (!active) {
             idle(id);
         }
+    }
+
+    /// Fetches all [PIDGains] from the given `filename`.
+    ///
+    /// Will return `null` and log an error if the `filename` cannot be found.
+    /// @param filename The filename of the `JSON` file with the PID gains
+    /// @return A hashmap of all PID gains in the file, indexed by their `id`
+    public static HashMap<String, PIDGains> getPIDsFromFile(String filename) {
+        List<PIDGains> pidGains;
+        try (FileReader reader = new FileReader(AppUtil.getInstance().getSettingsFile(filename))) {
+            pidGains = gson.fromJson(reader, new TypeToken<List<PIDGains>>() {}.getType());
+        } catch (Exception e) {
+            LogController.logError("Trouble fetching PID gains from " + filename +
+                    ". Error: " + e.getMessage());
+            return null;
+        }
+        HashMap<String, PIDGains> pids = new HashMap<>();
+        for (PIDGains p : pidGains) {
+            pids.put(p.id(), p);
+        }
+        LogController.logInfo("Successfully got all PIDs from " + filename);
+        return pids;
+    }
+
+    /// Tunes all PIDs given a [HashMap] that maps PID `ids` to the [PIDGains] that PID should be tuned with.
+    /// @param pidGainsMap A hash map from a PID's `id` to the pid gains record to tune it with
+    /// @return If a PID exists for every `id` in the `pidGainsMap`
+    public static boolean tuneAllPIDs(HashMap<String, PIDGains> pidGainsMap) {
+        boolean out = true;
+        for (String id : pidGainsMap.keySet()) {
+            if (pidData.containsKey(id)) {
+                pidData.get(id).tune(pidGainsMap.get(id));
+            } else {
+                out = false;
+            }
+        }
+        return out;
+    }
+
+    /// Fetches all [PIDGains] from the given `filename` and tunes all PIDs accordingly.
+    /// @param filename The filename of the `JSON` file with the PID gains
+    /// @return If the `filename` could be found
+    public static boolean tuneAllPIDsFromFile(String filename) {
+        HashMap<String, PIDGains> pidGainsMap = getPIDsFromFile(filename);
+        if (pidGainsMap == null) { return false; }
+        tuneAllPIDs(pidGainsMap);
+        return true;
     }
 
     /// Returns if a PID loop with the provided `id` has been created.

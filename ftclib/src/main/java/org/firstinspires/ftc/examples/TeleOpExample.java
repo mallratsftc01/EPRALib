@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.examples;
 
 import com.epra.epralib.ftclib.control.Controller;
-import com.epra.epralib.ftclib.control.JSONReader;
 import com.epra.epralib.ftclib.location.MultiIMU;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
@@ -11,7 +10,6 @@ import com.epra.epralib.ftclib.movement.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.DriveTrain;
 import com.epra.epralib.ftclib.movement.MotorController;
 import com.epra.epralib.ftclib.movement.PIDController;
-import com.epra.epralib.ftclib.storage.initialization.PIDGains;
 import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -19,7 +17,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 
-import java.io.IOException;
 import java.util.HashMap;
 
 @TeleOp
