@@ -1,5 +1,6 @@
 plugins {
     id("maven-publish")
+    id("org.jetbrains.dokka") version "1.9.10"
 }
 
 apply from: '../build.common.gradle'
@@ -19,28 +20,6 @@ android {
     }
 }
 
-// Manually create tasks to generate Javadoc and package it, along with sources
-task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.getSourceFiles()
-    android.libraryVariants.all { variant ->
-        if (variant.name == 'release') {
-            // Set the classpath for the javadoc task from the release variant
-            classpath = variant.javaCompileProvider.get().classpath
-        }
-    }
-    failOnError false
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    archiveClassifier.set('javadoc')
-    from javadoc.destinationDir
-}
-
-task sourcesJar(type: Jar) {
-    archiveClassifier.set('sources')
-    from android.sourceSets.main.java.srcDirs
-}
-
 dependencies {
     compileOnly 'org.firstinspires.ftc:RobotCore:10.0.0'
     compileOnly 'org.firstinspires.ftc:Hardware:10.0.0'
@@ -48,7 +27,48 @@ dependencies {
 }
 
 group = 'com.epra.epralib'
-version = '1.6.1'
+version = '1.6.3'
+
+// Configure Dokka
+dokkaHtml {
+    outputDirectory.set(file("$buildDir/dokka"))
+    
+    dokkaSourceSets {
+        configureEach {
+            includeNonPublic.set(true)
+            skipEmptyPackages.set(true)
+            skipDeprecated.set(false)
+            reportUndocumented.set(true)
+            
+            // Custom comment style for /// comments
+            sourceLink {
+                localDirectory.set(file("src/main/java"))
+                remoteUrl.set(new URL("https://github.com/mallratsftc01/EPRALib/blob/main/src/main/java"))
+                remoteLineSuffix.set("#L")
+            }
+            
+            // Configure to recognize /// comments
+            customAssertion {
+                if (contains("///")) {
+                    replace("///", "/**")
+                    append(" */")
+                }
+            }
+        }
+    }
+}
+
+// Create javadoc JAR
+task javadocJar(type: Jar, dependsOn: dokkaHtml) {
+    archiveClassifier.set('javadoc')
+    from dokkaHtml.outputDirectory
+}
+
+// Create sources JAR
+task sourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    from android.sourceSets.main.java.srcDirs
+}
 
 publishing {
     publications {
@@ -58,7 +78,6 @@ publishing {
             version = project.version
 
             // Defer the task lookup until after the project has been evaluated
-            // to ensure the 'bundleReleaseAar' task exists.
             afterEvaluate {
                 artifact(tasks.getByName("bundleReleaseAar"))
             }
@@ -78,4 +97,10 @@ publishing {
             }
         }
     }
+}
+
+// Optional: Configure source compatibility
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }

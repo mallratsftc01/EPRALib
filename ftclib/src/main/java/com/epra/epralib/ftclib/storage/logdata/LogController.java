@@ -21,6 +21,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+/// Handles a central log and individual logs for specific [DataLogger]s.
+///
+/// [#init()] will create the log directory at `sdcard/FIRST/settings/logs/DATE`.
+/// The `DATE` is in the form `ddMMyyyy:HH:mm`.
+/// The main log is `main.log` within that directory.
+/// Various levels of messages can be written to the central log.
+///
+/// [#addLogger(DataLogger)] will add a data logger, whose log can be found at
+/// `TYPE_ID.json` in the log directory.
+/// [#logData()] will update and log data from all data loggers.
 public class LogController {
     private static String DATE;
     private static String LOG_PATH;
