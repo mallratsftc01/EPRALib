@@ -14,8 +14,8 @@ import java.util.function.Supplier;
 
 import com.epra.epralib.ftclib.math.geometry.Angle;
 import com.epra.epralib.ftclib.movement.pid.PIDController;
-import com.epra.epralib.ftclib.movement.pid.PIDGains;
 import com.epra.epralib.ftclib.storage.autonomous.DriveTrainAutoModule;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 /// Coordinates multiple drive [Motor]s for cohesive motion.
 ///
@@ -293,12 +293,12 @@ public class DriveTrain {
         /// Tunes and initializes the PID loop used to rotate to a target angle in
         /// [#fieldOrientedMecanumDrive(Vector, Vector, double, boolean)] and [#posPIDMecanumDrive(double, double, double, boolean)] using
         /// [PIDController#tune(String, double, double, double)].
-        /// @param pidGains A record with instructions to tune the PID loop
+        /// @param pidCoefficients An object with instructions to tune the PID loop
         /// @return This builder
         ///
         /// @see PIDController
-        public Builder anglePIDConstants(PIDGains pidGains) {
-            kp_a = pidGains.kp(); ki_a = pidGains.ki(); kd_a = pidGains.kd();
+        public Builder anglePIDConstants(PIDCoefficients pidCoefficients) {
+            kp_a = pidCoefficients.p; ki_a = pidCoefficients.i; kd_a = pidCoefficients.d;
             tuneA = true;
             return this;
         }
@@ -316,13 +316,13 @@ public class DriveTrain {
             return this;
         }
         /// Tunes and initializes the PID loop used to move to a target point in [#posPIDMecanumDrive(double, double, double, boolean)] using
-        /// [PIDController#tune(String, PIDGains)].
-        /// @param pidGains A record with instructions to tune the PID loop
+        /// [PIDController#tune(String, PIDCoefficients)].
+        /// @param pidCoefficients An object with instructions to tune the PID loop
         /// @return This builder
         ///
         /// @see PIDController
-        public Builder pointPIDConstants(PIDGains pidGains) {
-            kp_p = pidGains.kp(); ki_p = pidGains.ki(); kd_p = pidGains.kd();
+        public Builder pointPIDConstants(PIDCoefficients pidCoefficients) {
+            kp_p = pidCoefficients.p; ki_p = pidCoefficients.i; kd_p = pidCoefficients.d;
             tuneP = true;
             return this;
         }
@@ -341,12 +341,12 @@ public class DriveTrain {
         }
         /// Tunes and initializes the PID loop used to reach the target motion vector in [#posPIDMecanumDrive(double, double, double)] using
         /// [PIDController#tune(String, double, double, double)].
-        /// @param pidGains A record with instructions to tune the PID loop
+        /// @param pidCoefficients An object with instructions to tune the PID loop
         /// @return This builder
         ///
         /// @see PIDController
-        public Builder motionPIDConstants(PIDGains pidGains) {
-            kp_m = pidGains.kp(); ki_m = pidGains.ki(); kd_m = pidGains.kd();
+        public Builder motionPIDConstants(PIDCoefficients pidCoefficients) {
+            kp_m = pidCoefficients.p; ki_m = pidCoefficients.i; kd_m = pidCoefficients.d;
             tuneM = true;
             return this;
         }
@@ -621,7 +621,7 @@ public class DriveTrain {
     /// A tolerance of 1 or more will result in the motor never moving.
     ///
     /// Created 6/17/2025.
-    /// @param posRange A range in **inches** around the target position for
+    /// @param posRange A range in the united used by Odometry around the target position for
     /// which the robot will be considered to have reached the target
     /// @param angleTolerance The tolerance for rotation as a number between 0 and 1
     /// @param maxPower The absolute maximum power the drive train can use for each motor to reach
@@ -694,15 +694,15 @@ public class DriveTrain {
 
     /// Tunes and/or initializes the PID loop used to rotate to a target angle in
     /// [#fieldOrientedMecanumDrive(Vector, Vector, double, boolean)] and [#posPIDMecanumDrive(double, double, double, boolean)] using
-    /// [PIDController#tune(String, double, double, double)].
-    /// @param pidGains A record with instructions to tune the PID loop
+    /// [PIDController#tune(String, PIDCoefficients)].
+    /// @param pidCoefficients An object with instructions to tune the PID loop
     ///
     /// @see PIDController
-    public void tuneAnglePID(PIDGains pidGains) {
+    public void tuneAnglePID(PIDCoefficients pidCoefficients) {
         if (PIDController.hasPID("DriveTrain_A")) {
-            PIDController.tune("DriveTrain_A", pidGains);
+            PIDController.tune("DriveTrain_A", pidCoefficients);
         } else {
-            PIDController.addPID("DriveTrain_A", pidGains, this::getAngleError, false);
+            PIDController.addPID("DriveTrain_A", pidCoefficients, this::getAngleError, false);
         } 
     }
 
@@ -721,15 +721,15 @@ public class DriveTrain {
         }
     }
     /// Tunes and/or initializes the PID loop used to move to a target point in [#posPIDMecanumDrive(double, double, double, boolean)] using
-    /// [PIDController#tune(String, PIDGains)].
-    /// @param pidGains A record with instructions to tune the PID loop
+    /// [PIDController#tune(String, PIDCoefficients)].
+    /// @param pidCoefficients An object with instructions to tune the PID loop
     ///
     /// @see PIDController
-    public void tunePointPID(PIDGains pidGains) {
+    public void tunePointPID(PIDCoefficients pidCoefficients) {
         if (PIDController.hasPID("DriveTrain_P")) {
-            PIDController.tune("DriveTrain_P", pidGains);
+            PIDController.tune("DriveTrain_P", pidCoefficients);
         } else {
-            PIDController.addPID("DriveTrain_P", pidGains, this::getPointError, false);
+            PIDController.addPID("DriveTrain_P", pidCoefficients, this::getPointError, false);
         }
     }
 
@@ -748,15 +748,15 @@ public class DriveTrain {
         }
     }
     /// Tunes and/or initializes the PID loop used to reach the target motion vector in [#posPIDMecanumDrive(double, double, double)] using
-    /// [PIDController#tune(String, double, double, double)].
-    /// @param pidGains A record with instructions to tune the PID loop
+    /// [PIDController#tune(String, PIDCoefficients)].
+    /// @param pidCoefficients An object with instructions to tune the PID loop
     ///
     /// @see PIDController
-    public void tuneMotionPID(PIDGains pidGains) {
+    public void tuneMotionPID(PIDCoefficients pidCoefficients) {
         if (PIDController.hasPID("DriveTrain_M")) {
-            PIDController.tune("DriveTrain_M", pidGains);
+            PIDController.tune("DriveTrain_M", pidCoefficients);
         } else {
-            PIDController.addPID("DriveTrain_M", pidGains, this::getMotionError, false);
+            PIDController.addPID("DriveTrain_M", pidCoefficients, this::getMotionError, false);
         }
     }
 

@@ -1,0 +1,13 @@
+{
+  "init.json": {
+    "CONTROLLER_X": "test_1.json",
+    "CONTROLLER_Y": "test_2.json",
+    "CONTROLLER_A": "test_3.json",
+    "CONTROLLER_B": "test_4.json",
+    "TRUE": "init.json"
+  },
+  "test_1.json": { "TRUE": "init.json" },
+  "test_2.json": { "TRUE": "init.json" },
+  "test_3.json": { "TRUE": "init.json" },
+  "test_4.json": { "TRUE": "init.json" }
+}

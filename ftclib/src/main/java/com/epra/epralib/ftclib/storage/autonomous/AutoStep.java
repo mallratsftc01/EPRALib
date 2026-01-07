@@ -56,9 +56,9 @@ public class AutoStep {
     ///           "posTolerance": float,
     ///           "angleTolerance": float,
     ///           "maxPower": float,
-    ///           "usePrecision": boolean,
+    ///           "usePrecision": boolean
     ///       },
-    ///       "motorControllerModules": [
+    ///       "motorControllerModules": [[
     ///           {
     ///               "id": string,
     ///               "target": int,

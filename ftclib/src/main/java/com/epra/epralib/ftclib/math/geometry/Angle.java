@@ -45,4 +45,10 @@ public class Angle {
     public double radian() { return this.radian;}
     /**@return The degree stored value;*/
     public double degree() { return this.degree; }
+
+    /// Returns the value of this angle in the form `θ°`.
+    /// @return The value of this angle as a string
+    public String toString() {
+        return this.degree + "°";
+    }
 }

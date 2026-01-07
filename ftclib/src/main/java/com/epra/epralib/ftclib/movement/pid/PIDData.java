@@ -1,5 +1,7 @@
 package com.epra.epralib.ftclib.movement.pid;
 
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
+
 import java.util.function.Supplier;
 
 /// A storage class for the data necessary for [PIDController] run a PID loop.
@@ -39,10 +41,10 @@ public class PIDData {
     ///
     /// A PID loop uses Proportional, Integral, and Derivative elements of feedback to correct error smoothly.
     /// [Wikipedia PID](https://en.wikipedia.org/wiki/Proportional%E2%80%93integral%E2%80%93derivative_controller).
-    /// @param pidGains A record with instructions to tune the PID loop
+    /// @param pidCoefficients An object with instructions to tune the PID loop
     /// @param errorSupplier A function that supplies the current error of the system that this PID loop will monitor
-    public PIDData(PIDGains pidGains, Supplier<Double> errorSupplier) {
-        this(pidGains.kp(), pidGains.ki(), pidGains.kd(), errorSupplier);
+    public PIDData(PIDCoefficients pidCoefficients, Supplier<Double> errorSupplier) {
+        this(pidCoefficients.p, pidCoefficients.i, pidCoefficients.d, errorSupplier);
     }
 
     /// Retrieves the output from the error supplier.
@@ -59,10 +61,10 @@ public class PIDData {
         this.kd = kd;
     }
     /// Modifies the gain constants for this PID loop
-    /// @param pidGains A record with instructions to tune the PID loop
-    public void tune(PIDGains pidGains) {
-        this.kp = pidGains.kp();
-        this.ki = pidGains.ki();
-        this.kd = pidGains.kd();
+    /// @param pidCoefficients An object with instructions to tune the PID loop
+    public void tune(PIDCoefficients pidCoefficients) {
+        this.kp = pidCoefficients.p;
+        this.ki = pidCoefficients.i;
+        this.kd = pidCoefficients.d;
     }
 }

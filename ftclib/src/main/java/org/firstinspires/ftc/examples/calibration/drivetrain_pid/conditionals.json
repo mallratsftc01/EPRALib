@@ -1,0 +1,8 @@
+{
+  "CONTROLLER_X": "[Controller.X] == 1",
+  "CONTROLLER_Y": "[Controller.Y] == 1",
+  "CONTROLLER_A": "[Controller.A] == 1",
+  "CONTROLLER_B": "[Controller.B] == 1",
+  "CONTROLLER_ANY": "[Controller.X] == 1 || [Controller.Y] == 1 || [Controller.A] == 1 || [Controller.B] == 1",
+  "AT_TARGET": "[Position.AtTarget] == 1"
+}

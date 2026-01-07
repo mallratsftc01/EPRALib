@@ -1,0 +1,16 @@
+[
+  {
+    "comment": "Idle",
+    "endCondition": "CONTROLLER_ANY",
+    "driveTrainModule": {
+      "targetX": 0.0,
+      "targetY": 0.0,
+      "targetAngle": 0.0,
+      "posTolerance": 1.0,
+      "angleTolerance": 1.0,
+      "maxPower": 0.0,
+      "usePrecision": false
+    },
+    "motorControllerModules": []
+  }
+]

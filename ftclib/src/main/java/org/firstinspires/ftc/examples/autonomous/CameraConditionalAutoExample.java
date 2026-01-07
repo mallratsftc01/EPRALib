@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.examples;
+package org.firstinspires.ftc.examples.autonomous;
 
 import com.epra.epralib.ftclib.location.MultiIMU;
 import com.epra.epralib.ftclib.location.Odometry;
@@ -28,7 +28,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
-@Autonomous
+@Autonomous(name = "CameraConditionalAutoExample", group = "Autonomous")
 public class CameraConditionalAutoExample extends LinearOpMode {
 
     //These variables lead to the JSON files that control the vast majority of auto
@@ -45,8 +45,6 @@ public class CameraConditionalAutoExample extends LinearOpMode {
     private DriveTrain drive;
 
     private HashMap<String, MotorController> nonDriveMotors;
-    private HashMap<String, CRServo> crServos;
-    private HashMap<String, Servo> servos;
 
     private MultiIMU imu;
 

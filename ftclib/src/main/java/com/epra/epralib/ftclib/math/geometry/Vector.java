@@ -83,7 +83,8 @@ public class Vector {
     /**@return The z coordinate of the vector.*/
     public double z() { return z; }
 
-    /**@return The vector written in (x,y,z) form.*/
+    /// Returns the value of this vector in the form `(x,y,z)`.
+    /// @return The value of this vector as a string
     @Override
     public String toString() {
         return "(" + x + ", " + y + ", " + z + ")";

@@ -3,8 +3,8 @@ package com.epra.epralib.ftclib.movement;
 import androidx.annotation.NonNull;
 
 import com.epra.epralib.ftclib.movement.pid.PIDController;
-import com.epra.epralib.ftclib.movement.pid.PIDGains;
 import com.epra.epralib.ftclib.storage.logdata.DataLogger;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import com.epra.epralib.ftclib.math.geometry.Angle;
@@ -293,13 +293,13 @@ public class MotorController implements Motor, DataLogger {
             return this;
         }
         /// Tunes and initializes the PID loop used in [#moveToTarget(double, double, boolean)] using
-        /// [PIDController#tune(String, PIDGains)].
-        /// @param pidGains A record with instructions to tune the PID loop
+        /// [PIDController#tune(String, PIDCoefficients)].
+        /// @param pidCoefficients An object with instructions to tune the PID loop
         /// @return This builder
         ///
         /// @see PIDController
-        public Builder targetPIDConstants(PIDGains pidGains) {
-            kp_t = pidGains.kp(); ki_t = pidGains.ki(); kd_t = pidGains.kd();
+        public Builder targetPIDConstants(PIDCoefficients pidCoefficients) {
+            kp_t = pidCoefficients.p; ki_t = pidCoefficients.i; kd_t = pidCoefficients.d;
             tuneT = true;
             return this;
         }
@@ -317,13 +317,13 @@ public class MotorController implements Motor, DataLogger {
             return this;
         }
         /// Tunes and initializes the PID loop used in [#maintainVelocity] using
-        /// [PIDController#tune(String, PIDGains)].
-        /// @param pidGains A record with instructions to tune the PID loop
+        /// [PIDController#tune(String, PIDCoefficients)].
+        /// @param pidCoefficients An object with instructions to tune the PID loop
         /// @return This builder
         ///
         /// @see PIDController
-        public Builder velocityPIDConstants(PIDGains pidGains) {
-            kp_v = pidGains.kp(); ki_v = pidGains.ki(); kd_v = pidGains.kd();
+        public Builder velocityPIDConstants(PIDCoefficients pidCoefficients) {
+            kp_v = pidCoefficients.p; ki_v = pidCoefficients.i; kd_v = pidCoefficients.d;
             tuneV = true;
             return this;
         }
@@ -585,15 +585,15 @@ public class MotorController implements Motor, DataLogger {
         return PIDController.idle(id + "_T");
     }
     /// Tunes the PID loop used in [#moveToTarget(double, double, boolean)] using
-    /// [PIDController#tune(String, PIDGains)].
-    /// @param pidGains A record with instructions to tune the PID loop
+    /// [PIDController#tune(String, PIDCoefficients)].
+    /// @param pidCoefficients An object with instructions to tune the PID loop
     ///
     /// @see PIDController
-    public void tuneTargetPID(PIDGains pidGains) {
+    public void tuneTargetPID(PIDCoefficients pidCoefficients) {
         if (PIDController.hasPID(id + "_T")) {
-            PIDController.tune(id + "_T", pidGains);
+            PIDController.tune(id + "_T", pidCoefficients);
         } else {
-            PIDController.addPID(id + "_T", pidGains, this::getTargetError, false);
+            PIDController.addPID(id + "_T", pidCoefficients, this::getTargetError, false);
         }
     }
 
@@ -690,15 +690,15 @@ public class MotorController implements Motor, DataLogger {
     }
 
     /// Tunes the PID loop used in [#maintainVelocity] using
-    /// [PIDController#tune(String, PIDGains)].
-    /// @param pidGains A record with instructions to tune the PID loop
+    /// [PIDController#tune(String, PIDCoefficients)].
+    /// @param pidCoefficients An object with instructions to tune the PID loop
     ///
     /// @see PIDController
-    public void tuneVelocityPID(PIDGains pidGains) {
+    public void tuneVelocityPID(PIDCoefficients pidCoefficients) {
         if (PIDController.hasPID(id + "_V")) {
-            PIDController.tune(id + "_V", pidGains);
+            PIDController.tune(id + "_V", pidCoefficients);
         } else {
-            PIDController.addPID(id + "_V", pidGains, this::getVelocityError, false);
+            PIDController.addPID(id + "_V", pidCoefficients, this::getVelocityError, false);
         }
     }
 

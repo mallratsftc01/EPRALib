@@ -3,6 +3,7 @@ package com.epra.epralib.ftclib.movement.pid;
 import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
 import java.io.FileReader;
@@ -28,19 +29,19 @@ public class PIDController {
 
     /// Adds a new PID loop and activates it.
     /// @param id A tag that will identify this PID loop
-    /// @param pidGains A record with instructions to tune the PID loop
+    /// @param pidCoefficients An object with instructions to tune the PID loop
     /// @param errorSupplier A function that supplies the current error of the system that this PID loop will monitor
-    public static void addPID(String id, PIDGains pidGains, Supplier<Double> errorSupplier) {
-        addPID(id, pidGains.kp(), pidGains.ki(), pidGains.kd(), errorSupplier);
+    public static void addPID(String id, PIDCoefficients pidCoefficients, Supplier<Double> errorSupplier) {
+        addPID(id, pidCoefficients.p, pidCoefficients.i, pidCoefficients.d, errorSupplier);
     }
 
     /// Adds a new PID loop.
     /// @param id A tag that will identify this PID loop
-    /// @param pidGains A record with instructions to tune the PID loop
+    /// @param pidCoefficients A record with instructions to tune the PID loop
     /// @param errorSupplier A function that supplies the current error of the system that this PID loop will monitor
     /// @param active If this PID loop should start active
-    public static void addPID(String id, PIDGains pidGains, Supplier<Double> errorSupplier, boolean active) {
-        addPID(id, pidGains, errorSupplier);
+    public static void addPID(String id, PIDCoefficients pidCoefficients, Supplier<Double> errorSupplier, boolean active) {
+        addPID(id, pidCoefficients, errorSupplier);
         if (!active) {
             idle(id);
         }
@@ -74,32 +75,27 @@ public class PIDController {
         }
     }
 
-    /// Fetches all [PIDGains] from the given `filename`.
+    /// Fetches all [PIDCoefficients] from the given `filename`.
     ///
     /// Will return `null` and log an error if the `filename` cannot be found.
-    /// @param filename The filename of the `JSON` file with the PID gains
-    /// @return A hashmap of all PID gains in the file, indexed by their `id`
-    public static HashMap<String, PIDGains> getPIDsFromFile(String filename) {
-        List<PIDGains> pidGains;
+    /// @param filename The filename of the `JSON` file with the PID coefficients
+    /// @return A hashmap of all PID coefficients in the file, indexed by their `id`
+    public static HashMap<String, PIDCoefficients> getPIDsFromFile(String filename) {
         try (FileReader reader = new FileReader(AppUtil.getInstance().getSettingsFile(filename))) {
-            pidGains = gson.fromJson(reader, new TypeToken<List<PIDGains>>() {}.getType());
+            HashMap<String, PIDCoefficients> temp = gson.fromJson(reader, new TypeToken<HashMap<String, PIDCoefficients>>() {}.getType());
+            LogController.logInfo("Successfully got all PIDs from " + filename);
+            return temp;
         } catch (Exception e) {
             LogController.logError("Trouble fetching PID gains from " + filename +
                     ". Error: " + e.getMessage());
             return null;
         }
-        HashMap<String, PIDGains> pids = new HashMap<>();
-        for (PIDGains p : pidGains) {
-            pids.put(p.id(), p);
-        }
-        LogController.logInfo("Successfully got all PIDs from " + filename);
-        return pids;
     }
 
-    /// Tunes all PIDs given a [HashMap] that maps PID `ids` to the [PIDGains] that PID should be tuned with.
+    /// Tunes all PIDs given a [HashMap] that maps PID `ids` to the [PIDCoefficients] that PID should be tuned with.
     /// @param pidGainsMap A hash map from a PID's `id` to the pid gains record to tune it with
     /// @return If a PID exists for every `id` in the `pidGainsMap`
-    public static boolean tuneAllPIDs(HashMap<String, PIDGains> pidGainsMap) {
+    public static boolean tuneAllPIDs(HashMap<String, PIDCoefficients> pidGainsMap) {
         boolean out = true;
         for (String id : pidGainsMap.keySet()) {
             if (pidData.containsKey(id)) {
@@ -111,11 +107,11 @@ public class PIDController {
         return out;
     }
 
-    /// Fetches all [PIDGains] from the given `filename` and tunes all PIDs accordingly.
+    /// Fetches all [PIDCoefficients] from the given `filename` and tunes all PIDs accordingly.
     /// @param filename The filename of the `JSON` file with the PID gains
     /// @return If the `filename` could be found
     public static boolean tuneAllPIDsFromFile(String filename) {
-        HashMap<String, PIDGains> pidGainsMap = getPIDsFromFile(filename);
+        HashMap<String, PIDCoefficients> pidGainsMap = getPIDsFromFile(filename);
         if (pidGainsMap == null) { return false; }
         tuneAllPIDs(pidGainsMap);
         return true;
@@ -172,15 +168,15 @@ public class PIDController {
         return hasPID(id) && activeIds.contains(id);
     }
 
-    /// Modifies the gain constants for the PID loop with the provided `id`.
+    /// Modifies the [PIDCoefficients] for the PID loop with the provided `id`.
     /// @param id The `id` of the PID loop to be modified
-    /// @param pidGains A record with instructions to tune the PID loop
+    /// @param pidCoefficients A record with instructions to tune the PID loop
     /// @return If the PID loop with the provided `id` exists
-    public static boolean tune(String id, PIDGains pidGains) {
+    public static boolean tune(String id, PIDCoefficients pidCoefficients) {
         if (!hasPID(id)) {
             return false;
         }
-        pidData.get(id).tune(pidGains);
+        pidData.get(id).tune(pidCoefficients);
         return true;
     }
     /// Modifies the gain constants for the PID loop with the provided `id`.

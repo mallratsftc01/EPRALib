@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.examples;
+package org.firstinspires.ftc.examples.teleop;
 
 import com.epra.epralib.ftclib.control.Controller;
 import com.epra.epralib.ftclib.location.MultiIMU;
@@ -19,7 +19,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import java.util.HashMap;
 
-@TeleOp
+@TeleOp(name = "TeleOpExample", group = "TeleOp")
 public class TeleOpExample extends LinearOpMode {
 
     private final Pose START_POSE = new Pose(new Vector(0, 0), new Angle());

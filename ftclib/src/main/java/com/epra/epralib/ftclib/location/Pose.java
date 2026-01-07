@@ -26,4 +26,10 @@ public class Pose {
         this.pos = pos;
         this.angle = angle;
     }
+
+    /// Returns the value of this pose in the form `(x,y) @ θ°`.
+    /// @return The value of this pose as a string
+    public String toString() {
+        return "(" + pos.x() + "," + pos.y() + ") @ " + angle;
+    }
 }

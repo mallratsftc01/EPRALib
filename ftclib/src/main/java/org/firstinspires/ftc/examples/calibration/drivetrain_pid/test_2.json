@@ -1,0 +1,72 @@
+[
+  {
+    "comment": "Starting Position",
+    "endCondition": "AT_TARGET",
+    "driveTrainModule": {
+      "targetX": 0.0,
+      "targetY": 0.0,
+      "targetAngle": 0.0,
+      "posTolerance": 0.5,
+      "angleTolerance": 0.5,
+      "maxPower": 0.5,
+      "usePrecision": true
+    },
+    "motorControllerModules": []
+  },
+  {
+    "comment": "Moving to point 1",
+    "endCondition": "AT_TARGET",
+    "driveTrainModule": {
+      "targetX": 48.0,
+      "targetY": 0.0,
+      "targetAngle": 90.0,
+      "posTolerance": 0.25,
+      "angleTolerance": 0.25,
+      "maxPower": 1.0,
+      "usePrecision": true
+    },
+    "motorControllerModules": []
+  },
+  {
+    "comment": "Moving to point 2",
+    "endCondition": "AT_TARGET",
+    "driveTrainModule": {
+      "targetX": 48.0,
+      "targetY": 48.0,
+      "targetAngle": 180.0,
+      "posTolerance": 0.25,
+      "angleTolerance": 0.25,
+      "maxPower": 1.0,
+      "usePrecision": true
+    },
+    "motorControllerModules": []
+  },
+  {
+    "comment": "Moving to point 3",
+    "endCondition": "AT_TARGET",
+    "driveTrainModule": {
+      "targetX": 0.0,
+      "targetY": 48.0,
+      "targetAngle": 270.0,
+      "posTolerance": 0.25,
+      "angleTolerance": 0.25,
+      "maxPower": 1.0,
+      "usePrecision": true
+    },
+    "motorControllerModules": []
+  },
+  {
+    "comment": "Returning to starting position",
+    "endCondition": "AT_TARGET",
+    "driveTrainModule": {
+      "targetX": 0.0,
+      "targetY": 0.0,
+      "targetAngle": 0.0,
+      "posTolerance": 0.25,
+      "angleTolerance": 0.25,
+      "maxPower": 1.0,
+      "usePrecision": true
+    },
+    "motorControllerModules": []
+  }
+]

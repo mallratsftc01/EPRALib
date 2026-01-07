@@ -718,6 +718,11 @@ public class AutoProgram {
     public AutoStep getCurrentStep() {
         return movementPaths.get(currentMovement).get(currentStepIndex);
     }
+    /// Returns the file name of the current movement.
+    /// @return The name of the current movement.
+    public String getCurrentMovement() {
+        return currentMovement;
+    }
     /// Updates the current [AutoStep] if the current step's end condition is met.
     /// Advances to the next movement if the current step was the last step in the current movement.
     ///
