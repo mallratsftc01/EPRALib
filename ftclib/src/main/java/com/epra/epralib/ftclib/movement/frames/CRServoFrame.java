@@ -18,14 +18,14 @@ public class CRServoFrame implements Motor {
         this.enabled = true;
     }
 
-    /**Sets the logical direction in which this servo operates.
-     * @param direction The direction to set for this servo.*/
+    /// Sets the logical direction in which this servo operates.
+    /// @param direction The direction to set for this servo
     @Override
     public void setDirection(Direction direction) {
         servo.setDirection(direction == Direction.FORWARD ? CRServo.Direction.FORWARD : CRServo.Direction.REVERSE);
     }
-    /**Returns the current logical direction in which this servo is set as operating.
-     * @return The current logical direction in which this servo is set as operating.*/
+    ///Returns the current logical direction in which this servo is set as operating.
+    /// @return The current logical direction in which this servo is set as operating
     @Override
     public Direction getDirection() {
         return servo.getDirection() == CRServo.Direction.FORWARD ? Direction.FORWARD : Direction.REVERSE;
@@ -80,8 +80,7 @@ public class CRServoFrame implements Motor {
     /// @return The wrapped servo
     @Override
     public Object getSelf() { return servo; }
-    /// Returns the device name of the wrapped [CRServo].
-    /// @return The motor's device name
+
     @Override
-    public String toString() { return servo.getDeviceName(); }
+    public String toString() { return servo.toString(); }
 }

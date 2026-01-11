@@ -87,8 +87,6 @@ public class DcMotorExFrame implements Motor {
     @Override
     public Object getSelf() { return motor; }
 
-    /// Returns the device name of the wrapped [DcMotorEx].
-    /// @return The motor's device name
     @Override
-    public String toString() { return motor.getDeviceName(); }
+    public String toString() { return motor.toString(); }
 }

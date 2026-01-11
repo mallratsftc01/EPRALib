@@ -85,8 +85,7 @@ public class ServoFrame implements Motor{
     public Object getSelf() {
         return servo;
     }
-    /// Returns the device name of the wrapped [Servo].
-    /// @return The motor's device name
+
     @Override
-    public String toString() { return servo.getDeviceName(); }
+    public String toString() { return servo.toString(); }
 }

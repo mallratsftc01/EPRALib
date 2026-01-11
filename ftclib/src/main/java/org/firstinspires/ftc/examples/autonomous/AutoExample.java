@@ -94,7 +94,7 @@ public class AutoExample extends LinearOpMode {
                 .motor(frontRight)
                 .motor(frontLeft)
                 .motor(backRight)
-                .motor(frontLeft)
+                .motor(backLeft)
                 .driveType(DriveTrain.DriveType.MECANUM)
                 .build();
 
