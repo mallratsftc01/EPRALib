@@ -109,4 +109,15 @@ public class AutoStep {
     public List<MotorControllerAutoModule> motorControllerModules() {
         return motorControllerModules;
     }
+
+    /// Returns the auto step with its [DriveTrainAutoModule]'s target pose reflected over the x-axis.
+    /// @return The auto step with its drive train auto module reflected over the x-axis
+    public AutoStep reflectX() {
+        return new AutoStep(comment, endConditionVar, driveTrainModule.reflectX(), motorControllerModules);
+    }
+    /// Returns the auto step with its [DriveTrainAutoModule]'s target pose reflected over the y-axis.
+    /// @return The auto step with its drive train auto module reflected over the y-axis
+    public AutoStep reflectY() {
+        return new AutoStep(comment, endConditionVar, driveTrainModule.reflectY(), motorControllerModules);
+    }
 }

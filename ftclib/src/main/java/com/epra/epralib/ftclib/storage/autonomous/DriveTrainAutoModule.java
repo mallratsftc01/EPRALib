@@ -101,4 +101,15 @@ public class DriveTrainAutoModule {
     public Pose targetPose() {
         return new Pose(new Vector(targetX, targetY), Angle.degree(targetAngle));
     }
+
+    /// Returns the drive train auto module with its target pose reflected over the x-axis.
+    /// @return The drive train auto module reflected over the x-axis
+    public DriveTrainAutoModule reflectX() {
+        return new DriveTrainAutoModule(-targetX, targetY, (180 - targetAngle) % 360, posTolerance, angleTolerance, maxPower, usePrecision);
+    }
+    /// Returns the drive train auto module with its target pose reflected over the y-axis.
+    /// @return The drive train auto module reflected over the y-axis
+    public DriveTrainAutoModule reflectY() {
+        return new DriveTrainAutoModule(targetX, -targetY, (-1 * targetAngle) % 360, posTolerance, angleTolerance, maxPower, usePrecision);
+    }
 }

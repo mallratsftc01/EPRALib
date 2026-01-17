@@ -746,4 +746,23 @@ public class AutoProgram {
         if (currentStepIndex + 1 < movementPaths.get(currentMovement).size()) { currentStepIndex++; return true; }
         return !currentMovement.isEmpty();
     }
+
+    /// Reflects the drive portions of all movement paths over the x-axis.
+    ///
+    /// This can be used so that if blue auto and red auto are mirrored,
+    /// one program can be used for both, with one reflected as appropriate.
+    public void reflectX() {
+        for (String movement : movementPaths.keySet()) {
+            movementPaths.get(movement).replaceAll(AutoStep::reflectX);
+        }
+    }
+    /// Reflects the drive portions of all movement paths over the y-axis.
+    ///
+    /// This can be used so that if blue auto and red auto are mirrored,
+    /// one program can be used for both, with one reflected as appropriate.
+    public void reflectY() {
+        for (String movement : movementPaths.keySet()) {
+            movementPaths.get(movement).replaceAll(AutoStep::reflectY);
+        }
+    }
 }

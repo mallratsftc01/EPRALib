@@ -28,10 +28,10 @@ public class PolyGroup implements Shape2D {
 
 
     /**@return The area of the PolyGroup. Overlapped area between components may be over counted, leading to inaccurate counts. To be fixed.*/
-    public double getArea() {
+    public double area() {
         double area = 0.0;
         for (Shape2D component : components) {
-            area += component.getArea();
+            area += component.area();
         }
         return area;
     }

@@ -103,12 +103,12 @@ public class Triangle implements Shape2D{
     public Angle getAngleC() { return angleC; }
 
     /**@return The area of the triangle.*/
-    public double getArea() { return (getBC() * getCA() * Math.sin(angleC.radian())) / 2; }
+    public double area() { return (getBC() * getCA() * Math.sin(angleC.radian())) / 2; }
 
     /**@return The perimeter of the triangle.*/
     public double getPerimeter() { return getAB() + getBC() + getCA(); }
 
     /**@param point Point to check.
      * @return True if the Vector is within the triangle, false if not.*/
-    public boolean checkPoint(Vector point) { return (new Triangle(a, b, point).getArea() + new Triangle(b, c, point).getArea() + new Triangle(c, a, point).getArea() == this.getArea()); }
+    public boolean checkPoint(Vector point) { return (new Triangle(a, b, point).area() + new Triangle(b, c, point).area() + new Triangle(c, a, point).area() == this.area()); }
 }

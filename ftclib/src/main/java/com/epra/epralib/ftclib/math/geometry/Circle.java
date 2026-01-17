@@ -1,7 +1,7 @@
 package com.epra.epralib.ftclib.math.geometry;
-/**Stores a full or partial circle.
- *<p></p>
- *Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
+/// Represents a circle or arc.
+///
+/// Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.*/
 public class Circle implements Shape2D {
 
     private final Vector center;
@@ -9,21 +9,22 @@ public class Circle implements Shape2D {
     private final Angle start;
     private final Angle end;
 
-    /**Stores a full circle.
-     * @param center The center Vector of the circle.
-     * @param radius The radius of the circle.*/
+    /// Represents a full circle.
+    /// @param center The center point of the circle
+    /// @param radius The radius of the circle
     public Circle(Vector center, double radius) {
         this.center = center;
         this.radius = radius;
         start = new Angle();
         end = new Angle();
     }
-    /**Stores a full circle or partial circle. The partial circle is defined between the start angle and end angle COUNTERCLOCKWISE.
-     *<p></p>
-     * @param center The center Vector of the circle.
-     * @param radius The radius of the circle.
-     * @param start The start angle of the circle.
-     * @param end The end angle of the circle.*/
+    /// Represents an arc.
+    ///
+    /// The arc is defined between the starting [Angle] and ending [Angle] **counterclockwise**.
+    /// @param center The center point of the arc
+    /// @param radius The radius of the arc
+    /// @param start The starting angle of the arc
+    /// @param end The ending angle of the arc
     public Circle(Vector center, double radius, Angle start, Angle end) {
         this.center = center;
         this.radius = radius;
@@ -31,27 +32,37 @@ public class Circle implements Shape2D {
         this.end = end;
     }
 
-    /**@return The center Vector of the circle.*/
-    public Vector getCenter() { return center; }
-    /**@return The radius of the circle.*/
-    public double getRadius() { return radius; }
-    /**@return The start angle of the circle.*/
-    public Angle getStart() { return start; }
-    /**@return The end angle of the circle.*/
-    public Angle getEnd() { return end; }
+    /// Returns the center point of the circle or arc as a [Vector].
+    /// @return The center point of the circle or arc
+    public Vector center() { return center; }
+    /// Returns the radius of the circle or arc.
+    /// @return The radius of the circle or arc
+    public double radius() { return radius; }
+    /// Returns the starting [Angle] of the arc, 0 degrees if this represents a full circle.
+    /// @return The starting angle of the arc
+    public Angle start() { return start; }
+    /// Returns the ending [Angle] of the arc, 0 degrees if this represents a full circle.
+    /// @return The ending angle of the arc
+    public Angle end() { return end; }
 
-    /**@return The area of the circle.*/
-    public double getArea() { return Math.PI * Math.pow(this.radius, 2); }
-    /**@return The circumference of the circle.*/
-    public double getCircumference() { return Math.PI * this.radius * 2.0; }
+    /// Returns the area of the circle or arc.
+    /// @return The area of the angle or arc
+    public double area() { return Math.PI * Math.pow(this.radius, 2) * (start.degree() == end.degree() ? 1 : Math.abs(end.degree() - start.degree()) / 360.0); }
+    /// Returns the circumference if this is a circle or the arc length if this is an arc.
+    /// @return The circumference or arc length
+    public double circumference() { return Math.PI * this.radius * 2.0 * (start.degree() == end.degree() ? 1 : Math.abs(end.degree() - start.degree()) / 360.0); }
 
-    /**@param point Point to check.
-     * @return True if the Vector is within the circle, false if not.*/
+    /// Checks if a given point, represented as a [Vector], is within the circle or arc.
+    /// @param point The point to check
+    /// @return If the point is within the circle or arc
     public boolean checkPoint(Vector point) {
+        if (Geometry.subtract(center, point).length() < radius) {
+            return false;
+        }
         if (end.degree() > start.degree()) {
-            return (Geometry.subtract(center, point).length() >= radius && point.theta().degree() >= start.degree() && point.theta().degree() <= end.degree());
+            return (point.theta().degree() >= start.degree() && point.theta().degree() <= end.degree());
         } else {
-            return (Geometry.subtract(center, point).length() >= radius && point.theta().degree() <= start.degree() && point.theta().degree() >= end.degree());
+            return (point.theta().degree() <= start.degree() && point.theta().degree() >= end.degree());
         }
     }
 }

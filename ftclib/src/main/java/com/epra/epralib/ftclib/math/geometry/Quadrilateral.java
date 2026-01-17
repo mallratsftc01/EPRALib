@@ -50,7 +50,7 @@ public class Quadrilateral implements Shape2D {
     /**@return The perimeter of the quadrilateral.*/
     public double getPerimeter() { return getAB() + getBC() + getCD() + getDA(); }
     /**@return The area of the quadrilateral.*/
-    public double getArea() { return tri1.getArea() + tri2.getArea(); }
+    public double area() { return tri1.area() + tri2.area(); }
 
     /**@param point Point to check.
      * @return True if the Vector is within the quadrilateral, false if not.*/
