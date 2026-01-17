@@ -43,13 +43,13 @@ public class Geometry {
     /// The resulting [Angle] will be in the range 0 and 360 degrees (0 to 2π radians).
     /// @param angle The angle to reflect
     /// @return The angle reflected over the x-axis
-    public static Angle reflectX(Angle angle) { return Angle.degree((180 - angle.degree()) % 360); }
+    public static Angle reflectX(Angle angle) { return Angle.degree((-angle.degree()) % 360); }
     /// Reflects an [Angle] over the y-axis.
     ///
     /// The resulting [Angle] will be in the range 0 and 360 degrees (0 to 2π radians).
     /// @param angle The angle to reflect
     /// @return The angle reflected over the y-axis
-    public static Angle reflectY(Angle angle) { return Angle.degree((-1 * angle.degree()) % 360); }
+    public static Angle reflectY(Angle angle) { return Angle.degree((180 - angle.degree()) % 360); }
 
     /// Finds the trigonometric sine value of an [Angle].
     ///
@@ -154,15 +154,15 @@ public class Geometry {
     /// Reflects a [Vector] over the x-axis.
     /// @param vector The vector to reflect
     /// @return The vector reflected over the x-axis
-    public static Vector reflectX(Vector vector) { return new Vector(-1 * vector.x(), vector.y(), vector.z()); }
+    public static Vector reflectX(Vector vector) { return new Vector(vector.x(), -vector.y(), -vector.z()); }
     /// Reflects a [Vector] over the y-axis.
     /// @param vector The vector to reflect
     /// @return The vector reflected over the y-axis
-    public static Vector reflectY(Vector vector) { return new Vector(vector.x(), -1 * vector.y(), vector.z()); }
+    public static Vector reflectY(Vector vector) { return new Vector(-vector.x(), vector.y(), -vector.z()); }
     /// Reflects a [Vector] over the z-axis.
     /// @param vector The vector to reflect
     /// @return The vector reflected over the z-axis
-    public static Vector reflectZ(Vector vector) { return new Vector(vector.x(), vector.y(), -1 * vector.z()); }
+    public static Vector reflectZ(Vector vector) { return new Vector(-vector.x(), -vector.y(), vector.z()); }
 
     /// Adds two [Matrices](Matrix).
     /// @param matrix1 First matrix
