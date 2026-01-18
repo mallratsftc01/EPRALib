@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 /// Autonomous file structure:
 /// <code><pre>
 /// auto
-/// ├ program.json
+/// ├ PROGRAM_NAME.json
 /// ├ conditionals.json
 /// ├ init.json
 /// ├ FIRST_MOVEMENT.json
@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 /// └ LAST_MOVEMENT.json
 /// </pre></code>
 ///
-/// `program.json` structure:
+/// `PROGRAM_NAME.json` structure:
 /// <code><pre>
 /// {
 ///     "init.json": { "TRUE": "FIRST_MOVEMENT.json" },
@@ -71,6 +71,7 @@ import java.util.regex.Pattern;
 public class AutoProgram {
 
     private final String directoryPath;
+    private final String programName;
     private final Gson gson = new Gson();
     private final HashMap<String, Supplier<Double>> dataSuppliers;
     private final HashMap<String, Supplier<Boolean>> conditionals;
@@ -90,6 +91,36 @@ public class AutoProgram {
     /// Autonomous file structure:
     /// <code><pre>
     /// auto
+    /// ├ PROGRAM_NAME.json
+    /// ├ conditionals.json
+    /// ├ init.json
+    /// ├ FIRST_MOVEMENT.json
+    /// ├ SECOND_MOVEMENT.json
+    /// ┆
+    /// └ LAST_MOVEMENT.json
+    /// </pre></code>
+    /// @param directoryPath The path to the directory for this autonomous relative to the `Settings` directory
+    /// @param programName The name of the program file (without type suffix) within the directory
+    /// @param dataSuppliers Data suppliers that provide data used by conditionals
+    /// @see #parseConditionals()
+    /// @see #parseProgram()
+    public AutoProgram(String directoryPath, String programName, HashMap<String, Supplier<Double>> dataSuppliers) {
+        this.directoryPath = directoryPath;
+        this.programName = programName;
+        this.dataSuppliers = dataSuppliers;
+        numParens = numAriths = numComps = numLogis = 0;
+        this.conditionals = new HashMap<>();
+        parseConditionals();
+
+        this.movementPaths = new HashMap<>();
+        this.nextMovementSuppliers = new HashMap<>();
+        parseProgram();
+    }
+    /// Represents an entire autonomous program as accessed via a directory.
+    ///
+    /// Autonomous file structure:
+    /// <code><pre>
+    /// auto
     /// ├ program.json
     /// ├ conditionals.json
     /// ├ init.json
@@ -103,31 +134,33 @@ public class AutoProgram {
     /// @see #parseConditionals()
     /// @see #parseProgram()
     public AutoProgram(String directoryPath, HashMap<String, Supplier<Double>> dataSuppliers) {
-        this.directoryPath = directoryPath;
-        this.dataSuppliers = dataSuppliers;
-        numParens = numAriths = numComps = numLogis = 0;
-        this.conditionals = new HashMap<>();
-        parseConditionals();
-
-        this.movementPaths = new HashMap<>();
-        this.nextMovementSuppliers = new HashMap<>();
-        parseProgram();
+        this(directoryPath, "program", dataSuppliers);
     }
     /// A builder for an [AutoProgram].
     public static class Builder {
         String directoryPath;
+        String programName = "program";
         HashMap<String, Supplier<Double>> dataSuppliers;
 
         /// A builder for an [AutoProgram].
         ///
         /// Starts with no data suppliers.
         /// @param directoryPath The path to the directory for this autonomous relative to the `Settings` directory
+        /// @see #programName(String)
         /// @see #dataSupplier(String, Supplier)
         /// @see #dataSupplier(String, String, Supplier)
         /// @see #build()
         public Builder(String directoryPath) {
             this.directoryPath = directoryPath;
             this.dataSuppliers = new HashMap<>();
+        }
+
+        /// Sets the name of the program file (without type suffix) within the directory.
+        /// @param programName The name of the program file
+        /// @return This builder
+        public Builder programName(String programName) {
+            this.programName = programName;
+            return this;
         }
 
         /// Adds a data [Supplier] with the given `key`.
@@ -154,7 +187,7 @@ public class AutoProgram {
         /// Builds an [AutoProgram] from this builder.
         /// @return The auto program built from this builder
         public AutoProgram build() {
-            return new AutoProgram(directoryPath, dataSuppliers);
+            return new AutoProgram(directoryPath, programName, dataSuppliers);
         }
     }
 
@@ -625,11 +658,11 @@ public class AutoProgram {
         return fetchData(components.get(0));
     }
 
-    /// Parses the `program.json` file and all movement files to initialize the program.
+    /// Parses the `PROGRAM_NAME.json` file and all movement files to initialize the program.
     ///
     /// Sets up all movements using [#parseMovementFile(String)] and [#parseNextMovement(String, HashMap)].
     ///
-    /// `program.json` structure:
+    /// `PROGRAM_NAME.json` structure:
     /// <code><pre>
     /// {
     ///     "init.json": { "TRUE": "FIRST_MOVEMENT.json" },
@@ -644,13 +677,13 @@ public class AutoProgram {
     /// </pre></code>
     /// @return If the program is properly parsed an initialized
     private boolean parseProgram() {
-        // Reads all items from the program.json file
-        try (FileReader file = new FileReader(AppUtil.getInstance().getSettingsFile(directoryPath + "/program.json"))) {
+        // Reads all items from the PROGRAM_NAME.json file
+        try (FileReader file = new FileReader(AppUtil.getInstance().getSettingsFile(directoryPath + "/" + programName + ".json"))) {
             HashMap<String, LinkedHashMap<String, String>> tempProgram =
                     gson.fromJson(file, new TypeToken<HashMap<String, LinkedHashMap<String, String>>>() {}.getType());
 
             if (!tempProgram.containsKey("init.json")) {
-                LogController.logError("No init.json file found in program.json.");
+                LogController.logError("No init.json file found in " + programName + ".json.");
                 return false;
             }
             currentMovement = "init.json";
@@ -664,10 +697,10 @@ public class AutoProgram {
                 parseNextMovement(filename, nextMovements);
             }
         } catch (Exception e) {
-            LogController.logError("Error parsing program.json: " + e.getMessage());
+            LogController.logError("Error parsing " + programName + ".json: " + e.getMessage());
             return false;
         }
-        LogController.logInfo("Successfully parsed program.json");
+        LogController.logInfo("Successfully parsed " + programName + ".json");
         return true;
     }
     /// Parses a movement file given that file's filename.
@@ -691,9 +724,9 @@ public class AutoProgram {
        LogController.logInfo("Successfully parsed " + filename);
        return true;
     }
-    /// Parses the conditionals that lead to the next movement a movement as defined in `program.json`.
+    /// Parses the conditionals that lead to the next movement a movement as defined in `PROGRAM_NAME.json`.
     /// @param filename The file name of the movement to find the next movement(s) for
-    /// @param nextMovements The mapping for the given filename as described in `program.json`
+    /// @param nextMovements The mapping for the given filename as described in `PROGRAM_NAME.json`
     /// @see #parseProgram()
     private void parseNextMovement(String filename, HashMap<String, String> nextMovements) {
         ArrayList<Supplier<String>> nextSuppliers = new ArrayList<>();
