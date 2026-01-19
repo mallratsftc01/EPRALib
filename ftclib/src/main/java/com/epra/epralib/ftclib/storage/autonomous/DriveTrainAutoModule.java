@@ -112,4 +112,14 @@ public class DriveTrainAutoModule {
     public DriveTrainAutoModule reflectY() {
         return new DriveTrainAutoModule(targetX, -targetY, (-1 * targetAngle) % 360, posTolerance, angleTolerance, maxPower, usePrecision);
     }
+
+    public boolean equals(DriveTrainAutoModule other) {
+        return targetX == other.targetX &&
+                targetY == other.targetY &&
+                targetAngle == other.targetAngle &&
+                posTolerance == other.posTolerance &&
+                angleTolerance == other.angleTolerance &&
+                maxPower == other.maxPower &&
+                usePrecision == other.usePrecision;
+    }
 }

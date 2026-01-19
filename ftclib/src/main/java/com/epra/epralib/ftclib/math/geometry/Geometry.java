@@ -5,7 +5,7 @@ package com.epra.epralib.ftclib.math.geometry;
 /// Queer Coded by Striker-909. If you use this class or a method from this class in its entirety, please make sure to give credit.
 public class Geometry {
 
-    /// Adds two [Angles](Angle).
+    /// Adds two [`Angles`](Angle).
     ///
     /// The resulting [Angle] will be in the range 0 and 360 degrees (0 to 2π radians).
     /// @param angle1 First angle
@@ -114,7 +114,7 @@ public class Geometry {
     /// @return The angle between the vector and the x-axis
     public static Angle atan(double x, double y) { return Angle.radian(Math.atan2(y, x)); }
 
-    /// Adds two [Vectors](Vector).
+    /// Adds two [`Vectors`](Vector).
     /// @param vector1 First vector
     /// @param vector2 Second vector
     /// @return The sum of the two vectors
@@ -124,12 +124,19 @@ public class Geometry {
     /// @param vector2 Second vector
     /// @return The second vector subtracted from the first
     public static Vector subtract(Vector vector1, Vector vector2) { return new Vector(vector2, vector1); }
+
+    /// Finds the [Angle] between two [`Vectors`](Vector).
+    /// @param vector1 First vector
+    /// @param vector2 Second vector
+    /// @return The angle between the vectors
+    public static Angle angularDifference(Vector vector1, Vector vector2) { return acos(dot(vector1, vector2) / (vector1.length() * vector2.length())); }
+
     /// Scales a [Vector] by a scalar
     /// @param vector A vector
     /// @param scalar A scalar
     /// @return The vector scaled by the scalar
     public static Vector scale(Vector vector, double scalar) { return new Vector(vector.x() * scalar, vector.y() * scalar, vector.z() * scalar); }
-    /// Computes the hadamard-product of two [Vectors](Vector), producing a [Vector].
+    /// Computes the hadamard-product of two [`Vectors`](Vector), producing a [Vector].
     ///
     /// [Wikipedia Hadamard Product](https://en.wikipedia.org/wiki/Hadamard_product_(matrices))
     /// @param vector1 First vector
@@ -143,7 +150,7 @@ public class Geometry {
     /// @param vector2 Second vector
     /// @return The dot-product of the two vectors
     public static double dot(Vector vector1, Vector vector2) { return (vector1.x() * vector2.x()) + (vector1.y() * vector2.y()) + (vector1.z() * vector2.z()); }
-    /// Computes the cross-product of two [Vectors](Vector), producing a [Vector].
+    /// Computes the cross-product of two [`Vectors`](Vector), producing a [Vector].
     ///
     /// [Wikipedia Cross Product](https://en.wikipedia.org/wiki/Cross_product)
     /// @param vector1 First vector
@@ -164,7 +171,7 @@ public class Geometry {
     /// @return The vector reflected over the z-axis
     public static Vector reflectZ(Vector vector) { return new Vector(-vector.x(), -vector.y(), vector.z()); }
 
-    /// Adds two [Matrices](Matrix).
+    /// Adds two [`Matrices`](Matrix).
     /// @param matrix1 First matrix
     /// @param matrix2 Second matrix
     /// @return The sum of the two matrices
@@ -281,7 +288,7 @@ public class Geometry {
     /// @return The distance from the origin to a point at `(x, y, z)`
     public static double pythagorean(double x, double y, double z) { return Math.sqrt((x*x) + (y*y) + (z*z)); }
 
-    /// Calculates the distance between two [Vectors](Vector).
+    /// Calculates the distance between two [`Vectors`](Vector).
     /// @param vector1 First vector
     /// @param vector2 Second vector
     /// @return The distance between the two vectors

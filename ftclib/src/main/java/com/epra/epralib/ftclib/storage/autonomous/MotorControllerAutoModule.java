@@ -71,4 +71,12 @@ public class MotorControllerAutoModule {
     /// Returns the power the [MotorController] will use if [#tolerance()] is -1.
     /// @return The power to run the motor controller at
     public double power() { return power; }
+
+    public boolean equals(MotorControllerAutoModule other) {
+        return id.equals(other.id) &&
+                target == other.target &&
+                tolerance == other.tolerance &&
+                maxPower == other.maxPower &&
+                power == other.power;
+    }
 }

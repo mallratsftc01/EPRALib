@@ -16,13 +16,10 @@ import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.HashMap;
-import java.util.function.Supplier;
 
 @Autonomous(name = "AutoExample", group = "Autonomous")
 public class AutoExample extends LinearOpMode {
@@ -33,6 +30,8 @@ public class AutoExample extends LinearOpMode {
     private final String ENCODER_SETTINGS_FILENAME = "encoder.json";
     //The starting position must also be set
     private final Pose START_POSE = new Pose(new Vector(0, 0), new Angle());
+    // The number of seconds after start that the auto program will begin
+    private final double DELAY = 0.0;
 
     private MotorController frontRight;
     private MotorController backRight;
@@ -109,29 +108,43 @@ public class AutoExample extends LinearOpMode {
 
         PIDController.getPIDsFromFile(PID_SETTINGS_FILENAME);
 
+
         // Setting up the AutoProgram
-        HashMap<String, Supplier<Double>> dataSuppliers = new HashMap<>();
-        dataSuppliers.put("Time.Seconds", () -> (double)System.currentTimeMillis() / 1000.0);
-        dataSuppliers.put("Position.X", () -> odometry.getPose().pos.x());
-        dataSuppliers.put("Position.Y", () -> odometry.getPose().pos.y());
-        dataSuppliers.put("Position.Theta", () -> imu.getYaw().degree());
-        dataSuppliers.put("Velocity.X", () -> odometry.getVelocity().x());
-        dataSuppliers.put("Velocity.Y", () -> odometry.getVelocity().y());
-        dataSuppliers.put("Acceleration.X", () -> odometry.getAcceleration().x());
-        dataSuppliers.put("Acceleration.Y", () -> odometry.getAcceleration().y());
+        final var autoTimes = new Object() {
+            long startTime = System.currentTimeMillis();
+            long stepStartTime = startTime;
+            long movementStartTime = startTime;
+        };
+
+        AutoProgram.Builder autoBuilder = new AutoProgram.Builder(AUTO_DIRECTORY)
+                .programName("AutoExample")
+                .dataSupplier("Time.Seconds", () -> (double)(System.currentTimeMillis() - autoTimes.startTime) / 1000.0)
+                .dataSupplier("Time.Step.Seconds", () -> (double)(System.currentTimeMillis() - autoTimes.stepStartTime) / 1000.0)
+                .dataSupplier("Time.Movement.Seconds", () -> (double)(System.currentTimeMillis() - autoTimes.movementStartTime) / 1000.0)
+                .dataSupplier("Time.Delay", () -> DELAY)
+
+                .dataSupplier("Position.X", () -> odometry.getPose().pos.x())
+                .dataSupplier("Position.Y", () -> odometry.getPose().pos.y())
+                .dataSupplier("Position.Theta", () -> imu.getYaw().degree())
+                .dataSupplier("Velocity.X", () -> odometry.getVelocity().x())
+                .dataSupplier("Velocity.Y", () -> odometry.getVelocity().y())
+                .dataSupplier("Acceleration.X", () -> odometry.getAcceleration().x())
+                .dataSupplier("Acceleration.Y", () -> odometry.getAcceleration().y());
+
         for (String key : nonDriveMotors.keySet()) {
             MotorController motor = nonDriveMotors.get(key);
-            dataSuppliers.put(key + ".Position", () -> motor.getCurrentPosition());
-            dataSuppliers.put(key + ".Velocity", () -> motor.getVelocity());
+            autoBuilder = autoBuilder.dataSupplier(key + ".Position", () -> motor.getCurrentPosition());
+            autoBuilder = autoBuilder.dataSupplier(key + ".Velocity", () -> motor.getVelocity());
         }
 
-        program = new AutoProgram(AUTO_DIRECTORY, dataSuppliers);
+        program = autoBuilder.build();
 
         LogController.logInfo("Waiting for start...");
         waitForStart();
         LogController.logInfo("Starting Autonomous.");
-        long startTime = System.currentTimeMillis();
-        long saveTime = startTime;
+        autoTimes.startTime = System.currentTimeMillis();
+        autoTimes.stepStartTime = autoTimes.startTime;
+        autoTimes.movementStartTime = autoTimes.startTime;
         while (program.autoActive()) {
             //Logs
             LogController.logData();
@@ -140,8 +153,16 @@ public class AutoExample extends LinearOpMode {
             PIDController.update();
 
             //Updates the auto program
+            AutoStep lastStep = program.getCurrentStep();
+            String lastMovement = program.getCurrentMovement();
             program.updateStep();
             AutoStep currentStep = program.getCurrentStep();
+            if (!lastStep.equals(currentStep)) {
+                autoTimes.stepStartTime = System.currentTimeMillis();
+            }
+            if (!lastMovement.equals(program.getCurrentMovement())) {
+                autoTimes.movementStartTime = System.currentTimeMillis();
+            }
 
             double weight = 0.0;
 

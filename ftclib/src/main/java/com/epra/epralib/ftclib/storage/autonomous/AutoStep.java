@@ -120,4 +120,11 @@ public class AutoStep {
     public AutoStep reflectY() {
         return new AutoStep(comment, endConditionVar, driveTrainModule.reflectY(), motorControllerModules);
     }
+
+    public boolean equals(AutoStep other) {
+        return comment.equals(other.comment) &&
+                endCondition.equals(other.endCondition) &&
+                driveTrainModule.equals(other.driveTrainModule) &&
+                motorControllerModules.equals(other.motorControllerModules);
+    }
 }
