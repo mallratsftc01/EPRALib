@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 /// <code><pre>
 /// auto
 /// ├ PROGRAM_NAME.json
+/// ├ constants.json
 /// ├ conditionals.json
 /// ├ init.json
 /// ├ FIRST_MOVEMENT.json
@@ -43,6 +44,17 @@ import java.util.regex.Pattern;
 /// }
 /// </pre></code>
 ///
+/// `constants.json` structure:
+/// <code><pre>
+/// {
+///     "CONSTANT_1_NAME": `Numerical Value`,
+///     "CONSTANT_2_NAME": `Numerical Value`,
+///     ...
+/// }
+/// </pre></code>
+/// The `constants.json` file contains key-value pairs that can be accessed by conditionals,
+/// treated in the exact same way as a data supplier.
+///
 /// `conditionals.json` structure:
 /// <code><pre>
 /// {
@@ -60,7 +72,7 @@ import java.util.regex.Pattern;
 /// (`&&`, `||`), and basic arithmatic (`+`, `-`, `*`, `/`, `//`, `%`, `^`).
 /// Conditionals can also use parentheticals.
 ///
-/// Data suppliers must be set up upon construction and are 2 deep.
+/// Data suppliers must be set up upon construction or in the `constants.json` file.
 /// Data is accessed through `\[OBJECT.DATA\]`. `OBJECT` is the object to access data from,
 /// or the first layer's key. `DATA` is the data type to be accessed from the `OBJECT`.
 /// This data will always be a double. (When a data supplier is another conditional,
@@ -93,6 +105,7 @@ public class AutoProgram {
     /// auto
     /// ├ PROGRAM_NAME.json
     /// ├ conditionals.json
+    /// ├ constants.json
     /// ├ init.json
     /// ├ FIRST_MOVEMENT.json
     /// ├ SECOND_MOVEMENT.json
@@ -110,6 +123,7 @@ public class AutoProgram {
         this.dataSuppliers = dataSuppliers;
         numParens = numAriths = numComps = numLogis = 0;
         this.conditionals = new HashMap<>();
+        parseConstants();
         parseConditionals();
 
         this.movementPaths = new HashMap<>();
@@ -123,6 +137,7 @@ public class AutoProgram {
     /// auto
     /// ├ program.json
     /// ├ conditionals.json
+    /// ├ constants.json
     /// ├ init.json
     /// ├ FIRST_MOVEMENT.json
     /// ├ SECOND_MOVEMENT.json
@@ -191,6 +206,20 @@ public class AutoProgram {
         }
     }
 
+    public boolean parseConstants() {
+        try (FileReader file = new FileReader(AppUtil.getInstance().getSettingsFile(directoryPath + "/constants.json"))) {
+            LinkedHashMap<String, Double> tempConstants = gson.fromJson(file, new TypeToken<LinkedHashMap<String, Double>>() {}.getType());
+            for (String id : tempConstants.keySet()) {
+                dataSuppliers.put(id, () -> tempConstants.get(id));
+            }
+        } catch (Exception e) {
+            LogController.logError("Error parsing constants.json: " + e.getMessage());
+            return false;
+        }
+        LogController.logInfo("Successfully parsed constants.json");
+        return true;
+    }
+
     /// Reads and parses all conditionals from the `conditionals.json` file.
     ///
     /// `conditionals.json` structure:
@@ -210,7 +239,7 @@ public class AutoProgram {
     /// (`&&`, `||`), and basic arithmatic (`+`, `-`, `*`, `/`, `//`, `%`, `^`).
     /// Conditionals can also use parentheticals.
     ///
-    /// Data suppliers must be set up upon construction and are 2 deep.
+    /// Data suppliers must be set up upon construction or in the `constants.json` file.
     /// Data is accessed through `\[OBJECT.DATA\]`. `OBJECT` is the object to access data from,
     /// or the first layer's key. `DATA` is the data type to be accessed from the `OBJECT`.
     /// This data will always be a double. (When a data supplier is another conditional,

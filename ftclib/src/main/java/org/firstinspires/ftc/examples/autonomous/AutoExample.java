@@ -31,7 +31,6 @@ public class AutoExample extends LinearOpMode {
     //The starting position must also be set
     private final Pose START_POSE = new Pose(new Vector(0, 0), new Angle());
     // The number of seconds after start that the auto program will begin
-    private final double DELAY = 0.0;
 
     private MotorController frontRight;
     private MotorController backRight;
@@ -121,7 +120,6 @@ public class AutoExample extends LinearOpMode {
                 .dataSupplier("Time.Seconds", () -> (double)(System.currentTimeMillis() - autoTimes.startTime) / 1000.0)
                 .dataSupplier("Time.Step.Seconds", () -> (double)(System.currentTimeMillis() - autoTimes.stepStartTime) / 1000.0)
                 .dataSupplier("Time.Movement.Seconds", () -> (double)(System.currentTimeMillis() - autoTimes.movementStartTime) / 1000.0)
-                .dataSupplier("Time.Delay", () -> DELAY)
 
                 .dataSupplier("Position.X", () -> odometry.getPose().pos.x())
                 .dataSupplier("Position.Y", () -> odometry.getPose().pos.y())
