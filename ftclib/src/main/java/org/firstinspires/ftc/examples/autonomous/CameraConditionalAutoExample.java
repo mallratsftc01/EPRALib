@@ -72,6 +72,7 @@ public class CameraConditionalAutoExample extends LinearOpMode {
         imu = new MultiIMU.Builder(tempIMU)
                 .loggingTarget(MultiIMU.Axis.YAW)
                 .build();
+        LogController.addLogger(imu);
 
         //Setting up the MotorControllers for the DriveTrain
         frontRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")))
@@ -96,6 +97,7 @@ public class CameraConditionalAutoExample extends LinearOpMode {
                 .startPose(new Pose(new Vector(0, 0), Angle.degree(0)))
                 .loggingTargets(Odometry.LoggingTarget.X, Odometry.LoggingTarget.Y)
                 .build();
+        LogController.addLogger(odometry);
 
         //Initializing the DriveTrain
         drive = new DriveTrain.Builder()
@@ -109,11 +111,12 @@ public class CameraConditionalAutoExample extends LinearOpMode {
         //Setting up the MotorControllers that are not part of the DriveTrain
         nonDriveMotors = new HashMap<>();
         //Add MotorControllers like so:
-        /* nonDriveMotors.put("ID",
+       /* nonDriveMotors.put("ID",
         new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "motorController1")))
                 .id("ID")
                 .addLogTarget(MotorController.LogTarget.POSITION)
-                .build());*/
+                .build());
+         LogController.addLogger(nonDriveMotors.get("ID"));*/
 
         PIDController.getPIDsFromFile(PID_SETTINGS_FILENAME);
         //Initializes april tag reader

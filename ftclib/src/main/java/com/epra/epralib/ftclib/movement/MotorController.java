@@ -749,7 +749,7 @@ public class MotorController implements Motor, DataLogger {
         savePos += posChange;
         saveTime += timeChange;
         double v_save = velocity;
-        velocity = posChange / (double) timeChange * 1000;
+        velocity = posChange / ((double) timeChange) * 1000.0;
         acceleration = (velocity - v_save) / (double) timeChange * 1000;
         for (LogTarget logTarget : loggingTargets) {
             if (logTarget == LogTarget.POWER) { continue; }

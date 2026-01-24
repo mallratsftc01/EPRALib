@@ -53,6 +53,7 @@ public class TeleOpExample extends LinearOpMode {
         imu = new MultiIMU.Builder(tempIMU)
                 .loggingTarget(MultiIMU.Axis.YAW)
                 .build();
+        LogController.addLogger(imu);
 
         //Setting up the MotorControllers for the DriveTrain
         frontRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")))
@@ -77,6 +78,7 @@ public class TeleOpExample extends LinearOpMode {
                 .startPose(new Pose(new Vector(0, 0), Angle.degree(0)))
                 .loggingTargets(Odometry.LoggingTarget.X, Odometry.LoggingTarget.Y)
                 .build();
+        LogController.addLogger(odometry);
 
         //Initializing the DriveTrain
         drive = new DriveTrain.Builder()
@@ -94,7 +96,8 @@ public class TeleOpExample extends LinearOpMode {
         new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "motorController1")))
                 .id("ID")
                 .addLogTarget(MotorController.LogTarget.POSITION)
-                .build());*/
+                .build());
+         LogController.addLogger(nonDriveMotors.get("ID"));*/
 
         controller1 = new Controller(gamepad1, 0.0f, "1",
                 new Controller.Key[] {
