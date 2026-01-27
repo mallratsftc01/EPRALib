@@ -143,7 +143,7 @@ public class DriveTrainPIDCalibration extends LinearOpMode {
         ref.startTime = System.currentTimeMillis();
         ref.movementStartTime = System.currentTimeMillis();
         long saveTime = ref.startTime;
-        while (program.autoActive()) {
+        while (opModeIsActive()) {
             //Logs
             LogController.logData();
 

@@ -38,9 +38,9 @@ import java.util.regex.Pattern;
 ///         "CONDITIONAL_NAME": "NEXT_MOVEMENT_IF_CONDITION.json",
 ///         ...
 ///     },
-///     "SECOND_MOVEMENT.json": \[ ... \],
+///     "SECOND_MOVEMENT.json": { ... },
 ///     ...
-///     "LAST_MOVEMENT.json": \[\]
+///     "LAST_MOVEMENT.json": {}
 /// }
 /// </pre></code>
 ///
@@ -699,9 +699,9 @@ public class AutoProgram {
     ///         "CONDITIONAL_NAME": "NEXT_MOVEMENT_IF_CONDITION.json",
     ///         ...
     ///     },
-    ///     "SECOND_MOVEMENT.json": \[ ... \],
+    ///     "SECOND_MOVEMENT.json": { ... },
     ///     ...
-    ///     "LAST_MOVEMENT.json": \[\]
+    ///     "LAST_MOVEMENT.json": {}
     /// }
     /// </pre></code>
     /// @return If the program is properly parsed an initialized

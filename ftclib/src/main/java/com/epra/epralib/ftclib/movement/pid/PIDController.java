@@ -78,6 +78,16 @@ public class PIDController {
     /// Fetches all [PIDCoefficients] from the given `filename`.
     ///
     /// Will return `null` and log an error if the `filename` cannot be found.
+    ///
+    /// Structure of the JSON file:
+    /// <pre>
+    /// ```json
+    /// [
+    ///     "ID_1": { "p": 0, "i": 0, "d": 0 },
+    ///     ...
+    /// ]
+    /// ```
+    /// </pre>
     /// @param filename The filename of the `JSON` file with the PID coefficients
     /// @return A hashmap of all PID coefficients in the file, indexed by their `id`
     public static HashMap<String, PIDCoefficients> getPIDsFromFile(String filename) {
@@ -108,6 +118,16 @@ public class PIDController {
     }
 
     /// Fetches all [PIDCoefficients] from the given `filename` and tunes all PIDs accordingly.
+    ///
+    /// Structure of the JSON file:
+    /// <pre>
+    /// ```json
+    /// [
+    ///     "ID_1": { "p": 0, "i": 0, "d": 0 },
+    ///     ...
+    /// ]
+    /// ```
+    /// </pre>
     /// @param filename The filename of the `JSON` file with the PID gains
     /// @return If the `filename` could be found
     public static boolean tuneAllPIDsFromFile(String filename) {
