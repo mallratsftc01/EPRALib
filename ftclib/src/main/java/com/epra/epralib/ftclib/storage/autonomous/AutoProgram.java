@@ -742,10 +742,19 @@ public class AutoProgram {
        try (FileReader file = new FileReader(AppUtil.getInstance().getSettingsFile(directoryPath + "/" + filename))) {
            List<AutoStep> tempMovement =
                    gson.fromJson(file, new TypeToken<List<AutoStep>>() {}.getType());
-           for (AutoStep step : tempMovement) {
-               step.setEndCondition(conditionals.get(step.endConditionVar));
+           if (tempMovement == null || tempMovement.isEmpty()) {
+               LogController.logError("No steps found in " + filename);
+               return false;
            }
-           movementPaths.put(filename, new ArrayList<>(tempMovement));
+           for (AutoStep step : tempMovement) {
+               try {
+                   step.setEndCondition(conditionals.get(step.endConditionVar));
+               } catch (Exception e) {
+                   LogController.logError("Error parsing " + filename + " at step \"" + step.comment() + "\": " + e.getMessage());
+                   return false;
+               }
+           }
+           movementPaths.put(filename, (ArrayList<AutoStep>) tempMovement);
        } catch (Exception e) {
            LogController.logError("Error parsing " + filename + ": " + e.getMessage());
            return false;
