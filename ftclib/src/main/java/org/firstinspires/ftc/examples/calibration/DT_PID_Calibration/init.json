@@ -1,7 +1,7 @@
 [
   {
     "comment": "Idle",
-    "endCondition": "CONTROLLER_ANY",
+    "endCondition": "TRUE",
     "driveTrainModule": {
       "targetX": 0.0,
       "targetY": 0.0,

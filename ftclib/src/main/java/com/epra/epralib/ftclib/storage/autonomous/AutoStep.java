@@ -37,8 +37,7 @@ import java.util.function.Supplier;
 /// @see AutoProgram
 public class AutoStep {
     private final String comment;
-    protected final String endConditionVar;
-    private Supplier<Boolean> endCondition;
+    protected final String endCondition;
     private final DriveTrainAutoModule driveTrainModule;
     private final List<MotorControllerAutoModule> motorControllerModules;
 
@@ -81,7 +80,7 @@ public class AutoStep {
                     List<MotorControllerAutoModule> motorControllerModules) {
 
         this.comment = comment;
-        this.endConditionVar = endCondition;
+        this.endCondition = endCondition;
         this.driveTrainModule = driveTrainModule;
         this.motorControllerModules = motorControllerModules;
     }
@@ -91,13 +90,9 @@ public class AutoStep {
     public String comment() {
         return comment;
     }
-
-    /// Sets the end condition for this auto step.
-    /// @param endCondition A supplier that is true when then this auto step should end
-    protected void setEndCondition(Supplier<Boolean> endCondition) { this.endCondition = endCondition; }
-    /// Checks if the end condition for this auto step is met.
-    /// @return If this auto step should end
-    public Boolean endCondition() { return endCondition.get(); }
+    /// Returns the name of the end condition for this auto step.
+    /// @return This auto step's end condition
+    public String endCondition() { return endCondition; }
 
     /// Returns the [DriveTrainAutoModule] associated with this auto step.
     /// @return The drivetrain auto module associated with this auto step
@@ -113,12 +108,12 @@ public class AutoStep {
     /// Returns the auto step with its [DriveTrainAutoModule]'s target pose reflected over the x-axis.
     /// @return The auto step with its drive train auto module reflected over the x-axis
     public AutoStep reflectX() {
-        return new AutoStep(comment, endConditionVar, driveTrainModule.reflectX(), motorControllerModules);
+        return new AutoStep(comment, endCondition, driveTrainModule.reflectX(), motorControllerModules);
     }
     /// Returns the auto step with its [DriveTrainAutoModule]'s target pose reflected over the y-axis.
     /// @return The auto step with its drive train auto module reflected over the y-axis
     public AutoStep reflectY() {
-        return new AutoStep(comment, endConditionVar, driveTrainModule.reflectY(), motorControllerModules);
+        return new AutoStep(comment, endCondition, driveTrainModule.reflectY(), motorControllerModules);
     }
 
     public boolean equals(AutoStep other) {

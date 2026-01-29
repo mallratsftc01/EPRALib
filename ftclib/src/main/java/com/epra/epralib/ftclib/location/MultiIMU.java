@@ -43,6 +43,7 @@ public class MultiIMU implements DataLogger {
         this.logPath = "IMU.json";
         this.loggingTargets = loggingTargets;
         this.logData = new HashMap<>();
+        recenter();
     }
     /// An object that can combine data from any number of [IMU]s.
     ///
@@ -54,11 +55,15 @@ public class MultiIMU implements DataLogger {
         this.logPath = "IMU.json";
         this.loggingTargets = loggingTargets;
         this.logData = new HashMap<>();
+        recenter();
     }
 
     /// A builder for a [MultiIMU].
     public static class Builder {
         private ArrayList<IMU> imus;
+        private Angle initialYaw = new Angle();
+        private Angle initialPitch = new Angle();
+        private Angle initialRoll = new Angle();
         private ArrayList<Axis> loggingTargets;
 
         /// A builder for a [MultiIMU].
@@ -84,6 +89,27 @@ public class MultiIMU implements DataLogger {
             this.imus.addAll(java.util.Arrays.asList(imus));
             return this;
         }
+        /// Sets the initial yaw value for IMU.
+        /// @param initialYaw The initial yaw value
+        /// @return This builder
+        public Builder initialYaw(Angle initialYaw) {
+            this.initialYaw = initialYaw;
+            return this;
+        }
+        /// Sets the initial pitch value for IMU.
+        /// @param initialPitch The initial pitch value
+        /// @return This builder
+        public Builder initialPitch(Angle initialPitch) {
+            this.initialPitch = initialPitch;
+            return this;
+        }
+        /// Sets the initial roll value for IMU.
+        /// @param initialRoll The initial yaw value
+        /// @return This builder
+        public Builder initialRoll(Angle initialRoll) {
+            this.initialRoll = initialRoll;
+            return this;
+        }
         /// Adds any number of [Axes][Axis] for the [MultiIMU] to log data from.
         /// @param axes Any number of logging targets
         /// @return This builder
@@ -94,7 +120,11 @@ public class MultiIMU implements DataLogger {
         /// Builds a [MultiIMU] from this builder.
         /// @return The multiIMU built from this builder
         public  MultiIMU build() {
-            return new MultiIMU(imus.toArray(imus.toArray(new IMU[0])), loggingTargets.toArray(new Axis[0]));
+            MultiIMU temp =  new MultiIMU(imus.toArray(imus.toArray(new IMU[0])), loggingTargets.toArray(new Axis[0]));
+            temp.baseYaw = initialYaw;
+            temp.basePitch = initialPitch;
+            temp.baseRoll = initialRoll;
+            return temp;
         }
     }
 
@@ -118,7 +148,7 @@ public class MultiIMU implements DataLogger {
         return Geometry.subtract(Geometry.average(angle), basePitch);
     }
 
-    /// Averages the [Axis#Roll] [Angle] from all [IMU]s.
+    /// Averages the [Axis#ROLL] [Angle] from all [IMU]s.
     /// @return The average roll angle
     public Angle getRoll() {
         Angle[] angle = new Angle[imus.size()];

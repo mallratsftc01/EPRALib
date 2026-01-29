@@ -4,6 +4,7 @@ import com.epra.epralib.ftclib.location.MultiIMU;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
+import com.epra.epralib.ftclib.math.geometry.Geometry;
 import com.epra.epralib.ftclib.math.geometry.Vector;
 import com.epra.epralib.ftclib.movement.frames.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.DriveTrain;
@@ -22,6 +23,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
@@ -70,6 +72,7 @@ public class CameraConditionalAutoExample extends LinearOpMode {
         IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
         tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
         imu = new MultiIMU.Builder(tempIMU)
+                .initialYaw(Geometry.subtract(Angle.degree(tempIMU.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)), START_POSE.angle))
                 .loggingTarget(MultiIMU.Axis.YAW)
                 .build();
         LogController.addLogger(imu);
@@ -94,7 +97,7 @@ public class CameraConditionalAutoExample extends LinearOpMode {
                 .rightEncoder(backLeft::getCurrentPosition, 0.01, new Vector(-8, 4))
                 .perpendicularEncoder(frontRight::getCurrentPosition, 0.01, new Vector(0, 2))
                 .heading(imu::getYaw)
-                .startPose(new Pose(new Vector(0, 0), Angle.degree(0)))
+                .startPose(START_POSE)
                 .loggingTargets(Odometry.LoggingTarget.X, Odometry.LoggingTarget.Y)
                 .build();
         LogController.addLogger(odometry);

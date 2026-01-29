@@ -8,8 +8,10 @@ import com.epra.epralib.ftclib.location.MultiIMU;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
+import com.epra.epralib.ftclib.math.geometry.Geometry;
 import com.epra.epralib.ftclib.math.geometry.Vector;
 import com.epra.epralib.ftclib.movement.DriveTrain;
+import com.epra.epralib.ftclib.movement.Motor;
 import com.epra.epralib.ftclib.movement.MotorController;
 import com.epra.epralib.ftclib.movement.frames.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.pid.PIDController;
@@ -22,6 +24,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import java.util.HashMap;
 import java.util.function.Supplier;
@@ -64,13 +67,14 @@ public class DriveTrainPIDCalibration extends LinearOpMode {
         LogController.init();
 
         //Setting up the IMU
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.DOWN;
+        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
         IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
         tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
         imu = new MultiIMU.Builder(tempIMU)
+                    .initialYaw(Geometry.subtract(Angle.degree(tempIMU.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)), START_POSE.angle))
                     .loggingTarget(MultiIMU.Axis.YAW)
                     .build();
         LogController.addLogger(imu);
@@ -78,9 +82,11 @@ public class DriveTrainPIDCalibration extends LinearOpMode {
         //Setting up the MotorControllers for the DriveTrain
         frontRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northeastMotor")))
                 .driveOrientation(DriveTrain.Orientation.RIGHT_FRONT)
+                .direction(Motor.Direction.REVERSE)
                 .build();
         backRight = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "southeastMotor")))
                 .driveOrientation(DriveTrain.Orientation.RIGHT_BACK)
+                .direction(Motor.Direction.REVERSE)
                 .build();
         frontLeft = new MotorController.Builder(new DcMotorExFrame(hardwareMap.get(DcMotorEx.class, "northwestMotor")))
                 .driveOrientation(DriveTrain.Orientation.LEFT_FRONT)
@@ -96,7 +102,7 @@ public class DriveTrainPIDCalibration extends LinearOpMode {
                 .perpendicularEncoder(frontRight::getCurrentPosition, 0.01, new Vector(0, 2))
                 .useEncoderSettingsFile(ENCODER_SETTINGS_FILENAME)
                 .heading(imu::getYaw)
-                .startPose(new Pose(new Vector(0, 0), Angle.degree(0)))
+                .startPose(START_POSE)
                 .loggingTargets(Odometry.LoggingTarget.X, Odometry.LoggingTarget.Y)
                 .build();
         LogController.addLogger(odometry);
@@ -111,6 +117,8 @@ public class DriveTrainPIDCalibration extends LinearOpMode {
                 .build();
 
         PIDController.getPIDsFromFile(PID_SETTINGS_FILENAME);
+
+        controller1 = new Controller(gamepad1, 0.05f, "Controller1");
 
         // Setting up the AutoProgram
         var ref = new Object() {
@@ -135,7 +143,7 @@ public class DriveTrainPIDCalibration extends LinearOpMode {
         dataSuppliers.put("Controller.X", () -> controller1.getButton(Controller.Key.X) ? 1.0 : 0.0);
         dataSuppliers.put("Controller.Y", () -> controller1.getButton(Controller.Key.Y) ? 1.0 : 0.0);
 
-        program = new AutoProgram(DIRECTORY, dataSuppliers);
+        program = new AutoProgram(DIRECTORY, new HashMap<>(dataSuppliers));
 
         LogController.logInfo("Waiting for start...");
         waitForStart();
@@ -166,6 +174,7 @@ public class DriveTrainPIDCalibration extends LinearOpMode {
 
             TelemetryPacket telemetryPacket = new TelemetryPacket();
             telemetryPacket.put("Step", currentStep.comment());
+            telemetryPacket.put("End Condition Met", program.currentStepEndCondition());
             telemetryPacket.put("Time", (double)(System.currentTimeMillis() - ref.startTime) / 1000.0);
             telemetryPacket.put("Time.Movement", (double)(System.currentTimeMillis() - ref.movementStartTime) / 1000.0);
             telemetryPacket.addLine(" ");

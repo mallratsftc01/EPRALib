@@ -254,6 +254,7 @@ public class AutoProgram {
         // Reads all conditionals from the conditional.json file
         try (FileReader file = new FileReader(AppUtil.getInstance().getSettingsFile(directoryPath + "/conditionals.json"))) {
             LinkedHashMap<String, String> tempConditionals = gson.fromJson(file, new TypeToken<LinkedHashMap<String, String>>() {}.getType());
+            LogController.logInfo("Parsing conditionals: " + tempConditionals.keySet().toString());
 
             // Adds default TRUE and FALSE
             this.conditionals.put("TRUE", () -> true);
@@ -262,6 +263,10 @@ public class AutoProgram {
             // Parses all conditionals and adds them
             for (String id : tempConditionals.keySet()) {
                 Supplier<Double> temp = parseLogic(tempConditionals.get(id));
+                if (temp == null) {
+                    LogController.logError("Error parsing conditional: " + id);
+                    return false;
+                }
                 this.conditionals.put(id, () -> temp.get() == 1.0);
                 this.dataSuppliers.put("Conditional." + id, temp);
             }
@@ -717,12 +722,14 @@ public class AutoProgram {
             }
             currentMovement = "init.json";
             currentStepIndex = 0;
+            LogController.logInfo("Parsing movement files:" + tempProgram.keySet().toString());
             // Parses all movement files and their next movements
             for (String filename : tempProgram.keySet()) {
                 if (!parseMovementFile(filename)) {
                     return false;
                 }
                 HashMap<String, String> nextMovements = tempProgram.get(filename);
+                LogController.logInfo("Parsing next movements for " + filename + ": " + nextMovements.toString());
                 parseNextMovement(filename, nextMovements);
             }
         } catch (Exception e) {
@@ -742,18 +749,6 @@ public class AutoProgram {
        try (FileReader file = new FileReader(AppUtil.getInstance().getSettingsFile(directoryPath + "/" + filename))) {
            List<AutoStep> tempMovement =
                    gson.fromJson(file, new TypeToken<List<AutoStep>>() {}.getType());
-           if (tempMovement == null || tempMovement.isEmpty()) {
-               LogController.logError("No steps found in " + filename);
-               return false;
-           }
-           for (AutoStep step : tempMovement) {
-               try {
-                   step.setEndCondition(conditionals.get(step.endConditionVar));
-               } catch (Exception e) {
-                   LogController.logError("Error parsing " + filename + " at step \"" + step.comment() + "\": " + e.getMessage());
-                   return false;
-               }
-           }
            movementPaths.put(filename, (ArrayList<AutoStep>) tempMovement);
        } catch (Exception e) {
            LogController.logError("Error parsing " + filename + ": " + e.getMessage());
@@ -794,6 +789,9 @@ public class AutoProgram {
     public String getCurrentMovement() {
         return currentMovement;
     }
+    /// Checks if the end condition for the current [AutoStep] is met.
+    /// @return If the current step's end condition is met
+    public boolean currentStepEndCondition() { return conditionals.get(movementPaths.get(currentMovement).get(currentStepIndex).endCondition).get(); }
     /// Updates the current [AutoStep] if the current step's end condition is met.
     /// Advances to the next movement if the current step was the last step in the current movement.
     ///
@@ -802,18 +800,19 @@ public class AutoProgram {
     /// @return If there are any remaining steps
     public boolean updateStep() {
         // Checks if the step needs to be changed
-        if (!movementPaths.get(currentMovement).get(currentStepIndex).endCondition()) { return true; }
+        if (!currentStepEndCondition()) { return true; }
         // Checks if the movement file needs to be changed
         if (currentStepIndex + 1 < movementPaths.get(currentMovement).size()) { currentStepIndex++; return true; }
 
         currentMovement = nextMovementSuppliers.get(currentMovement).get();
+        LogController.logInfo("Moving to " + currentMovement);
         currentStepIndex = 0;
         return !currentMovement.isEmpty();
     }
     /// Checks if there are steps remaining for the auto program to run through (including the current step).
     /// @return If the auto program is still running
     public boolean autoActive() {
-        if (!movementPaths.get(currentMovement).get(currentStepIndex).endCondition()) { return true; }
+        if (!currentStepEndCondition()) { return true; }
         if (currentStepIndex + 1 < movementPaths.get(currentMovement).size()) { currentStepIndex++; return true; }
         return !currentMovement.isEmpty();
     }

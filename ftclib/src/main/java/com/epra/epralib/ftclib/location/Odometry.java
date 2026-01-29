@@ -389,10 +389,17 @@ public class Odometry implements DataLogger {
                 (((p1.x()* (Geometry.sin(phi)) / phiRadians) +
                         (p1.y()* (Geometry.cos(phi) - 1.0) / phiRadians))) * -1.0
         );
-        pose = new Pose(
-                Geometry.add(pose.pos, p2),
-                Geometry.add(pose.angle, phi)
-        );
+        if (headingEnabled) {
+            pose = new Pose(
+                    Geometry.add(pose.pos, p2),
+                    heading.get()
+            );
+        } else {
+            pose = new Pose(
+                    Geometry.add(pose.pos, p2),
+                    Geometry.add(pose.angle, phi)
+            );
+        }
         double time = (System.currentTimeMillis() - saveTime) / 1000.0;
         velocityBuffer.addValue(Geometry.pythagorean(p2.x(), p2.y()) / time);
         phiBuffer.addValue(Geometry.add(phi, p2.theta()).radian() / time);

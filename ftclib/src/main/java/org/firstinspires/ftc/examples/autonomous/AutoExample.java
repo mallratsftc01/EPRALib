@@ -4,6 +4,7 @@ import com.epra.epralib.ftclib.location.MultiIMU;
 import com.epra.epralib.ftclib.location.Odometry;
 import com.epra.epralib.ftclib.location.Pose;
 import com.epra.epralib.ftclib.math.geometry.Angle;
+import com.epra.epralib.ftclib.math.geometry.Geometry;
 import com.epra.epralib.ftclib.math.geometry.Vector;
 import com.epra.epralib.ftclib.movement.frames.DcMotorExFrame;
 import com.epra.epralib.ftclib.movement.DriveTrain;
@@ -18,6 +19,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import java.util.HashMap;
 
@@ -59,8 +61,9 @@ public class AutoExample extends LinearOpMode {
         IMU tempIMU = hardwareMap.get(IMU.class, "imu 1");
         tempIMU.initialize(new IMU.Parameters(orientationOnRobot));
         imu = new MultiIMU.Builder(tempIMU)
-                    .loggingTarget(MultiIMU.Axis.YAW)
-                    .build();
+                .initialYaw(Geometry.subtract(Angle.degree(tempIMU.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)), START_POSE.angle))
+                .loggingTarget(MultiIMU.Axis.YAW)
+                .build();
         LogController.addLogger(imu);
 
         //Setting up the MotorControllers for the DriveTrain
@@ -84,7 +87,7 @@ public class AutoExample extends LinearOpMode {
                 .perpendicularEncoder(frontRight::getCurrentPosition, 0.01, new Vector(0, 2))
                 .useEncoderSettingsFile(ENCODER_SETTINGS_FILENAME)
                 .heading(imu::getYaw)
-                .startPose(new Pose(new Vector(0, 0), Angle.degree(0)))
+                .startPose(START_POSE)
                 .loggingTargets(Odometry.LoggingTarget.X, Odometry.LoggingTarget.Y)
                 .build();
         LogController.addLogger(odometry);
