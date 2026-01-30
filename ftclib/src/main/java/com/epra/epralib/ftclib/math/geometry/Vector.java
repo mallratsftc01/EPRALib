@@ -83,6 +83,10 @@ public class Vector {
     /**@return The z coordinate of the vector.*/
     public double z() { return z; }
 
+    /// Returns the unit vector in the direction of this vector.
+    /// @return The unit vector for this vector
+    public Vector unit() { return new Vector(1, theta, phi); }
+
     /// Returns the value of this vector in the form `(x,y,z)`.
     /// @return The value of this vector as a string
     @Override

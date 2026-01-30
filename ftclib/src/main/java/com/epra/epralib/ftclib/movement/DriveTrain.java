@@ -661,7 +661,7 @@ public class DriveTrain {
         switch (driveTrainAutoModule.driveMode()) {
             case "direct_drive":
                 fieldOrientedMecanumDrive(new Vector(1, Angle.degree(driveTrainAutoModule.angle())),
-                        new Vector(driveTrainAutoModule.x(), driveTrainAutoModule.y()),
+                        Geometry.scale(new Vector(driveTrainAutoModule.x(), driveTrainAutoModule.y()).unit(), driveTrainAutoModule.maxPower()),
                         driveTrainAutoModule.angleTolerance(),
                         true);
                 return true;
