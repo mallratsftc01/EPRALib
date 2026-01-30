@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 import com.epra.epralib.ftclib.math.geometry.Angle;
 import com.epra.epralib.ftclib.movement.pid.PIDController;
 import com.epra.epralib.ftclib.storage.autonomous.DriveTrainAutoModule;
+import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 /// Coordinates multiple drive [Motor]s for cohesive motion.
@@ -577,7 +578,7 @@ public class DriveTrain {
     /// @see DriveType#MECANUM
     /// @see PIDController
     /// @see #posPIDMecanumDrive(double, double, double)
-    /// @see #posPIDMecanumDrive(DriveTrainAutoModule)
+    /// @see #useDriveTrainAutoModule(DriveTrainAutoModule)
     public boolean posPIDMecanumDrive(double posTolerance, double angleTolerance, double maxPower, boolean haltAtTarget) {
         if (!positionControlEnabled || !PIDController.hasPID("DriveTrain_P") || !PIDController.hasPID("DriveTrain_A")) { return false; }
         PIDController.idle("DriveTrain_M");
@@ -630,7 +631,7 @@ public class DriveTrain {
     ///
     /// @see DriveType#MECANUM
     /// @see PIDController
-    /// @see #posPIDMecanumDrive(DriveTrainAutoModule)
+    /// @see #useDriveTrainAutoModule(DriveTrainAutoModule)
     public boolean posPIDMecanumDrive(double posRange, double angleTolerance, double maxPower) {
         if (!positionControlEnabled || !PIDController.hasPID("DriveTrain_M") || !PIDController.hasPID("DriveTrain_A")) { return false; }
         PIDController.idle("DriveTrain_P");
@@ -648,31 +649,36 @@ public class DriveTrain {
         return b;
     }
 
-    /// An autonomous holonomic driving system that will use PID loops and a mecanum drive base to move the robot according
+    /// An autonomous holonomic driving system that controls a mecanum drive base to move the robot according
     /// to instructions in a [DriveTrainAutoModule].
-    ///
-    /// Uses either [#posPIDMecanumDrive(double, double, double, boolean)] or [#posPIDMecanumDrive(double, double, double)]
-    /// according to the instructions.
-    ///
-    /// Uses the [#poseSupplier] to find the heading angle to correctly orient the drive and the current position of the
-    /// robot on the field. Will return `False` if position control is not enabled.
-    ///
-    /// Uses a PID loop to move to the target position. Will have no effect and return `False` if the
-    /// angle PID, point PID, or motion PID is not initialized.
-    /// (Use [#tuneAnglePID(double, double, double)], [#tunePointPID(double, double, double)], and [#tuneMotionPID(double, double, double)] to initialize.)
-    /// PID loops must be updated frequently with [PIDController#update()] or this function will be ineffective.
     ///
     /// @param driveTrainAutoModule An auto module with instructions for the drive train
     /// @return If the target position has been reached
     ///
     /// @see DriveType#MECANUM
     /// @see PIDController
-    public boolean posPIDMecanumDrive(DriveTrainAutoModule driveTrainAutoModule) {
-        setTargetPose(driveTrainAutoModule.targetPose());
-        if (driveTrainAutoModule.usePrecision()) {
-            return posPIDMecanumDrive(driveTrainAutoModule.posTolerance(), driveTrainAutoModule.angleTolerance(), driveTrainAutoModule.maxPower(), true);
-        } else {
-            return posPIDMecanumDrive(driveTrainAutoModule.posTolerance(), driveTrainAutoModule.angleTolerance(), driveTrainAutoModule.maxPower());
+    public boolean useDriveTrainAutoModule(DriveTrainAutoModule driveTrainAutoModule) {
+        switch (driveTrainAutoModule.driveMode()) {
+            case "direct_drive":
+                fieldOrientedMecanumDrive(new Vector(1, Angle.degree(driveTrainAutoModule.angle())),
+                        new Vector(driveTrainAutoModule.x(), driveTrainAutoModule.y()),
+                        driveTrainAutoModule.angleTolerance(),
+                        true);
+                return true;
+            case "precise_targeted_drive":
+                setTargetPose(driveTrainAutoModule.targetPose());
+                return posPIDMecanumDrive(driveTrainAutoModule.posTolerance(),
+                        driveTrainAutoModule.angleTolerance(),
+                        driveTrainAutoModule.maxPower(),
+                        true);
+            case "non_precise_targeted_drive":
+                setTargetPose(driveTrainAutoModule.targetPose());
+                return posPIDMecanumDrive(driveTrainAutoModule.posTolerance(),
+                        driveTrainAutoModule.angleTolerance(),
+                        driveTrainAutoModule.maxPower());
+            default:
+                LogController.logError("Invalid drive mode in DriveTrainAutoModule");
+                return false;
         }
     }
 

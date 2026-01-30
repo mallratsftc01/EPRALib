@@ -44,29 +44,31 @@ public class AutoStep {
     /// A class that stores instructions for one step of auto.
     ///
     /// JSON Format:
-    /// <pre><code>
+    /// ``` json
     ///     {
     ///       "comment": string,
     ///       "endCondition": string,
     ///       "driveTrainModule": {
-    ///           "targetX": float,
-    ///           "targetY": float,
-    ///           "targetAngle": float,
-    ///           "posTolerance": float,
-    ///           "angleTolerance": float,
-    ///           "maxPower": float,
-    ///           "usePrecision": boolean
+    ///               "driveMode": string,
+    ///               "maxPower": float,
+    ///               "x": float,
+    ///               "y": float,
+    ///               "angle": float,
+    ///               "posTolerance": float,
+    ///               "angleTolerance": float
     ///       },
-    ///       "motorControllerModules": [[
+    ///       "motorControllerModules": [
     ///           {
     ///               "id": string,
     ///               "target": int,
     ///               "tolerance": float,
     ///               "maxPower": float,
     ///               "power": float
-    ///           }
+    ///           },
+    ///         ...
     ///       ]
-    ///     } </code></pre>
+    ///     }
+    /// ```
     ///
     /// To be used in a list in a movement file.
     ///

@@ -17,10 +17,8 @@ import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -28,7 +26,6 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.HashMap;
-import java.util.function.Supplier;
 
 @Autonomous(name = "CameraConditionalAutoExample", group = "Autonomous")
 public class CameraConditionalAutoExample extends LinearOpMode {
@@ -184,7 +181,7 @@ public class CameraConditionalAutoExample extends LinearOpMode {
             double weight = 0.0;
 
             //Updates the DriveTrain with new instructions
-            drive.posPIDMecanumDrive(currentStep.driveTrainModule());
+            drive.useDriveTrainAutoModule(currentStep.driveTrainModule());
 
             //Updates all the MotorControllers with new instructions
             if (currentStep.motorControllerModules() != null) {

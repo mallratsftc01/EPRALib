@@ -3,13 +3,13 @@
     "comment": "Starting Position",
     "endCondition": "AT_TARGET",
     "driveTrainModule": {
-      "targetX": 0.0,
-      "targetY": 0.0,
-      "targetAngle": 0.0,
-      "posTolerance": 0.5,
-      "angleTolerance": 0.5,
+      "driveMode": "precise_targeted_drive",
       "maxPower": 0.5,
-      "usePrecision": true
+      "x": 0.0,
+      "y": 0.0,
+      "angle": 0.0,
+      "posTolerance": 0.5,
+      "angleTolerance": 0.5
     },
     "motorControllerModules": []
   },
@@ -17,13 +17,13 @@
     "comment": "Moving to point 1",
     "endCondition": "AT_TARGET",
     "driveTrainModule": {
-      "targetX": 48.0,
-      "targetY": 0.0,
-      "targetAngle": 0.0,
-      "posTolerance": 0.25,
-      "angleTolerance": 0.5,
+      "driveMode": "precise_targeted_drive",
       "maxPower": 1.0,
-      "usePrecision": true
+      "x": 48.0,
+      "y": 0.0,
+      "angle": 0.0,
+      "posTolerance": 0.25,
+      "angleTolerance": 0.5
     },
     "motorControllerModules": []
   },
@@ -31,13 +31,13 @@
     "comment": "Moving to point 2",
     "endCondition": "AT_TARGET",
     "driveTrainModule": {
-      "targetX": 0.0,
-      "targetY": 48.0,
-      "targetAngle": 0.0,
-      "posTolerance": 0.25,
-      "angleTolerance": 0.5,
+      "driveMode": "precise_targeted_drive",
       "maxPower": 1.0,
-      "usePrecision": true
+      "x": 0.0,
+      "y": 48.0,
+      "angle": 0.0,
+      "posTolerance": 0.25,
+      "angleTolerance": 0.5
     },
     "motorControllerModules": []
   },
@@ -45,13 +45,13 @@
     "comment": "Moving to point 3",
     "endCondition": "AT_TARGET",
     "driveTrainModule": {
-      "targetX": 48.0,
-      "targetY": 48.0,
-      "targetAngle": 0.0,
-      "posTolerance": 0.25,
-      "angleTolerance": 0.5,
+      "driveMode": "precise_targeted_drive",
       "maxPower": 1.0,
-      "usePrecision": true
+      "x": 48.0,
+      "y": 48.0,
+      "angle": 0.0,
+      "posTolerance": 0.25,
+      "angleTolerance": 0.5
     },
     "motorControllerModules": []
   },
@@ -59,13 +59,13 @@
     "comment": "Returning to starting position",
     "endCondition": "AT_TARGET",
     "driveTrainModule": {
-      "targetX": 0.0,
-      "targetY": 0.0,
-      "targetAngle": 0.0,
-      "posTolerance": 0.25,
-      "angleTolerance": 0.5,
+      "driveMode": "precise_targeted_drive",
       "maxPower": 1.0,
-      "usePrecision": true
+      "x": 0.0,
+      "y": 0.0,
+      "angle": 0.0,
+      "posTolerance": 0.25,
+      "angleTolerance": 0.5
     },
     "motorControllerModules": []
   }

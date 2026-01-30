@@ -170,7 +170,7 @@ public class DriveTrainPIDCalibration extends LinearOpMode {
             }
 
             //Updates the DriveTrain with new instructions
-            ref.atTarget = drive.posPIDMecanumDrive(currentStep.driveTrainModule());
+            ref.atTarget = drive.useDriveTrainAutoModule(currentStep.driveTrainModule());
 
             TelemetryPacket telemetryPacket = new TelemetryPacket();
             telemetryPacket.put("Step", currentStep.comment());

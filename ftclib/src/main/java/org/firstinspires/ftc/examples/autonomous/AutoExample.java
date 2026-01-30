@@ -171,7 +171,7 @@ public class AutoExample extends LinearOpMode {
             double weight = 0.0;
 
             //Updates the DriveTrain with new instructions
-            drive.posPIDMecanumDrive(currentStep.driveTrainModule());
+            drive.useDriveTrainAutoModule(currentStep.driveTrainModule());
 
             //Updates all the MotorControllers with new instructions
             if (currentStep.motorControllerModules() != null) {
