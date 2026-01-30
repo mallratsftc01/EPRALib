@@ -180,6 +180,7 @@ public class Odometry implements DataLogger {
         private final Map<Orientation, Double> unitPerTick = new HashMap<>();
         private final Map<Orientation, Vector> displacement = new HashMap<>();
         private Supplier<Angle> heading;
+        private boolean headingEnabled = false;
         private Pose startPose;
         private final ArrayList<LoggingTarget> loggingTargets = new ArrayList<>();
 
@@ -270,6 +271,7 @@ public class Odometry implements DataLogger {
         /// @return This builder
         public Builder heading(Supplier<Angle> headingSupplier) {
             this.heading = headingSupplier;
+            this.headingEnabled = true;
             return this;
         }
         /// Sets a start [Pose] for the [Odometry].
@@ -310,7 +312,7 @@ public class Odometry implements DataLogger {
                         heading, startPose, loggingTargets.toArray(new LoggingTarget[0])
                 );
             }
-            o.headingEnabled = heading == null;
+            o.headingEnabled = this.headingEnabled;
             return o;
         }
     }
