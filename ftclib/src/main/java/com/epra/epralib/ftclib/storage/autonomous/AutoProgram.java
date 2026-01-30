@@ -6,10 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -88,6 +85,7 @@ public class AutoProgram {
     private final HashMap<String, Supplier<Double>> dataSuppliers;
     private final HashMap<String, Supplier<Boolean>> conditionals;
     private final HashMap<String, ArrayList<AutoStep>> movementPaths;
+    private final Set<String> lastMovements;
     private String currentMovement;
     private int currentStepIndex;
     private final HashMap<String, Supplier<String>> nextMovementSuppliers;
@@ -128,6 +126,7 @@ public class AutoProgram {
 
         this.movementPaths = new HashMap<>();
         this.nextMovementSuppliers = new HashMap<>();
+        this.lastMovements = new HashSet<>();
         parseProgram();
     }
     /// Represents an entire autonomous program as accessed via a directory.
@@ -762,6 +761,10 @@ public class AutoProgram {
     /// @param nextMovements The mapping for the given filename as described in `PROGRAM_NAME.json`
     /// @see #parseProgram()
     private void parseNextMovement(String filename, HashMap<String, String> nextMovements) {
+        if (nextMovements.isEmpty()) {
+            lastMovements.add(filename);
+            return;
+        }
         ArrayList<Supplier<String>> nextSuppliers = new ArrayList<>();
         for (String conditional : nextMovements.keySet()) {
             Supplier<Boolean> conditionalSupplier = conditionals.get(conditional);
@@ -807,14 +810,14 @@ public class AutoProgram {
         currentMovement = nextMovementSuppliers.get(currentMovement).get();
         LogController.logInfo("Moving to " + currentMovement);
         currentStepIndex = 0;
-        return !currentMovement.isEmpty();
+        return !lastMovements.contains(currentMovement);
     }
     /// Checks if there are steps remaining for the auto program to run through (including the current step).
     /// @return If the auto program is still running
     public boolean autoActive() {
         if (!currentStepEndCondition()) { return true; }
-        if (currentStepIndex + 1 < movementPaths.get(currentMovement).size()) { currentStepIndex++; return true; }
-        return !currentMovement.isEmpty();
+        if (currentStepIndex + 1 < movementPaths.get(currentMovement).size()) { return true; }
+        return !lastMovements.contains(currentMovement);
     }
 
     /// Reflects the drive portions of all movement paths over the x-axis.
