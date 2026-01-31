@@ -49,22 +49,22 @@ public class AutoStep {
     ///       "comment": string,
     ///       "endCondition": string,
     ///       "driveTrainModule": {
-    ///               "driveMode": string,
-    ///               "maxPower": float,
-    ///               "x": float,
-    ///               "y": float,
-    ///               "angle": float,
-    ///               "posTolerance": float,
-    ///               "angleTolerance": float
+    ///           "driveMode": string,
+    ///           "maxPower": float,
+    ///           "x": float,
+    ///           "y": float,
+    ///           "angle": float,
+    ///           "posTolerance": float,
+    ///           "angleTolerance": float
     ///       },
     ///       "motorControllerModules": [
-    ///           {
-    ///               "id": string,
-    ///               "target": int,
-    ///               "tolerance": float,
-    ///               "maxPower": float,
-    ///               "power": float
-    ///           },
+    ///       {
+    ///           "id": string,
+    ///           "motorMode": string,
+    ///           "target": int/string,
+    ///           "tolerance": float/string,
+    ///           "maxPower": float/string
+    ///       },
     ///         ...
     ///       ]
     ///     }

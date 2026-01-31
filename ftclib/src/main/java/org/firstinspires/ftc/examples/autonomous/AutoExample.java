@@ -16,6 +16,7 @@ import com.epra.epralib.ftclib.storage.autonomous.MotorControllerAutoModule;
 import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -24,6 +25,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import java.util.HashMap;
 
 @Autonomous(name = "AutoExample", group = "Autonomous")
+@Disabled
 public class AutoExample extends LinearOpMode {
 
     //These variables lead to the JSON files that control the vast majority of auto
@@ -176,11 +178,7 @@ public class AutoExample extends LinearOpMode {
             //Updates all the MotorControllers with new instructions
             if (currentStep.motorControllerModules() != null) {
                 for (MotorControllerAutoModule m : currentStep.motorControllerModules()) {
-                    if (m.tolerance() == -1.0) {
-                        nonDriveMotors.get(m.id()).setPower(m.power());
-                    } else {
-                        nonDriveMotors.get(m.id()).moveToTarget(m);
-                    }
+                    nonDriveMotors.get(m.id()).useMotorControllerAutoModule(m);
                 }
             }
         }

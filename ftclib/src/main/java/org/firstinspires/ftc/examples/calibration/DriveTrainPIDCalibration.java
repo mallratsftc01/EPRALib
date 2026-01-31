@@ -19,6 +19,7 @@ import com.epra.epralib.ftclib.storage.autonomous.AutoProgram;
 import com.epra.epralib.ftclib.storage.autonomous.AutoStep;
 import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -37,6 +38,7 @@ class PIDInput {
 }
 
 @TeleOp(name = "DriveTrainPIDCalibration", group = "Calibration")
+@Disabled
 public class DriveTrainPIDCalibration extends LinearOpMode {
 
     //These variables lead to the JSON files that control the vast majority of auto

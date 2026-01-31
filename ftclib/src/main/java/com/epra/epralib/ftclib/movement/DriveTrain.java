@@ -536,8 +536,12 @@ public class DriveTrain {
         if (Math.abs(rightPower) > angleTolerance) {
             fieldOrientedMecanumDrive(rightPower, vectorLeft, heading);
         } else {
-            if (haltAtTarget) { fieldOrientedMecanumDrive(0, vectorLeft, heading); }
-            PIDController.idle("DriveTrain_A");
+            if (haltAtTarget) {
+                PIDController.idle("DriveTrain_A");
+                fieldOrientedMecanumDrive(0, vectorLeft, heading);
+            } else {
+                fieldOrientedMecanumDrive(rightPower, vectorLeft, heading);
+            }
             return true;
         }
         return false;
@@ -587,8 +591,10 @@ public class DriveTrain {
         Vector vectorRight = new Vector(1.0, targetPose.angle);
         boolean b = fieldOrientedMecanumDrive(vectorRight, new Vector(Math.min(maxPower, vectorLeft.length()), vectorLeft.theta()), angleTolerance, haltAtTarget);
         if (Geometry.subtract(current.pos, targetPose.pos).length() <= getAbsolutePosTolerance(posTolerance) && b) {
-            if (haltAtTarget) { mecanumDrive(0, 0, 0); }
-            PIDController.idle("DriveTrain_P");
+            if (haltAtTarget) {
+                mecanumDrive(0, 0, 0);
+                PIDController.idle("DriveTrain_P");
+            }
             return true;
         }
         return false;
@@ -652,34 +658,45 @@ public class DriveTrain {
     /// An autonomous holonomic driving system that controls a mecanum drive base to move the robot according
     /// to instructions in a [DriveTrainAutoModule].
     ///
+    /// If the [DriveTrainAutoModule] has an invalid `driveMode`, this will log an error and return `False`.
+    ///
     /// @param driveTrainAutoModule An auto module with instructions for the drive train
-    /// @return If the target position has been reached
+    /// @return If the target position has been reached for a `targeted_drive`,
+    /// `True` for any other valid `driveMode`
     ///
     /// @see DriveType#MECANUM
-    /// @see PIDController
+    /// @see DriveTrain#fieldOrientedMecanumDrive(Vector, Vector, double, boolean)
+    /// @see DriveTrain#setTargetPose(Pose)
+    /// @see DriveTrain#posPIDMecanumDrive(double, double, double, boolean)
+    /// @see DriveTrain#posPIDMecanumDrive(double, double, double)
     public boolean useDriveTrainAutoModule(DriveTrainAutoModule driveTrainAutoModule) {
-        switch (driveTrainAutoModule.driveMode()) {
-            case "direct_drive":
+        return switch (driveTrainAutoModule.driveMode()) {
+            case "none" -> true;
+            case "direct_drive" -> {
                 fieldOrientedMecanumDrive(new Vector(1, Angle.degree(driveTrainAutoModule.angle())),
                         Geometry.scale(new Vector(driveTrainAutoModule.x(), driveTrainAutoModule.y()).unit(), driveTrainAutoModule.maxPower()),
                         driveTrainAutoModule.angleTolerance(),
-                        true);
-                return true;
-            case "precise_targeted_drive":
+                        false);
+                yield true;
+            }
+            case "precise_targeted_drive" -> {
                 setTargetPose(driveTrainAutoModule.targetPose());
-                return posPIDMecanumDrive(driveTrainAutoModule.posTolerance(),
+                yield posPIDMecanumDrive(driveTrainAutoModule.posTolerance(),
                         driveTrainAutoModule.angleTolerance(),
                         driveTrainAutoModule.maxPower(),
                         true);
-            case "non_precise_targeted_drive":
+            }
+            case "non_precise_targeted_drive" -> {
                 setTargetPose(driveTrainAutoModule.targetPose());
-                return posPIDMecanumDrive(driveTrainAutoModule.posTolerance(),
+                yield posPIDMecanumDrive(driveTrainAutoModule.posTolerance(),
                         driveTrainAutoModule.angleTolerance(),
                         driveTrainAutoModule.maxPower());
-            default:
+            }
+            default -> {
                 LogController.logError("Invalid drive mode in DriveTrainAutoModule");
-                return false;
-        }
+                yield false;
+            }
+        };
     }
 
     /// Tunes and/or initializes the PID loop used to rotate to a target angle in

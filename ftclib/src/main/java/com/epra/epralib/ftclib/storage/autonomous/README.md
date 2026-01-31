@@ -8,6 +8,7 @@ An example of an auto directory's structure:
 auto
 ├ program.json
 ├ conditionals.json
+├ constants.json
 ├ init.json
 ├ FIRST_MOVEMENT.json
 ├ SECOND_MOVEMENT.json
@@ -22,32 +23,54 @@ An example of an auto step's structure:
 
 ```json
 {
-    "comment": "Example",
-    "endCondition": "CONDITIONAL_1",
-    "driveTrainModule": {
-      "targetX": 0.0,
-        "targetY": 0.0,
-        "targetAngle": 0.0,
-        "posTolerance": 0.5,
-        "angleTolerance": 0.5,
-        "maxPower": 1.0, 
-        "usePrecision": true
-    },
-    "motorControllerModules": [
-        {
-            "id": "MOTOR_1",
-            "target": 100,
-            "tolerance": 0.5,
-            "maxPower": 1.0,
-            "power": 0.0
-        }
-    ]
-}
+       "comment": "Moves forward and shoots",
+       "endCondition": "DONE_SHOOTING",
+       "driveTrainModule": {
+           "driveMode": "direct_drive",
+           "maxPower": "[DRIVE.MAX_POWER]",
+           "x": 0.5,
+           "y": 0.25,
+           "angle": 90,
+           "posTolerance": 0,
+           "angleTolerance": "[DRIVE.ANGLE_TOLERANCE]"
+       },
+       "motorControllerModules": [
+       {
+           "id": "Shooter",
+           "motorMode": "direct_power",
+           "target": 0,
+           "tolerance": 0,
+           "maxPower": "[SHOOTER.POWER]"
+       }
+       ]
+     }
 ```
 
-The DTAM controls how the `DriveTrain` moves, using the `posPIDMecanumDrive` method in conjunction with data from `Odometry` and `MultiIMU`. It will drive the robot towards the `targetX`, `targetY` position and rotate to the `targetAngle`. If `usePrecision` is true, the `posTolerance` and `angleTolerance` will control how closely the robot must reach the target position and angle, respectively. Otherwise, the robot will simply move towards the target position but not try to hit it exactly. This movement mode is useful when following a general path. The `maxPower` controls how much power can be sent to the drive train's motors. If set to 0, the robot will not move.
+The DTAM controls how the `DriveTrain` moves. The DTAM has four `driveMode`s:
+- `none` will halt the robot, not moving at all.
 
-Each MCAM gives instructions to a single `MotorController`. They should **not** be used for drive train motors, as that can interfere with the instructions from the DTAM. Just like the DTAM, MCAMs have two main "modes". If the `tolerance` is set to -1.0, the power for the motor can be set directly. This is useful when you don't need the motor to reach a certain point, only reach a certain speed, such as spinning up a shooter wheel. When the `tolerance` is above 0, it is used to determine how close the motor should try to get to the `target`. The `target` is in motor-specific ticks, and is reached via PID loop. The `maxPower` caps the amount of power that can be sent to the motor.
+ - `direct_drive` drives the robot at `maxPower` in the direction specified by `x` and `y`,
+ treated as a vector relative to the field.
+ It will also rotate to the specified `angle` within the `angleTolerance`
+ (1 being no precision and 0 being infinite precision), relative to the field.
+ This drive mode uses the `DriveTrain`'s `fieldOrientedMecanumDrive`.
+
+ - `precise_targeted_drive` drives the robot to the `Pose` on the field specified by `x`, `y`, and the `angle`.
+ Precision is specified by `posTolerance` and `angleTolerance` (1 being no precision and 0 being infinite precision)
+ for both. This drive mode uses the `DriveTrain`'s `posPIDMecanumDrive`.
+
+ - `non_precise_targeted_drive` drives the robot **in the direction of** the target position specified by `x` and `y`. The `posTolerance` is the minimum distance between the robot and the target position that is considered "close enough". `angle` is handled the same way as the other drive modes. This drive mode uses the `DriveTrain`'s `posPIDMecanumDrive`.
+
+Each MCAM gives instructions to a single `MotorController`. They should **not** be used for drive train motors, as that can interfere with the instructions from the DTAM. Similar to the DTAM, MCAMs have three `motorModes`: 
+
+- `none` will not drive the motor at all, setting the power to 0.
+
+- `direct_power` moves the motor at `maxPower` constantly. `maxPower` should be between -1 and 1.
+
+- `targeted` moves the motor to `target` in motor-specific ticks. The absolute maximum power will be
+     `maxPower`. The tolerance for reaching `target` is `tolerance` (between 0 and 1).
+
+Both DTAMs and MCAMs can have values set by strings that reference constants or internal variables. They use the same system as Conditionals (explained later). This allows for variables such as shooter velocity or maximum drive speed to be updated dynamically.
 
 ## Movement Files
 
@@ -86,8 +109,8 @@ An example of `conditionals.json`'s structure:
  }
 ```
 
-Data is supplied by data suppliers. These are set up in the construction of an auto program, as a map from ids to double suppliers. These ids can be referenced in conditionals with the format `[ID]`. Previously defined conditionals can also be reference in the same way, returning 1 if they are `True` and 0 otherwise.
+Data is supplied by data suppliers or constants from the `constants.json` file. Data suppliers are set up in the construction of an auto program, as a map from ids to double suppliers. These ids can be referenced in conditionals with the format `[ID]`. Previously defined conditionals can also be reference in the same way, returning 1 if they are `True` and 0 otherwise.
 
 Two conditionals are always defined by default: `TRUE` which always returns `True` and `FALSE` which always returns `False`.
 
-Outputs from data suppliers can have bany basic arithmatic applied to them, both by integers and by other data supplier outputs. Addition (+), subtraction (-), multiplication (*), division (/), integer division (//), modulus (%), and exponents (^) can all be used. Values can be compared using ==, >, >=, <, <=, and !=. The results of these comparisons can be further processed using or (||) and and (&&).
+Outputs from data suppliers and constants can have basic arithmatic applied to them, both by integers and by other data supplier outputs. Addition (+), subtraction (-), multiplication (*), division (/), integer division (//), modulus (%), and exponents (^) can all be used. Values can be compared using ==, >, >=, <, <=, and !=. The results of these comparisons can be further processed using `or` (||) and `and` (&&).

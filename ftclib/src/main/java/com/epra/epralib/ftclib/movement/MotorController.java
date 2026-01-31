@@ -3,7 +3,9 @@ package com.epra.epralib.ftclib.movement;
 import androidx.annotation.NonNull;
 
 import com.epra.epralib.ftclib.movement.pid.PIDController;
+import com.epra.epralib.ftclib.storage.autonomous.DriveTrainAutoModule;
 import com.epra.epralib.ftclib.storage.logdata.DataLogger;
+import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -554,28 +556,37 @@ public class MotorController implements Motor, DataLogger {
         }
     }
 
-    /// Rotates the motor to the target position using a [MotorControllerAutoModule],
-    /// returns if that target position has been reached.
+    /// Follows instructions from [MotorControllerAutoModule] to either give the motor a specified power level
+    /// or rotate to a specified position.
     ///
-    /// Will use [#setPosition(double)] if [#positionControlEnabled] is `True`.
-    /// Uses PID loops from [PIDController] otherwise.
-    /// PID loops must be updated frequently with [PIDController#update] or this function will be ineffective.
+    /// If the [MotorControllerAutoModule] has an invalid `motorMode`, this will log an error and return `False`.
     ///
-    /// The tolerance controls how precise the motor must be in reaching the target.
-    /// A tolerance of 0 or less will result in the motor never reaching the target.
-    /// A tolerance of 1 or more will result in the motor never moving.
-    ///
-    /// If [#positionControlEnabled] is `False` and either [#powerEnabled] or [#positionMonitoringEnabled]
-    /// is `False`, this will have no effect and return `False`.
-    /// @param motorControllerAutoModule An auto module with instructions to rotate the motor to a target
-    /// @return If the motor has reached the target
+    /// @param motorControllerAutoModule An auto module with instructions for this motor controller
+    /// @return If the motor has reached the target for `targeted` `motorMode`,
+    /// `True` for any other valid `motorMode`
     ///
     /// @see #setTarget(double)
     /// @see #getTarget()
     /// @see #getCurrentPosition()
-    public boolean moveToTarget(MotorControllerAutoModule motorControllerAutoModule) {
-        setTarget(motorControllerAutoModule.target());
-        return moveToTarget(motorControllerAutoModule.maxPower(), motorControllerAutoModule.tolerance(), true);
+    public boolean useMotorControllerAutoModule(MotorControllerAutoModule motorControllerAutoModule) {
+        return switch (motorControllerAutoModule.motorMode()) {
+            case "none" -> {
+                setPower(0.0);
+                yield true;
+            }
+            case "direct_power" -> {
+                setPower(motorControllerAutoModule.maxPower());
+                yield true;
+            }
+            case "targeted" -> {
+                setTarget(motorControllerAutoModule.target());
+                yield moveToTarget(motorControllerAutoModule.maxPower(), motorControllerAutoModule.tolerance(), true);
+            }
+            default -> {
+                LogController.logError("Invalid motor mode in MotorControllerAutoModule");
+                yield false;
+            }
+        };
     }
 
     /// Idles the PID loop used in [#moveToTarget(double, double, boolean)] using [PIDController#idle(String)].

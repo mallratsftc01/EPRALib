@@ -13,6 +13,7 @@ import com.epra.epralib.ftclib.movement.MotorController;
 import com.epra.epralib.ftclib.movement.pid.PIDController;
 import com.epra.epralib.ftclib.storage.logdata.LogController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -22,6 +23,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import java.util.HashMap;
 
 @TeleOp(name = "TeleOpExample", group = "TeleOp")
+@Disabled
 public class TeleOpExample extends LinearOpMode {
 
     private final Pose START_POSE = new Pose(new Vector(0, 0), new Angle());

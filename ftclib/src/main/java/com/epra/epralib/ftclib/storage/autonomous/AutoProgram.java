@@ -452,7 +452,7 @@ public class AutoProgram {
     /// 5) Evaluates addition and subtraction.
     /// @param arithmatic The arithmetic statement to be parsed
     /// @return A supplier that returns the result of the parsed arithmetic statement
-    private Supplier<Double> parseArithmatic(String arithmatic) {
+    protected Supplier<Double> parseArithmatic(String arithmatic) {
         // 1) Parse parentheticals
         arithmatic = parseArithmaticParenthetical(arithmatic);
 
@@ -837,5 +837,39 @@ public class AutoProgram {
         for (String movement : movementPaths.keySet()) {
             movementPaths.get(movement).replaceAll(AutoStep::reflectY);
         }
+    }
+
+    /// An interface that unifies suppliers for auto modules that supply doubles directly, and
+    /// suppliers that supply doubles by parsing an arithmatic statement using [AutoProgram#parseProgram()].
+    sealed interface AutoModuleDataSupplier permits AutoModuleDataSupplierNumber, AutoModuleDataSupplierString {
+        /// Returns the value of this [AutoModuleDataSupplier].
+        /// @return This data supplier's value
+        double get();
+    }
+
+    /// An [AutoModuleDataSupplier] that supplies a constant double value.
+    static final class AutoModuleDataSupplierNumber implements AutoModuleDataSupplier {
+        private final double value;
+        /// A [AutoModuleDataSupplier] that supplies a constant double value.
+        /// @param value The value for this data supplier to supply
+        AutoModuleDataSupplierNumber(double value) { this.value = value; }
+
+        @Override
+        public double get() { return value; }
+    }
+
+    /// An [AutoModuleDataSupplier] that parses a string using [AutoProgram#parseProgram()] to return a
+    /// dynamic value based on that string.
+    final class AutoModuleDataSupplierString implements AutoModuleDataSupplier {
+        private final Supplier<Double> supplier;
+        /// An [AutoModuleDataSupplier] that parses a string using [AutoProgram#parseProgram()] to return a
+        /// dynamic value based on that string.
+        /// @param value The string to be parsed
+        AutoModuleDataSupplierString(String value) {
+            supplier = parseArithmatic(value);
+        }
+
+        @Override
+        public double get() { return supplier.get(); }
     }
 }
